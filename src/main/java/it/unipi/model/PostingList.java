@@ -6,6 +6,7 @@ public interface PostingList {
     public int docId();
 
     // Return the score of the current posting
+    // TERM FREQUENCY
     public double score();
 
     // Moves sequentially the iterator to the next posting
