@@ -1,6 +1,7 @@
 package it.unipi.model;
 
 public interface DocumentInterface {
+
     // returns the docId
     public int getId();
     public void setId(int docid);

@@ -1,7 +1,7 @@
 package it.unipi.model;
 
 
-import it.unipi.Document;
+import it.unipi.model.implementation.Document;
 
 public interface DocumentStreamInterface {
     /*

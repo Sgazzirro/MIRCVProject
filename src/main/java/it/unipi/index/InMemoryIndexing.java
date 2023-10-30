@@ -1,7 +1,7 @@
 package it.unipi.index;
 
 
-import it.unipi.Document;
+import it.unipi.model.implementation.Document;
 import it.unipi.model.*;
 
 public class InMemoryIndexing {

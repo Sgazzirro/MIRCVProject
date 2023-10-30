@@ -1,7 +1,5 @@
-package it.unipi.model;
+package it.unipi.model.implementation;
 
-
-import it.unipi.PostingList;
 
 public class VocabularyEntry {
     private Integer frequency;

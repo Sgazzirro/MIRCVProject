@@ -1,5 +1,5 @@
-package it.unipi.model;
-import it.unipi.PostingList;
+package it.unipi.model.implementation;
+import it.unipi.model.VocabularyInterface;
 
 import java.util.HashMap;
 public class Vocabulary implements VocabularyInterface {

@@ -1,9 +1,7 @@
-package it.unipi;
+package it.unipi.model.implementation;
 import it.unipi.model.DocumentStreamInterface;
 
 import java.io.*;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.zip.GZIPInputStream;
 
 public class DocumentStream implements DocumentStreamInterface {

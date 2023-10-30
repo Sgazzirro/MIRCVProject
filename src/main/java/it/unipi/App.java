@@ -1,5 +1,8 @@
 package it.unipi;
 
+import it.unipi.model.implementation.Document;
+import it.unipi.model.implementation.DocumentStream;
+
 /**
  * Hello world!
  *

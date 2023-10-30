@@ -1,5 +1,7 @@
 package it.unipi.model;
 
+// DEPRECATED
+
 public interface InvertedIndex {
 
     /*

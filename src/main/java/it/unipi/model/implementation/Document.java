@@ -1,4 +1,4 @@
-package it.unipi;
+package it.unipi.model.implementation;
 
 import it.unipi.model.DocumentInterface;
 
