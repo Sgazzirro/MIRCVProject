@@ -1,6 +1,7 @@
 package it.unipi.index;
 
 
+import it.unipi.Document;
 import it.unipi.model.*;
 
 public class InMemoryIndexing {
@@ -32,14 +33,10 @@ public class InMemoryIndexing {
     }
 
     public void buildIndex(){
-
-        while(documentStreamInterface.hasNext()){
-            String[] document = documentStreamInterface.nextDoc();
-            int docid = Integer.parseInt(document[0]);
-            String content = document[1];
-
-            for(String token : tokenizer.tokenizeBySpace(content)){
-                vocabulary.addEntry(token, docid);
+        Document document;
+        while((document = documentStreamInterface.nextDoc())!=null){
+            for(String token : tokenizer.tokenizeBySpace(document.getText())){
+                vocabulary.addEntry(token, document.getId());
 
                 // TODO: Update Vocabulary
                 // TODO: Update DocIndex

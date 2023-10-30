@@ -8,6 +8,12 @@ public class App
 {
     public static void main( String[] args )
     {
-        System.out.println( "CiaoneProprio" );
+        DocumentStream ds = new DocumentStream("data/reduced_collection.tar.gz");
+        for(int i=0; i<10; i++){
+            Document doc = ds.nextDoc();
+            System.out.println(doc.getId());
+            System.out.println(doc.getText());
+        }
+
     }
 }
