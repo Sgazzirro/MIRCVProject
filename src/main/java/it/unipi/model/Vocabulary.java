@@ -1,4 +1,6 @@
 package it.unipi.model;
+import it.unipi.PostingList;
+
 import java.util.HashMap;
 public class Vocabulary implements VocabularyInterface {
     private HashMap<String, VocabularyEntry> table;
@@ -13,19 +15,20 @@ public class Vocabulary implements VocabularyInterface {
     }
 
     @Override
-    public VocabularyEntry addEntry(String token) {
-        // TODO: Create a new entry into the vocabulary
-        if (isPresent(token)) {
-            getEntry(token).setFrequency(getEntry(token).getFrequency() + 1);
-            return getEntry(token);
+    public void addEntry(String token, int docid) {
+        // TODO: add entry to the posting list
+        VocabularyEntry ve;
+        if (!isPresent(token)) {
+            ve = new VocabularyEntry();
+            ve.setFrequency(0);
+            ve.setPostingList(new PostingList());
+            ve.setUpperBound((double) 0);
+            table.put(token,ve);
         }
-        VocabularyEntry ve = new VocabularyEntry();
-        ve.setFrequency(1);
-        // non so bene cosa intendi per location posting list
-        ve.setLocationPostingList(0);
-        ve.setLocationPostingList(0);
-        table.put(token,ve);
-        return ve;
+        else ve=getEntry(token);
+        ve.setFrequency(getEntry(token).getFrequency() + 1);
+
+        ve.getPostingList().addPosting(docid);
     }
 
     @Override

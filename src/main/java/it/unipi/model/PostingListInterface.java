@@ -1,6 +1,6 @@
 package it.unipi.model;
 
-public interface PostingList {
+public interface PostingListInterface {
 
     // Return the docId of the current posting
     public int docId();
@@ -15,4 +15,6 @@ public interface PostingList {
     // Advances the iterator forward to the next posting
     // with a document identifier >= docId
     public void nextGEQ(int docId);
+
+    public void addPosting(int value);
 }

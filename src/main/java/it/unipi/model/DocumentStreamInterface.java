@@ -1,9 +1,7 @@
 package it.unipi.model;
 
 
-import java.util.Map;
-
-public interface DocumentStream {
+public interface DocumentStreamInterface {
     /*
         Represent a stream of documents
      */

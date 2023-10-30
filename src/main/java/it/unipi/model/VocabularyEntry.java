@@ -1,9 +1,13 @@
 package it.unipi.model;
 
 
+import it.unipi.PostingList;
+
 public class VocabularyEntry {
     private Integer frequency;
-    private int locationPostingList;
+
+    private PostingList postingList;
+
     private Double upperBound;
 
     public Integer getFrequency() {
@@ -14,16 +18,16 @@ public class VocabularyEntry {
         this.frequency = frequency;
     }
 
-    public int getLocationPostingList() {
-        return locationPostingList;
-    }
-
-    public void setLocationPostingList(int location) {
-        this.locationPostingList = location;
-    }
-
     public Double getUpperBound() {
         return upperBound;
+    }
+
+    public PostingList getPostingList() {
+        return postingList;
+    }
+
+    public void setPostingList(PostingList postingList) {
+        this.postingList = postingList;
     }
 
     public void setUpperBound(Double upperBound) {
