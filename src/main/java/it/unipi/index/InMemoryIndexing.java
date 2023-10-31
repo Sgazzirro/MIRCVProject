@@ -22,20 +22,20 @@ public class InMemoryIndexing {
 
     public InvertedIndex index;
 
-    public Tokenizer tokenizer;
+    public TokenizerInterface tokenizerInterface;
 
-    public InMemoryIndexing(DocumentStreamInterface d, DocumentIndex doc, VocabularyInterface v, InvertedIndex i, Tokenizer tok){
+    public InMemoryIndexing(DocumentStreamInterface d, DocumentIndex doc, VocabularyInterface v, InvertedIndex i, TokenizerInterface tok){
         documentStreamInterface = d;
         docIndex = doc;
         vocabulary = v;
         index = i;
-        tokenizer = tok;
+        tokenizerInterface = tok;
     }
 
     public void buildIndex(){
         Document document;
         while((document = documentStreamInterface.nextDoc())!=null){
-            for(String token : tokenizer.tokenizeBySpace(document.getText())){
+            for(String token : tokenizerInterface.tokenizeBySpace(document.getText())){
                 vocabulary.addEntry(token, document.getId());
 
                 // TODO: Update Vocabulary
