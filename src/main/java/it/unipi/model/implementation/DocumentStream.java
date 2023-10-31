@@ -32,7 +32,13 @@ public class DocumentStream implements DocumentStreamInterface {
                 doc.setId(0);
                 firstLine=false;
             }
-            else doc.setId(Integer.parseInt(data[0]));
+            else {
+                try{
+                    doc.setId(Integer.parseInt(data[0]));
+                } catch (NumberFormatException e){
+                    return null;
+                }
+            }
             doc.setText(data[1]);
 
         } catch (IOException e) {

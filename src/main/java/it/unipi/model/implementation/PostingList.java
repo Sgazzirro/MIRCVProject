@@ -1,11 +1,14 @@
 package it.unipi.model.implementation;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import it.unipi.model.PostingListInterface;
 
 import java.util.ArrayList;
 
 public class PostingList implements PostingListInterface {
+    @JsonProperty("docIdList")
     ArrayList<Integer> docIdList;
+    @JsonProperty("termFrequencyList")
     ArrayList<Integer> termFrequencyList;
 
     public PostingList(){
@@ -41,5 +44,10 @@ public class PostingList implements PostingListInterface {
             termFrequencyList.add(1);
         }
         else termFrequencyList.set(last_index, termFrequencyList.get(last_index)+1);
+    }
+
+    @Override
+    public String toString(){
+        return "DocIdList: "+docIdList.toString()+" TermFrequencyList: "+termFrequencyList.toString();
     }
 }

@@ -1,8 +1,7 @@
 package it.unipi;
 
-import it.unipi.model.implementation.Document;
-import it.unipi.model.implementation.DocumentStream;
-import it.unipi.model.implementation.Tokenizer;
+import it.unipi.index.InMemoryIndexing;
+import it.unipi.model.implementation.*;
 
 import java.util.List;
 
@@ -16,11 +15,11 @@ public class App
     {
         DocumentStream ds = new DocumentStream("data/reduced_collection.tar.gz");
 
-        Document doc = ds.nextDoc();
-        System.out.println(doc.getText());
-        Tokenizer tok = new Tokenizer();
-        List<String> tokenized = tok.tokenizeBySpace(doc.getText());
-        System.out.println(tokenized);
+        DocumentIndex documentIndex = new DocumentIndex();
+        Vocabulary vocabulary = new Vocabulary();
+        Tokenizer tokenizer = new Tokenizer();
 
+        InMemoryIndexing inMemoryIndexing = new InMemoryIndexing(ds, documentIndex, vocabulary, tokenizer);
+        inMemoryIndexing.buildIndex();
     }
 }

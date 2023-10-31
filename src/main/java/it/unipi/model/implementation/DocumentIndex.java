@@ -1,12 +1,17 @@
 package it.unipi.model.implementation;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import it.unipi.model.DocumentIndexInterface;
 
+import java.io.Serializable;
 import java.util.HashMap;
 
-public class DocumentIndex implements DocumentIndexInterface {
+public class DocumentIndex implements DocumentIndexInterface, Serializable {
+    @JsonProperty("totalLength")
     private int totalLength;
+    @JsonProperty("numDocuments")
     private int numDocuments;
+    @JsonProperty("docIndexTable")
     private HashMap<Integer, DocumentIndexEntry> table;
 
     public DocumentIndex(){
@@ -42,5 +47,9 @@ public class DocumentIndex implements DocumentIndexInterface {
             totalLength += docLength;
             return true;
         }
+    }
+    @Override
+    public String toString(){
+        return "TotalLength: "+totalLength+" NumDocuments: "+numDocuments+" DocumentIndexTable: "+table.toString();
     }
 }

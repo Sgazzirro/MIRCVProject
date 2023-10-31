@@ -1,11 +1,16 @@
 package it.unipi.model.implementation;
 
 
-public class VocabularyEntry {
+import com.fasterxml.jackson.annotation.JsonProperty;
+
+import java.io.Serializable;
+
+public class VocabularyEntry implements Serializable {
+    @JsonProperty("frequency")
     private Integer frequency;
-
+    @JsonProperty("postingList")
     private PostingList postingList;
-
+    @JsonProperty("upperBound")
     private Double upperBound;
 
     public Integer getFrequency() {
@@ -30,5 +35,10 @@ public class VocabularyEntry {
 
     public void setUpperBound(Double upperBound) {
         this.upperBound = upperBound;
+    }
+
+    @Override
+    public String toString(){
+        return "Frequency: "+frequency+" UpperBound: "+upperBound+" PostingList: "+postingList.toString();
     }
 }

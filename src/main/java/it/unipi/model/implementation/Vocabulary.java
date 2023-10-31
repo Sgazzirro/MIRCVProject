@@ -1,8 +1,11 @@
 package it.unipi.model.implementation;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import it.unipi.model.VocabularyInterface;
 
+import java.io.Serializable;
 import java.util.HashMap;
-public class Vocabulary implements VocabularyInterface {
+public class Vocabulary implements VocabularyInterface, Serializable {
+    @JsonProperty("VocabularyTable")
     private HashMap<String, VocabularyEntry> table;
 
     public Vocabulary(){
@@ -35,5 +38,11 @@ public class Vocabulary implements VocabularyInterface {
     public VocabularyEntry getEntry(String token) {
         return table.get(token);
     }
+
+    @Override
+    public String toString(){
+        return "Table: "+table.toString();
+    }
+
 
 }
