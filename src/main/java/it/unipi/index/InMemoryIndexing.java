@@ -18,17 +18,14 @@ public class InMemoryIndexing {
     public DocumentStreamInterface documentStreamInterface;
     public VocabularyInterface vocabulary;
 
-    public DocumentIndex docIndex;
-
-    public InvertedIndex index;
+    public DocumentIndexInterface docIndex;
 
     public TokenizerInterface tokenizerInterface;
 
-    public InMemoryIndexing(DocumentStreamInterface d, DocumentIndex doc, VocabularyInterface v, InvertedIndex i, TokenizerInterface tok){
+    public InMemoryIndexing(DocumentStreamInterface d, DocumentIndexInterface doc, VocabularyInterface v, TokenizerInterface tok){
         documentStreamInterface = d;
         docIndex = doc;
         vocabulary = v;
-        index = i;
         tokenizerInterface = tok;
     }
 
