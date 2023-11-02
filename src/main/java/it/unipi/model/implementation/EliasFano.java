@@ -39,6 +39,7 @@ public class EliasFano implements EncoderInterface {
 
     @Override
     public ArrayList<Integer> decode(ArrayList<Boolean> bitsList) {
+        // TO DO
         return null;
     }
 
