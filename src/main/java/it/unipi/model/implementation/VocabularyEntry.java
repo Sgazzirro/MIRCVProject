@@ -5,12 +5,10 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 import java.io.Serializable;
 
-public class VocabularyEntry implements Serializable {
-    @JsonProperty("frequency")
+public class VocabularyEntry {
+
     private Integer frequency;
-    @JsonProperty("postingList")
     private PostingList postingList;
-    @JsonProperty("upperBound")
     private Double upperBound;
 
     public Integer getFrequency() {

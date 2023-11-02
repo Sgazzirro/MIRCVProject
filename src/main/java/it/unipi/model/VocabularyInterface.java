@@ -2,6 +2,8 @@ package it.unipi.model;
 
 import it.unipi.model.implementation.VocabularyEntry;
 
+import java.util.Map;
+
 public interface VocabularyInterface {
     
     // Returns whether the vocabulary has the term inside
@@ -10,7 +12,9 @@ public interface VocabularyInterface {
     // Add the posting docid and create the entry in the vocabulary if never-seen token
     void addEntry(String token, int docid);
 
-    // Returnes the vocEntry of the term
+    // Returns the vocEntry of the term
     VocabularyEntry getEntry(String token);
 
+    // Returns an iterator over term, entry pairs
+    public Iterable<Map.Entry<String, VocabularyEntry>> getEntries();
 }

@@ -4,12 +4,14 @@ import it.unipi.model.VocabularyInterface;
 
 import java.io.Serializable;
 import java.util.HashMap;
+import java.util.Map;
+
 public class Vocabulary implements VocabularyInterface, Serializable {
     @JsonProperty("VocabularyTable")
     private HashMap<String, VocabularyEntry> table;
 
     public Vocabulary(){
-        table = new HashMap<String, VocabularyEntry>();
+        table = new HashMap<>();
     }
 
     @Override
@@ -40,9 +42,13 @@ public class Vocabulary implements VocabularyInterface, Serializable {
     }
 
     @Override
+    public Iterable<Map.Entry<String, VocabularyEntry>> getEntries() {
+        return table.entrySet();
+    }
+
+    @Override
     public String toString(){
         return "Table: "+table.toString();
     }
-
 
 }

@@ -4,35 +4,52 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import it.unipi.model.PostingListInterface;
 
 import java.util.ArrayList;
+import java.util.StringJoiner;
 
 public class PostingList implements PostingListInterface {
 
-    @JsonProperty("docIdList")
+    Integer offset;
     ArrayList<Integer> docIdList;
-    @JsonProperty("termFrequencyList")
     ArrayList<Integer> termFrequencyList;
 
+    // Used when building the index
     public PostingList() {
-        docIdList = new ArrayList<>();
-        termFrequencyList = new ArrayList<>();
+        this.docIdList = new ArrayList<>();
+        this.termFrequencyList = new ArrayList<>();
+    }
+
+    // Used when reading the index
+    public PostingList(int offset) {
+        this.offset = offset;
+    }
+
+    private void loadPosting() {
+        // Method that loads the posting list in memory if not present
+        if (docIdList == null) {
+            // load posting list
+        }
     }
 
     @Override
     public int docId() {
+        loadPosting();
         return 0;
     }
 
     @Override
     public double score() {
+        loadPosting();
         return 0;
     }
 
     @Override
     public void next() {
+        loadPosting();
     }
 
     @Override
     public void nextGEQ(int docId) {
+        loadPosting();
     }
 
     @Override
@@ -50,5 +67,14 @@ public class PostingList implements PostingListInterface {
     @Override
     public String toString() {
         return "DocIdList: " + docIdList.toString() + " TermFrequencyList: " + termFrequencyList.toString();
+    }
+
+    public int dumpPostings(StringJoiner docIds, StringJoiner termFrequencies) {
+        for (int docId : docIdList)
+            docIds.add(Integer.toString(docId));
+        for (int tf : termFrequencyList)
+            termFrequencies.add(Integer.toString(tf));
+
+        return docIdList.size();
     }
 }
