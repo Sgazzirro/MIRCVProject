@@ -16,5 +16,5 @@ public interface PostingListInterface {
     // with a document identifier >= docId
     public void nextGEQ(int docId);
 
-    public void addPosting(int value);
+    public void addPosting(int docId);
 }

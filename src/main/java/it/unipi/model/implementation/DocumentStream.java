@@ -2,6 +2,8 @@ package it.unipi.model.implementation;
 import it.unipi.model.DocumentStreamInterface;
 
 import java.io.*;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.zip.GZIPInputStream;
 
 public class DocumentStream implements DocumentStreamInterface {
@@ -12,7 +14,8 @@ public class DocumentStream implements DocumentStreamInterface {
         try{
             FileInputStream fileInput = new FileInputStream(filename);
             GZIPInputStream gzipInput = new GZIPInputStream(fileInput);
-            InputStreamReader reader = new InputStreamReader(gzipInput);
+            // Forces Unicode decoding (it should be on by default)
+            InputStreamReader reader = new InputStreamReader(gzipInput, StandardCharsets.UTF_8);
             br = new BufferedReader(reader);
         } catch (IOException e){
             e.printStackTrace();
@@ -28,14 +31,15 @@ public class DocumentStream implements DocumentStreamInterface {
                 return null;
             }
             String[] data = line.split("\t"); // Split the line into fields using the tab character
-            if(firstLine){
+
+            // Used to prevent incorrect reading of the first document id
+            if (firstLine) {
                 doc.setId(0);
-                firstLine=false;
-            }
-            else {
-                try{
+                firstLine = false;
+            } else {
+                try {
                     doc.setId(Integer.parseInt(data[0]));
-                } catch (NumberFormatException e){
+                } catch (NumberFormatException e) {
                     return null;
                 }
             }
@@ -43,6 +47,7 @@ public class DocumentStream implements DocumentStreamInterface {
 
         } catch (IOException e) {
             e.printStackTrace();
+            return null;
         }
         return doc;
     }
