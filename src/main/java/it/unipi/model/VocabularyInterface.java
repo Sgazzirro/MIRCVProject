@@ -3,6 +3,7 @@ package it.unipi.model;
 import it.unipi.model.implementation.VocabularyEntry;
 
 import java.util.Map;
+import java.util.TreeMap;
 
 public interface VocabularyInterface {
     
@@ -17,4 +18,6 @@ public interface VocabularyInterface {
 
     // Returns an iterator over term, entry pairs
     public Iterable<Map.Entry<String, VocabularyEntry>> getEntries();
+
+    public TreeMap<String, VocabularyEntry> sortByTerm();
 }

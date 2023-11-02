@@ -5,6 +5,7 @@ import it.unipi.model.VocabularyInterface;
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.TreeMap;
 
 public class Vocabulary implements VocabularyInterface, Serializable {
     @JsonProperty("VocabularyTable")
@@ -39,6 +40,15 @@ public class Vocabulary implements VocabularyInterface, Serializable {
     @Override
     public VocabularyEntry getEntry(String token) {
         return table.get(token);
+    }
+
+    public TreeMap<String, VocabularyEntry> sortByTerm(){
+        // TreeMap to store values of HashMap
+        TreeMap<String, VocabularyEntry> sorted = new TreeMap<>();
+
+        // Copy all data from hashMap into TreeMap
+        sorted.putAll(table);
+        return sorted;
     }
 
     @Override
