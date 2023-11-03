@@ -3,17 +3,14 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import it.unipi.model.VocabularyInterface;
 
 import java.io.Serializable;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Objects;
-import java.util.TreeMap;
+import java.util.*;
 
 public class Vocabulary implements VocabularyInterface, Serializable {
 
-    private final HashMap<String, VocabularyEntry> table;
+    private final NavigableMap<String, VocabularyEntry> table;
 
     public Vocabulary(){
-        table = new HashMap<>();
+        table = new TreeMap<>();
     }
 
     @Override
@@ -47,6 +44,7 @@ public class Vocabulary implements VocabularyInterface, Serializable {
         table.put(term, entry);
     }
 
+    /*
     public TreeMap<String, VocabularyEntry> sortByTerm(){
         // TreeMap to store values of HashMap
         TreeMap<String, VocabularyEntry> sorted = new TreeMap<>();
@@ -55,7 +53,7 @@ public class Vocabulary implements VocabularyInterface, Serializable {
         sorted.putAll(table);
         return sorted;
     }
-
+*/
     @Override
     public Iterable<Map.Entry<String, VocabularyEntry>> getEntries() {
         return table.entrySet();

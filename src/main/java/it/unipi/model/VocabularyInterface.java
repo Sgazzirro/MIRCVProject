@@ -19,5 +19,5 @@ public interface VocabularyInterface {
     // Returns an iterator over term, entry pairs
     public Iterable<Map.Entry<String, VocabularyEntry>> getEntries();
 
-    public TreeMap<String, VocabularyEntry> sortByTerm();
+    // public TreeMap<String, VocabularyEntry> sortByTerm();
 }

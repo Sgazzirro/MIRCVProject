@@ -1,12 +1,9 @@
 package it.unipi.index;
 
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import it.unipi.model.implementation.*;
 import it.unipi.model.*;
 import it.unipi.utils.Constants;
-import opennlp.tools.parser.Cons;
 import opennlp.tools.stemmer.PorterStemmer;
 
 import java.io.*;
@@ -15,7 +12,6 @@ import java.nio.file.Files;
 import java.util.List;
 import java.util.Map;
 import java.util.StringJoiner;
-import java.util.zip.GZIPInputStream;
 
 public class InMemoryIndexing {
     /*
@@ -35,6 +31,11 @@ public class InMemoryIndexing {
 
     public TokenizerInterface tokenizerInterface;
 
+    List<String> stopwords = loadStopwords(Constants.STOPWORDS_FILE);
+
+    // Use Porter stemmer
+    PorterStemmer stemmer = new PorterStemmer();
+
     public InMemoryIndexing(DocumentStreamInterface d, DocumentIndexInterface doc, VocabularyInterface v, TokenizerInterface tok){
         documentStreamInterface = d;
         docIndex = doc;
@@ -45,12 +46,9 @@ public class InMemoryIndexing {
     public void buildIndex(){
         Document document;
 
-        List<String> stopwords = loadStopwords(Constants.STOPWORDS_FILE);
-
-        // Use Porter stemmer
-        PorterStemmer stemmer = new PorterStemmer();
 
         while((document = documentStreamInterface.nextDoc())!=null){
+            processDocument(document);
             List<String> tokenized = tokenizerInterface.tokenizeBySpace(document.getText());
             tokenized.removeAll(stopwords);     // Remove all stopwords
 
@@ -65,7 +63,22 @@ public class InMemoryIndexing {
         dumpDocumentIndex();
     }
 
-    private void dumpVocabulary() {
+    public void processDocument(Document document) {
+        List<String> tokenized = tokenizerInterface.tokenizeBySpace(document.getText());
+        tokenized.removeAll(stopwords);     // Remove all stopwords
+
+        for (String token : tokenized)
+            vocabulary.addEntry(stemmer.stem(token), document.getId());
+
+        docIndex.addDocument(document.getId(), tokenized.size());
+    }
+
+    protected void dumpVocabulary(){
+        dumpVocabulary(Constants.VOCABULARY_FILE,
+                Constants.DOC_IDS_POSTING_FILE,
+                Constants.TF_POSTING_FILE);
+    }
+    protected void dumpVocabulary(String fvoc, String fids, String ffreq) {
 
         // Dump vocabulary as csv with structure
         //  term | frequency | upper bound | offset in postings | length of postings
@@ -96,9 +109,9 @@ public class InMemoryIndexing {
 
         // Write everything to file
         try (
-                PrintWriter vocabularyWriter = new PrintWriter(Constants.VOCABULARY_FILE);
-                PrintWriter docIdsWriter = new PrintWriter(Constants.DOC_IDS_POSTING_FILE);
-                PrintWriter termFrequenciesWriter = new PrintWriter(Constants.TF_POSTING_FILE)
+                PrintWriter vocabularyWriter = new PrintWriter(fvoc);
+                PrintWriter docIdsWriter = new PrintWriter(fids);
+                PrintWriter termFrequenciesWriter = new PrintWriter(ffreq);
         ) {
             vocabularyWriter.print(vocabulary);
             docIdsWriter.print(docIds);
@@ -110,7 +123,11 @@ public class InMemoryIndexing {
         }
     }
 
-    private void dumpDocumentIndex() {
+    protected void dumpDocumentIndex(){
+        dumpDocumentIndex(Constants.DOCUMENT_INDEX_FILE);
+    }
+
+    protected void dumpDocumentIndex(String filename) {
 
         // Dump documentIndex as csv with structure
         //  doc id | document length
@@ -126,7 +143,7 @@ public class InMemoryIndexing {
 
         // Write everything to file
         try (
-                PrintWriter documentIndexWriter = new PrintWriter(Constants.DOCUMENT_INDEX_FILE)
+                PrintWriter documentIndexWriter = new PrintWriter(filename)
         ) {
             documentIndexWriter.print(documentIndex);
 
@@ -143,5 +160,21 @@ public class InMemoryIndexing {
             System.err.println("Error loading stopwords");
             return List.of();
         }
+    }
+
+    public DocumentStreamInterface getDocumentStreamInterface() {
+        return documentStreamInterface;
+    }
+
+    public VocabularyInterface getVocabulary() {
+        return vocabulary;
+    }
+
+    public DocumentIndexInterface getDocIndex() {
+        return docIndex;
+    }
+
+    public TokenizerInterface getTokenizerInterface() {
+        return tokenizerInterface;
     }
 }

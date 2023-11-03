@@ -122,7 +122,6 @@ public class PostingList implements PostingListInterface {
         } else
             termFrequencyList.set(lastIndex, termFrequencyList.get(lastIndex)+termFrequency);
 
-        this.length++;
     }
 
     public int dumpPostings(StringJoiner docIds, StringJoiner termFrequencies) {

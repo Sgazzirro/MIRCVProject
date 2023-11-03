@@ -17,7 +17,7 @@ import java.util.*;
 public class SPIMIIndex {
     public DocumentStreamInterface documentStreamInterface;
     public TokenizerInterface tokenizerInterface;
-    private long block_size = Runtime.getRuntime().totalMemory(); // Each block 10KB
+    private long block_size = 1000000; // Each block 10KB
     private int next_block = 0;
     private boolean finish = false;
 
@@ -55,8 +55,7 @@ public class SPIMIIndex {
         long usedMemory = startMemory;
 
         // Initialize structures
-        VocabularyInterface currentVoc = new Vocabulary();
-        DocumentIndexInterface currentDocIndex = new DocumentIndex();
+        InMemoryIndexing intermediateIndex = new InMemoryIndexing(documentStreamInterface, new DocumentIndex(), new Vocabulary(), tokenizerInterface);
 
         while(availableMemory(usedMemory, startMemory)){
             // Get the next document
@@ -66,27 +65,25 @@ public class SPIMIIndex {
                 finish = true;
                 break;
             }
-            List<String> tokenized = tokenizerInterface.tokenizeBySpace(doc.getText());
-            // tokenized.removeAll(stopwords);     // Remove all stopwords
-
-            // Use Porter stemmer
-            PorterStemmer stemmer = new PorterStemmer();
-
-            for (String token : tokenized) {
-                currentVoc.addEntry(stemmer.stem(token), doc.getId());
-            }
-            currentDocIndex.addDocument(doc.getId(), tokenized.size());
+            intermediateIndex.processDocument(doc);
             usedMemory = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
         }
 
         // When out of memory:
-        // 1) sort vocabulary by term
+        // 1) sort vocabulary by term (already done by the tree map)
         // 2) write block to the disk
-        TreeMap<String, VocabularyEntry> treeVoc = currentVoc.sortByTerm();
-        writeBlock(treeVoc, currentDocIndex);
+
+        writeBlock(intermediateIndex);
         next_block++;
     }
 
+    private void writeBlock(InMemoryIndexing intermediateIndex) {
+        intermediateIndex.dumpDocumentIndex("data/blocks/document_index"+next_block+".csv");
+        intermediateIndex.dumpVocabulary("data/blocks/vocabulary" + next_block + ".csv",
+                "data/blocks/doc_ids" + next_block + ".txt",
+                "data/blocks/term_frequencies" + next_block + ".txt");
+    }
+    /*
     private void writeBlock(TreeMap<String, VocabularyEntry> currentVoc, DocumentIndexInterface currentDocIndex) {
         dumpVocabulary(currentVoc);
         dumpDocumentIndex(currentDocIndex);
@@ -154,7 +151,7 @@ public class SPIMIIndex {
             e.printStackTrace();
         }
     }
-
+    */
     private boolean finished() {
         return finish;
     }
