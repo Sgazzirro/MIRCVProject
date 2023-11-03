@@ -3,22 +3,19 @@ package it.unipi.index;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import it.unipi.model.implementation.Document;
+import it.unipi.model.implementation.*;
 import it.unipi.model.*;
-import it.unipi.model.implementation.PostingList;
-import it.unipi.model.implementation.Vocabulary;
-import it.unipi.model.implementation.VocabularyEntry;
+import it.unipi.utils.Constants;
+import opennlp.tools.parser.Cons;
 import opennlp.tools.stemmer.PorterStemmer;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.PrintWriter;
+import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.List;
 import java.util.Map;
 import java.util.StringJoiner;
+import java.util.zip.GZIPInputStream;
 
 public class InMemoryIndexing {
     /*
@@ -48,34 +45,30 @@ public class InMemoryIndexing {
     public void buildIndex(){
         Document document;
 
-        // Stopwords downloaded from https://raw.githubusercontent.com/stopwords-iso/stopwords-en/master/stopwords-en.txt
-        List<String> stopwords = loadStopwords("data/stopwords-en.txt");
+        List<String> stopwords = loadStopwords(Constants.STOPWORDS_FILE);
+
+        // Use Porter stemmer
+        PorterStemmer stemmer = new PorterStemmer();
 
         while((document = documentStreamInterface.nextDoc())!=null){
             List<String> tokenized = tokenizerInterface.tokenizeBySpace(document.getText());
             tokenized.removeAll(stopwords);     // Remove all stopwords
 
-            // Use Porter stemmer
-            PorterStemmer stemmer = new PorterStemmer();
-
-            for (String token : tokenized) {
+            for (String token : tokenized)
                 vocabulary.addEntry(stemmer.stem(token), document.getId());
-            }
+
             docIndex.addDocument(document.getId(), tokenized.size());
         }
 
-        // TODO - Improve the following methods by periodically dump the memory instead of dumping altogether
+        // TODO - Improve the following methods by periodically dumping the memory instead of dumping it all at once
         dumpVocabulary();
         dumpDocumentIndex();
     }
 
     private void dumpVocabulary() {
-        String vocabularyFile = "data/vocabulary.csv";
-        String docIdsFile = "data/doc_ids.txt";
-        String termFrequenciesFile = "data/term_frequencies.txt";
 
         // Dump vocabulary as csv with structure
-        //  term | frequency | upper bound | offset in postings
+        //  term | frequency | upper bound | offset in postings | length of postings
         StringBuilder vocabulary = new StringBuilder();
         StringJoiner docIds = new StringJoiner("\n");
         StringJoiner termFrequencies = new StringJoiner("\n");
@@ -90,17 +83,22 @@ public class InMemoryIndexing {
             int termFrequency = vocEntry.getFrequency();
             double upperBound = vocEntry.getUpperBound();
 
-            vocabulary.append(term).append(",").append(termFrequency).append(",").append(upperBound).append(",").append(offset).append("\n");
-
             PostingList postingList = vocEntry.getPostingList();
-            offset += postingList.dumpPostings(docIds, termFrequencies);
+            int length = postingList.dumpPostings(docIds, termFrequencies);
+
+            vocabulary.append(term).append(",")
+                    .append(termFrequency).append(",")
+                    .append(upperBound).append(",")
+                    .append(offset).append(",")
+                    .append(length).append("\n");
+            offset += length;   // Advance the offset by the length of the current posting list
         }
 
         // Write everything to file
         try (
-                PrintWriter vocabularyWriter = new PrintWriter(vocabularyFile);
-                PrintWriter docIdsWriter = new PrintWriter(docIdsFile);
-                PrintWriter termFrequenciesWriter = new PrintWriter(termFrequenciesFile)
+                PrintWriter vocabularyWriter = new PrintWriter(Constants.VOCABULARY_FILE);
+                PrintWriter docIdsWriter = new PrintWriter(Constants.DOC_IDS_POSTING_FILE);
+                PrintWriter termFrequenciesWriter = new PrintWriter(Constants.TF_POSTING_FILE)
         ) {
             vocabularyWriter.print(vocabulary);
             docIdsWriter.print(docIds);
@@ -113,17 +111,26 @@ public class InMemoryIndexing {
     }
 
     private void dumpDocumentIndex() {
-        String documentIndexFile = "data/document_index.json";
 
-        // Dump document index as Json
-        ObjectMapper objectMapper = new ObjectMapper();
-        try(
-                PrintWriter documentIndexWriter = new PrintWriter(documentIndexFile)
+        // Dump documentIndex as csv with structure
+        //  doc id | document length
+        StringBuilder documentIndex = new StringBuilder();
+
+        for (Map.Entry<Integer, DocumentIndexEntry> entry : this.docIndex.getEntries()) {
+            int docId = entry.getKey();
+            DocumentIndexEntry docEntry = entry.getValue();
+
+            int docLength = docEntry.getDocumentLength();
+            documentIndex.append(docId).append(",").append(docLength).append("\n");
+        }
+
+        // Write everything to file
+        try (
+                PrintWriter documentIndexWriter = new PrintWriter(Constants.DOCUMENT_INDEX_FILE)
         ) {
-            String documentIndexJSON = objectMapper.writeValueAsString(docIndex);
-            documentIndexWriter.println(documentIndexJSON);
+            documentIndexWriter.print(documentIndex);
 
-        } catch (JsonProcessingException | FileNotFoundException e) {
+        } catch (FileNotFoundException e) {
             System.err.println("There has been an error in writing the document index to file");
             e.printStackTrace();
         }

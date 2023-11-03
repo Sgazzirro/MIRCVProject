@@ -5,11 +5,12 @@ import it.unipi.model.VocabularyInterface;
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 import java.util.TreeMap;
 
 public class Vocabulary implements VocabularyInterface, Serializable {
-    @JsonProperty("VocabularyTable")
-    private HashMap<String, VocabularyEntry> table;
+
+    private final HashMap<String, VocabularyEntry> table;
 
     public Vocabulary(){
         table = new HashMap<>();
@@ -21,7 +22,7 @@ public class Vocabulary implements VocabularyInterface, Serializable {
     }
 
     @Override
-    public void addEntry(String token, int docid) {
+    public void addEntry(String token, int docId) {
         // TODO: add entry to the posting list
         VocabularyEntry ve;
         if (!isPresent(token)) {
@@ -34,12 +35,16 @@ public class Vocabulary implements VocabularyInterface, Serializable {
         else ve=getEntry(token);
         ve.setFrequency(getEntry(token).getFrequency() + 1);
 
-        ve.getPostingList().addPosting(docid);
+        ve.getPostingList().addPosting(docId);
     }
 
     @Override
     public VocabularyEntry getEntry(String token) {
         return table.get(token);
+    }
+
+    public void setEntry(String term, VocabularyEntry entry) {
+        table.put(term, entry);
     }
 
     public TreeMap<String, VocabularyEntry> sortByTerm(){
@@ -58,7 +63,19 @@ public class Vocabulary implements VocabularyInterface, Serializable {
 
     @Override
     public String toString(){
-        return "Table: "+table.toString();
+        return "Table: " + table;
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Vocabulary that = (Vocabulary) o;
+        return Objects.equals(table.entrySet(), that.table.entrySet());
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(table);
+    }
 }

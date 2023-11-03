@@ -1,8 +1,14 @@
 package it.unipi.model;
 
 import it.unipi.model.implementation.Document;
+import it.unipi.model.implementation.DocumentIndexEntry;
+
+import java.util.Map;
 
 public interface DocumentIndexInterface {
+
+    public int getTotalLength();
+    public int getNumDocuments();
 
     // Get the length of a specific document
     public int getLength(int docId);
@@ -12,4 +18,5 @@ public interface DocumentIndexInterface {
 
     public boolean addDocument(int docId, int docLength);
 
+    Iterable<? extends Map.Entry<Integer, DocumentIndexEntry>> getEntries();
 }

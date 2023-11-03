@@ -3,10 +3,11 @@ package it.unipi.model.implementation;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import java.io.Serializable;
+import java.util.Objects;
 
 public class DocumentIndexEntry implements Serializable {
+
     // maybe there will be something to add inside here
-    @JsonProperty("docLength")
     private int documentLength;
 
     public int getDocumentLength() {
@@ -20,5 +21,18 @@ public class DocumentIndexEntry implements Serializable {
     @Override
     public String toString(){
         return String.valueOf(documentLength);
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        DocumentIndexEntry that = (DocumentIndexEntry) o;
+        return documentLength == that.documentLength;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(documentLength);
     }
 }
