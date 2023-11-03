@@ -113,8 +113,10 @@ public class SPIMIIndex {
 
             int termFrequency = vocEntry.getFrequency();
             double upperBound = vocEntry.getUpperBound();
+            // int length = vocEntry.getPostingList().score(;
 
-            output.append(term).append(",").append(termFrequency).append(",").append(upperBound).append(",").append(offset).append("\n");
+            output.append(term).append(",").append(termFrequency).append(",").append(upperBound).append(",")
+                    .append(offset).append("\n");
 
             PostingList postingList = vocEntry.getPostingList();
             offset += postingList.dumpPostings(docIds, termFrequencies);
@@ -173,10 +175,10 @@ public class SPIMIIndex {
         // Each read buffer is refilled from its file when necessary.
 
         // Initialize all buffers
-        List<ObjectInputStream> readVocabularyBuffers = new ArrayList<>();
-        List<ObjectInputStream> readFrequenciesBuffers = new ArrayList<>();
+        List<BufferedReader> readVocabularyBuffers = new ArrayList<>();
+        List<BufferedReader> readFrequenciesBuffers = new ArrayList<>();
         List<BufferedReader> readDocIdBuffers = new ArrayList<>();
-        List<ObjectInputStream> readDocIndexBuffers = new ArrayList<>();
+        List<BufferedReader> readDocIndexBuffers = new ArrayList<>();
 
         PrintWriter writerDocId;
         PrintWriter writerDocIndex;
@@ -191,47 +193,60 @@ public class SPIMIIndex {
         try{
             System.out.println("NEXT BLOCK: " + next_block);
             for(int i = 0; i < next_block; i++){
-/*                readVocabularyBuffers.add(
-                        new ObjectInputStream(
-                                new FileInputStream("./data/blocks/vocabulary" + (next_block - 1) + ".csv")));
-                readFrequenciesBuffers.add(
-                        new ObjectInputStream(
-                                new FileInputStream("./data/blocks/term_frequencies" + (next_block - 1) + ".txt")));
-     */           readDocIdBuffers.add(
+                readVocabularyBuffers.add(
                         new BufferedReader(
-                                new FileReader("./data/blocks/doc_ids" + (next_block - 1) + ".txt")));
-    /*            readFrequenciesBuffers.add(
-                        new ObjectInputStream(
-                                new FileInputStream("./data/blocks/document_index" + (next_block - 1) + ".txt")));
-      */      }
+                                new FileReader("./data/blocks/vocabulary" + i + ".csv")));
+                readFrequenciesBuffers.add(
+                        new BufferedReader(
+                                new FileReader("./data/blocks/term_frequencies" + i + ".txt")));
+                readDocIdBuffers.add(
+                        new BufferedReader(
+                                new FileReader("./data/blocks/doc_ids" + i + ".txt")));
+                readFrequenciesBuffers.add(
+                        new BufferedReader(
+                                new FileReader("./data/blocks/document_index" + i + ".json")));
+            }
             writerDocId = new PrintWriter("./data/doc_ids.txt");
             writerDocIndex = new PrintWriter("./data/document_index.json");
             writerTermFrequencies = new PrintWriter("./data/term_frequencies.txt");
             writerVocabulary = new PrintWriter("./data/vocabulary.csv");
 
             // Now that they are all open, check the lowest term_ids
-            //while(true){
+            while(true){
                 // Pick objects one bye one
-                List<String> terms = new ArrayList<>();
+                String[] terms = new String[next_block];
                 List<VocabularyEntry> entries = new ArrayList<>();
                 for(int k = 0; k < next_block; k++){
                     System.out.println("BLOCCO: " + processed.get(k));
                     if(!processed.get(k)){
-                        // Vocabulary prova = (Vocabulary) readVocabularyBuffers.get(k).readObject();
-                        int prova = Integer.parseInt(readDocIdBuffers.get(k).readLine());
-                        System.out.println(prova);
-                    }
+                        // Get a vocabulary entry
+                        // Term | TermFrequency | UpperBound | #Posting | Offset
 
+                        String lineK = readVocabularyBuffers.get(k).readLine();
+                        // If block is finished, just close its buffer
+                        if(lineK == null){
+                            readVocabularyBuffers.get(k).close();
+                        }
+
+                        // Else, store the informations of the line
+                        String[] lineParam = lineK.split(",");
+
+                        // LineParam[0] : the term
+                        terms[k] = lineParam[0];
+
+                        // The other params can create a vocabularyEntry
+                        entries.add(new VocabularyEntry(Integer.parseInt(lineParam[1]),
+                                Double.parseDouble(lineParam[2]),
+                                new PostingList(Integer.parseInt(lineParam[3]), Integer.parseInt(lineParam[4]))));
+                    }
                 }
+
+                // Now write onto the writing file the correct things
+
+                // Iter
                 // Merge if equal term
-            // Advance only blocks that have been parsed at this iteration
-            for(int i = 0; i < next_block; i++){
-                readVocabularyBuffers.get(i).close();
-                readDocIdBuffers.get(i).close();
-                readDocIndexBuffers.get(i).close();
-                readFrequenciesBuffers.get(i).close();
+
             }
-            //}
         } catch (FileNotFoundException e) {
             throw new RuntimeException(e);
         } catch (IOException e) {

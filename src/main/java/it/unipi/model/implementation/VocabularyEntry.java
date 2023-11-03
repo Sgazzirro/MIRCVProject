@@ -9,8 +9,9 @@ import java.util.Objects;
 public class VocabularyEntry {
 
     private Integer frequency;
-    private PostingList postingList;
     private Double upperBound;
+    private PostingList postingList;
+
 
     public VocabularyEntry(){}
 
@@ -19,6 +20,7 @@ public class VocabularyEntry {
         this.upperBound = upperBound;
         this.postingList = postingList;
     }
+
 
     public Integer getFrequency() {
         return frequency;
