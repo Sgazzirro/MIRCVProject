@@ -16,6 +16,10 @@ public class Vocabulary implements VocabularyInterface, Serializable {
         table = new HashMap<>();
     }
 
+    public Vocabulary(String term, Integer freq, Double upperBound, Integer offset){
+        table = new HashMap<>();
+        table.put(term, new VocabularyEntry(freq, upperBound, new PostingList(offset)));
+    }
     @Override
     public boolean isPresent(String term) {
         return table.containsKey(term);

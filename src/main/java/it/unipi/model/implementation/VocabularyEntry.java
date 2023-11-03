@@ -12,6 +12,14 @@ public class VocabularyEntry {
     private PostingList postingList;
     private Double upperBound;
 
+    public VocabularyEntry(){}
+
+    public VocabularyEntry(Integer freq, Double upperBound, PostingList postingList) {
+        frequency = freq;
+        this.upperBound = upperBound;
+        this.postingList = postingList;
+    }
+
     public Integer getFrequency() {
         return frequency;
     }

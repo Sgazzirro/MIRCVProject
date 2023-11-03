@@ -2,6 +2,7 @@ package it.unipi.index;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.sun.source.tree.ArrayAccessTree;
 import com.sun.source.tree.Tree;
 import it.unipi.model.DocumentIndexInterface;
 import it.unipi.model.DocumentStreamInterface;
@@ -10,16 +11,13 @@ import it.unipi.model.VocabularyInterface;
 import it.unipi.model.implementation.*;
 import opennlp.tools.stemmer.PorterStemmer;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.PrintWriter;
+import java.io.*;
 import java.util.*;
 
 public class SPIMIIndex {
     public DocumentStreamInterface documentStreamInterface;
     public TokenizerInterface tokenizerInterface;
-    private long block_size = 128000; // Each block 10KB
-
+    private long block_size = Runtime.getRuntime().totalMemory(); // Each block 10KB
     private int next_block = 0;
     private boolean finish = false;
 
@@ -46,9 +44,10 @@ public class SPIMIIndex {
         }
 
         // TODO: Merge all blocks
-        //mergeAllBlocks();
+        mergeAllBlocks();
 
     }
+
 
     public void invertBlock(){
         // Get the current state of memory
@@ -161,6 +160,85 @@ public class SPIMIIndex {
     private boolean availableMemory(long usedMemory, long startMemory) {
         // Returns if (usedMemory - starting memory) is less than a treshold
         return (usedMemory - startMemory) <= block_size;
+    }
+
+    private void mergeAllBlocks() {
+        // Key idea to merge all blocks together
+        // To do the merging, we open all block files simultaneously
+        // We maintain small read buffers for blocks we are reading
+        // and a write buffer for the final merged index we are writing.
+        // In each iteration, we select the lowest termID that has not been processed yet
+        // using a priority queue or a similar data structure.
+        // All postings lists for this termID are read and merged, and the merged list is written back to disk.
+        // Each read buffer is refilled from its file when necessary.
+
+        // Initialize all buffers
+        List<ObjectInputStream> readVocabularyBuffers = new ArrayList<>();
+        List<ObjectInputStream> readFrequenciesBuffers = new ArrayList<>();
+        List<BufferedReader> readDocIdBuffers = new ArrayList<>();
+        List<ObjectInputStream> readDocIndexBuffers = new ArrayList<>();
+
+        PrintWriter writerDocId;
+        PrintWriter writerDocIndex;
+        PrintWriter writerTermFrequencies;
+        PrintWriter writerVocabulary;
+
+        // Initialize a Boolean list to check if the block has been processed
+        List<Boolean> processed = new ArrayList<>();
+        for(int i = 0; i < next_block; i++)
+            processed.add(false);
+
+        try{
+            System.out.println("NEXT BLOCK: " + next_block);
+            for(int i = 0; i < next_block; i++){
+/*                readVocabularyBuffers.add(
+                        new ObjectInputStream(
+                                new FileInputStream("./data/blocks/vocabulary" + (next_block - 1) + ".csv")));
+                readFrequenciesBuffers.add(
+                        new ObjectInputStream(
+                                new FileInputStream("./data/blocks/term_frequencies" + (next_block - 1) + ".txt")));
+     */           readDocIdBuffers.add(
+                        new BufferedReader(
+                                new FileReader("./data/blocks/doc_ids" + (next_block - 1) + ".txt")));
+    /*            readFrequenciesBuffers.add(
+                        new ObjectInputStream(
+                                new FileInputStream("./data/blocks/document_index" + (next_block - 1) + ".txt")));
+      */      }
+            writerDocId = new PrintWriter("./data/doc_ids.txt");
+            writerDocIndex = new PrintWriter("./data/document_index.json");
+            writerTermFrequencies = new PrintWriter("./data/term_frequencies.txt");
+            writerVocabulary = new PrintWriter("./data/vocabulary.csv");
+
+            // Now that they are all open, check the lowest term_ids
+            //while(true){
+                // Pick objects one bye one
+                List<String> terms = new ArrayList<>();
+                List<VocabularyEntry> entries = new ArrayList<>();
+                for(int k = 0; k < next_block; k++){
+                    System.out.println("BLOCCO: " + processed.get(k));
+                    if(!processed.get(k)){
+                        // Vocabulary prova = (Vocabulary) readVocabularyBuffers.get(k).readObject();
+                        int prova = Integer.parseInt(readDocIdBuffers.get(k).readLine());
+                        System.out.println(prova);
+                    }
+
+                }
+                // Merge if equal term
+            // Advance only blocks that have been parsed at this iteration
+            for(int i = 0; i < next_block; i++){
+                readVocabularyBuffers.get(i).close();
+                readDocIdBuffers.get(i).close();
+                readDocIndexBuffers.get(i).close();
+                readFrequenciesBuffers.get(i).close();
+            }
+            //}
+        } catch (FileNotFoundException e) {
+            throw new RuntimeException(e);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
+
     }
 
 }
