@@ -21,7 +21,11 @@ public class VocabularyEntry {
         this.postingList = postingList;
     }
 
-
+    public VocabularyEntry(String[] lineParam){
+        this(Integer.parseInt(lineParam[1]),
+                Double.parseDouble(lineParam[2]),
+                new PostingList(Integer.parseInt(lineParam[3]), Integer.parseInt(lineParam[4])));
+    }
     public Integer getFrequency() {
         return frequency;
     }

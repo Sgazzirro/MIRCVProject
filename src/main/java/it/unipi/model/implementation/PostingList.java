@@ -34,15 +34,48 @@ public class PostingList implements PostingListInterface {
         this.length = length;
     }
 
-    private boolean loadPosting() {
+    public Integer getOffset() {
+        return offset;
+    }
+
+    public Integer getLength() {
+        return length;
+    }
+
+    public ArrayList<Integer> getDocIdList() {
+        return docIdList;
+    }
+
+    public ArrayList<Integer> getTermFrequencyList() {
+        return termFrequencyList;
+    }
+
+    public void mergePosting(PostingList p2){
+        docIdList.addAll(p2.getDocIdList());
+        termFrequencyList.addAll(p2.getTermFrequencyList());
+    }
+    public boolean loadPosting(){
+        return loadPosting(-1);
+    }
+    public boolean loadPosting(int blockNumber) {
         // Method that loads the posting list in memory if not present
         if (docIdList == null) {
             docIdList = new ArrayList<>();
             termFrequencyList = new ArrayList<>();
 
+            String idsFilename;
+            String freqFilename;
+            if(blockNumber < 0){
+                idsFilename = Constants.DOC_IDS_POSTING_FILE;
+                freqFilename = Constants.TF_POSTING_FILE;
+            }
+            else{
+                idsFilename = "./data/blocks/doc_ids" + blockNumber + ".txt";
+                freqFilename = "./data/blocks/term_frequencies" + blockNumber + ".txt";
+            }
             try (
-                    BufferedReader docIdsReader = new BufferedReader(new InputStreamReader(Files.newInputStream(Paths.get(Constants.DOC_IDS_POSTING_FILE)), StandardCharsets.UTF_8));
-                    BufferedReader termFreqReader = new BufferedReader(new InputStreamReader(Files.newInputStream(Paths.get(Constants.TF_POSTING_FILE)), StandardCharsets.UTF_8));
+                    BufferedReader docIdsReader = new BufferedReader(new InputStreamReader(Files.newInputStream(Paths.get(idsFilename)), StandardCharsets.UTF_8));
+                    BufferedReader termFreqReader = new BufferedReader(new InputStreamReader(Files.newInputStream(Paths.get(freqFilename)), StandardCharsets.UTF_8));
             ) {
                 // Skip lines to reach the start of the posting list
                 int count = 0;

@@ -49,13 +49,6 @@ public class InMemoryIndexing {
 
         while((document = documentStreamInterface.nextDoc())!=null){
             processDocument(document);
-            List<String> tokenized = tokenizerInterface.tokenizeBySpace(document.getText());
-            tokenized.removeAll(stopwords);     // Remove all stopwords
-
-            for (String token : tokenized)
-                vocabulary.addEntry(stemmer.stem(token), document.getId());
-
-            docIndex.addDocument(document.getId(), tokenized.size());
         }
 
         // TODO - Improve the following methods by periodically dumping the memory instead of dumping it all at once

@@ -22,7 +22,7 @@ public class App
         DocumentIndex documentIndex = new DocumentIndex();
         Vocabulary vocabulary = new Vocabulary();
         Tokenizer tokenizer = new Tokenizer();
-/*
+
         InMemoryIndexing inMemoryIndexing = new InMemoryIndexing(ds, documentIndex, vocabulary, tokenizer);
         inMemoryIndexing.buildIndex();
 
@@ -42,9 +42,11 @@ public class App
             System.out.println(documentIndexLoaded);
         }
 
- */
-        SPIMIIndex index = new SPIMIIndex(ds, tokenizer);
+/*
+       SPIMIIndex index = new SPIMIIndex(ds, tokenizer);
         index.buildIndexSPIMI();
+
+*/
     }
 
 

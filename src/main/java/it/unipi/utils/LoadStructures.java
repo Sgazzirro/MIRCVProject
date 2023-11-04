@@ -10,6 +10,18 @@ import java.nio.charset.StandardCharsets;
 
 public class LoadStructures {
 
+    public static String loadLine(BufferedReader reader) throws IOException {
+        // Get the term of the next line
+        String lineK = reader.readLine();
+        // If block is finished, just close its buffer
+        if(lineK == null){
+            reader.close();
+            return null;
+        }
+        return lineK;
+
+    }
+
     public static Vocabulary loadVocabulary(String filename) {
         try (
                 FileInputStream fileInput = new FileInputStream(filename);
@@ -24,7 +36,7 @@ public class LoadStructures {
                 // Vocabulary has csv structure
                 //  term | frequency | upper bound | offset in postings | length of postings
                 String term = split[0];
-                int frequency = Integer.parseInt(split[1]);
+                /*int frequency = Integer.parseInt(split[1]);
                 double upperBound = Double.parseDouble(split[2]);
                 int offset = Integer.parseInt(split[3]);
                 int length = Integer.parseInt(split[4]);
@@ -33,7 +45,8 @@ public class LoadStructures {
                 entry.setFrequency(frequency);
                 entry.setPostingList(new PostingList(offset, length));
                 entry.setUpperBound(upperBound);
-
+                */
+                VocabularyEntry entry = new VocabularyEntry(split);
                 vocabulary.setEntry(term, entry);
             }
 
