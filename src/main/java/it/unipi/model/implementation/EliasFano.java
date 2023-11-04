@@ -163,18 +163,17 @@ public class EliasFano implements EncoderInterface {
         // skips unnecessary lists
 
         for(int i=0; i<index; i++){
-            // Read an integer from the file
+            // Read integers from the file
             int U = dis.readInt();
             int n = dis.readInt();
 
-            // number of bits
+            // computing number of bytes to skip
             int lowHalfLength = (int) Math.ceil(Math.log((float)U/n)/Math.log(2));
             int highHalfLength = (int) Math.ceil(Math.log(U)/Math.log(2))-lowHalfLength;
-
             int nTotLowBits = lowHalfLength*n;
             int nTotHighBits = (int) (n+Math.pow(2,highHalfLength));
-
             int bytesToSkip = (int) Math.ceil((float) nTotLowBits/8) + (int) Math.ceil((float) nTotHighBits/8);
+
             if (bytesToSkip != fis.skip(bytesToSkip)){
                 throw new IOException();
             }
