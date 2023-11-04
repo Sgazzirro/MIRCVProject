@@ -2,71 +2,182 @@ package it.unipi.model.implementation;
 
 import it.unipi.model.EncoderInterface;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
+import java.io.*;
+import java.util.*;
 
 public class EliasFano implements EncoderInterface {
+
     @Override
-    public ArrayList<Boolean> encode(ArrayList<Integer> list) {
+    public void encode(String filename, ArrayList<Integer> list) {
+        // data needed for compression
         int U = list.get(list.size()-1);
         int n = list.size();
-        ArrayList<Boolean> highBitset = new ArrayList<>();
-        ArrayList<Boolean> lowBitset = new ArrayList<>();
-        int lowHalfLength = (int) Math.ceil(Math.log((float)U/n)/Math.log(2));
-        int highHalfLength = (int) Math.ceil(Math.log(U)/Math.log(2))-lowHalfLength;
-        int totBits = lowHalfLength+highHalfLength;
 
-        Map<Integer,Integer> clusterFreq = new HashMap<>();
+        // number of bits
+        int lowHalfLength = (int) Math.ceil(Math.log((float)U/n)/Math.log(2));          //number of bits needed to represent each group in low_bits
+        int highHalfLength = (int) Math.ceil(Math.log(U)/Math.log(2))-lowHalfLength;    //number of bits needed to represent each group in high_bits
+        int totBits = lowHalfLength+highHalfLength;                                     // tot number of bits
+
+        // structures to maintain encoded integers
+        BitSet highBitset = new BitSet((int) (n+Math.pow(2,highHalfLength)));
+        BitSet lowBitset = new BitSet(lowHalfLength*n);
+
+        // utility
+        int index =0;
+        Map<Integer,Integer> clusterComp = new HashMap<>();
 
         for(int number: list){
-            // low bits
-            lowBitset.addAll(extractBits(number, lowHalfLength));
+            // low bits compression
+            BitSet extractedLowBitset = extractLowBitset(number,lowHalfLength);
+            append(lowBitset, extractedLowBitset, lowHalfLength, index);
+            index += lowHalfLength;
 
-            // high bits
+            // high bits cluster composition
             int highHalfInt = (number >> (totBits - highHalfLength) & (1 << highHalfLength)-1); // computes the integer corresponding to the higher bits
-            clusterFreq.compute(highHalfInt, (key, value) -> (value == null) ? 1 : value + 1);  // keeps track of the number of integers in the clusters
+            clusterComp.compute(highHalfInt, (key, value) -> (value == null) ? 1 : value + 1);  // keeps track of the number of integers in the clusters
         }
-        for(Map.Entry<Integer,Integer> entry: clusterFreq.entrySet()){
-            int value = entry.getValue();
-            highBitset.addAll(integerToUnary(value));
+        // high bits compression
+        index = 0;
+        for(int i=0; i<Math.pow(2,highHalfLength); i++){
+            int value = clusterComp.get(i) == null? 0:clusterComp.get(i);
+            append(highBitset, integerToUnary(value), integerToUnary(value).length()+1, index);
+            index+=integerToUnary(value).length()+1;
         }
-        // append low bitset to highbitset
-        highBitset.addAll(lowBitset);
-        return highBitset;
+        // dump on file
+        dump(U, n, highBitset.toByteArray(), lowBitset.toByteArray(), filename);
     }
 
     @Override
-    public ArrayList<Integer> decode(ArrayList<Boolean> bitsList) {
-        // TO DO
-        return null;
-    }
+    public ArrayList<Integer> decode(String filename, int index) {
+        // STRUCTURE: U | n | low_bits | high_bits //
 
-    private ArrayList<Boolean> extractBits(int num, int n) {
-        ArrayList<Boolean> bitList = new ArrayList<>();
+        ArrayList<Integer> decoded = null;
+        try {
+            // Open the file for reading
+            FileInputStream fis = new FileInputStream(filename);
+            DataInputStream dis = new DataInputStream(fis);
 
-        for (int i = 0; i < n; i++) {
-            // Use bitwise AND operation to extract the lowest bit
-            boolean bit = ((num >> i) & 1) == 1;
-            bitList.add(bit);
+            // skip lists not required
+            skipLists(fis, dis, index);
+
+            // read U and n
+            int U = dis.readInt();
+            int n = dis.readInt();
+
+            // number of bits
+            int lowHalfLength = (int) Math.ceil(Math.log((float)U/n)/Math.log(2));          // number of bits for each group in low_bits
+            int highHalfLength = (int) Math.ceil(Math.log(U)/Math.log(2))-lowHalfLength;    // number of bits for each group in high_bits
+            int nTotLowBits = lowHalfLength*n;                                              // total length (in bits) of low_bits
+            int nTotHighBits = (int) (n+Math.pow(2,highHalfLength));                        // total length (in bits) of high_bits
+
+            // read low_bits and high_bits and cast them to BitSets
+            byte [] lowBytes = new byte[(int) Math.ceil((float) nTotLowBits/8)];
+            byte [] highBytes = new byte[(int) Math.ceil((float) nTotHighBits/8)];
+            fis.read(lowBytes);
+            fis.read(highBytes);
+            BitSet lowBitset = BitSet.valueOf(lowBytes);
+            BitSet highBitset = BitSet.valueOf(highBytes);
+
+            // Close the streams
+            dis.close();
+            fis.close();
+
+            // list containing uncompressed integers
+            decoded=new ArrayList<>();
+
+            // utility
+            int groupValue = 0;
+            int lowBitsetIndex =0;
+
+            // DECODE //
+            for(int i=0; i<nTotHighBits; i++){
+                if(highBitset.get(i)){
+                    int shifted = groupValue;
+                    for(int j=lowBitsetIndex*lowHalfLength; j<lowBitsetIndex*lowHalfLength+lowHalfLength; j++){
+                        int bitValue = lowBitset.get(j)? 1:0;
+                        shifted = shifted<<1|bitValue;
+                    }
+                    lowBitsetIndex++;
+                    decoded.add(shifted);
+                } else groupValue++;
+            }
+        } catch (IOException e) {
+            System.err.println("Error in decoding EliasFano");
+            e.printStackTrace();
         }
-
-        // The bits are added to the list from least significant to most significant, so reverse the list.
-        Collections.reverse(bitList);
-
-        return bitList;
+        return decoded;
     }
 
-    private ArrayList<Boolean> integerToUnary(int num) {
-        ArrayList<Boolean> unaryList = new ArrayList<>();
+    private BitSet extractLowBitset(int number, int nLowBits) {
+        // Extracts the lower part of the binary representation of the number
+
+        BitSet bitSet = new BitSet();
+        int j = nLowBits-1;
+        // Iterate over the lowest nLowBits bits of the number
+        for (int i = 0; i < nLowBits; i++) {
+            boolean bitValue = ((number >> i) & 1) == 1;
+            bitSet.set(j--, bitValue);
+        }
+        return bitSet;
+    }
+
+    private BitSet integerToUnary(int num) {
+        // converts the number to a unary representation bitset
+
+        BitSet unaryBitset = new BitSet();
 
         // Add 'true' to the list 'num' times
         for (int i = 0; i < num; i++) {
-            unaryList.add(true);
+            unaryBitset.set(unaryBitset.length(), true);
         }
-        unaryList.add(false);
+        unaryBitset.set(unaryBitset.length(), false);
 
-        return unaryList;
+        return unaryBitset;
+    }
+
+    private BitSet append(BitSet bitset1, BitSet bitset2, int nbits, int index){
+        // appends bitset2 to bitset1, for nbits, starting from index.
+
+        for(int i=0; i<nbits; i++){
+            bitset1.set(index++, bitset2.get(i));
+        }
+        return bitset1;
+    }
+
+    private void dump(int U, int n, byte[] highBitset, byte[] lowBitset, String filename){
+        // dumps the encoded list on file
+
+        FileOutputStream fos;
+        try (DataOutputStream dos = new DataOutputStream(fos = new FileOutputStream(filename,true))) {
+            dos.writeInt(U);
+            dos.writeInt(n);
+            fos.write(lowBitset);
+            fos.write(highBitset);
+        } catch (IOException e) {
+            System.err.println("Error in dumping EliasFano");
+            e.printStackTrace();
+        }
+    }
+
+    private void skipLists(FileInputStream fis, DataInputStream dis, int index) throws IOException {
+        // skips unnecessary lists
+
+        for(int i=0; i<index; i++){
+            // Read an integer from the file
+            int U = dis.readInt();
+            int n = dis.readInt();
+
+            // number of bits
+            int lowHalfLength = (int) Math.ceil(Math.log((float)U/n)/Math.log(2));
+            int highHalfLength = (int) Math.ceil(Math.log(U)/Math.log(2))-lowHalfLength;
+
+            int nTotLowBits = lowHalfLength*n;
+            int nTotHighBits = (int) (n+Math.pow(2,highHalfLength));
+
+            int bytesToSkip = (int) Math.ceil((float) nTotLowBits/8) + (int) Math.ceil((float) nTotHighBits/8);
+            if (bytesToSkip != fis.skip(bytesToSkip)){
+                throw new IOException();
+            }
+        }
     }
 }
