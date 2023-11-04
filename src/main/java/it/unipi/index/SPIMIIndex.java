@@ -11,7 +11,7 @@ import java.util.*;
 public class SPIMIIndex {
     public DocumentStreamInterface documentStreamInterface;
     public TokenizerInterface tokenizerInterface;
-    private long block_size = 1000000; // Each block 10KB
+    private long block_size = 10000; // Each block 10KB
     private int next_block = 0;
     private boolean finish = false;
     private int vocOffset;
@@ -183,7 +183,6 @@ public class SPIMIIndex {
             processed.add(true);
 
         try{
-            System.out.println("NEXT BLOCK: " + next_block);
             for(int i = 0; i < next_block; i++){
                 readVocabularyBuffers.add(
                         new BufferedReader(
@@ -200,10 +199,15 @@ public class SPIMIIndex {
                         new BufferedReader(
                                 new FileReader("./data/blocks/document_index" + i + ".csv")));
             }
-            writerDocId = new BufferedWriter(new FileWriter("./data/doc_ids.txt", true));
-            writerDocIndex = new BufferedWriter(new FileWriter("./data/document_index.json", true));
-            writerTermFrequencies = new BufferedWriter(new FileWriter("./data/term_frequencies.txt", true));
-            writerVocabulary = new BufferedWriter(new FileWriter("./data/vocabulary.csv", true));
+            writerDocId = new BufferedWriter(new FileWriter("./data/doc_ids.txt"));
+            writerDocIndex = new BufferedWriter(new FileWriter("./data/document_index.json"));
+            writerTermFrequencies = new BufferedWriter(new FileWriter("./data/term_frequencies.txt"));
+            writerVocabulary = new BufferedWriter(new FileWriter("./data/vocabulary.csv"));
+
+            writerDocId.write("");
+            writerDocIndex.write("");
+            writerVocabulary.write("");
+            writerTermFrequencies.write("");
 
             int blockClosed = 0;
             boolean[] closed = new boolean[next_block];
@@ -318,7 +322,6 @@ public class SPIMIIndex {
 
         // Get length
         length = mergedList.dumpPostings(docids, termFrequencies);
-        System.out.println("DUMPED DOCS : " + docids);
         StringBuilder result = new StringBuilder();
         result.append(term).append(",")
                 .append(frequency).append(",")
@@ -327,9 +330,9 @@ public class SPIMIIndex {
                 .append(length).append("\n");
         vocOffset += length;   // Advance the offset by the length of the current posting list
 
-        writerVocabulary.write(result.toString());
-        writerDocId.write(docids.toString());
-        writerTermFrequencies.write(termFrequencies.toString());
+        writerVocabulary.append(result.toString());
+        writerDocId.append(docids + "\n");
+        writerTermFrequencies.append(termFrequencies + "\n");
     }
 
 }
