@@ -5,10 +5,9 @@ import it.unipi.model.EncoderInterface;
 import java.io.*;
 import java.util.*;
 
-public class EliasFano implements EncoderInterface {
+public class EliasFano {
 
-    @Override
-    public void encode(String filename, ArrayList<Integer> list) {
+    public long encode(String filename, ArrayList<Integer> list) {
         // data needed for compression
         int U = list.get(list.size()-1);
         int n = list.size();
@@ -44,12 +43,11 @@ public class EliasFano implements EncoderInterface {
             index+=integerToUnary(value).length()+1;
         }
         // dump on file
-        dump(U, n, highBitset.toByteArray(), lowBitset.toByteArray(), filename);
+        return dump(highBitset.toByteArray(), lowBitset.toByteArray(), filename);
     }
 
-    @Override
-    public ArrayList<Integer> decode(String filename, int index) {
-        // STRUCTURE: U | n | low_bits | high_bits //
+    public ArrayList<Integer> decode(String filename, long byteOffset, int U, int n) {
+        // STRUCTURE: low_bits | high_bits //
 
         ArrayList<Integer> decoded = null;
         try {
@@ -58,11 +56,9 @@ public class EliasFano implements EncoderInterface {
             DataInputStream dis = new DataInputStream(fis);
 
             // skip lists not required
-            skipLists(fis, dis, index);
-
-            // read U and n
-            int U = dis.readInt();
-            int n = dis.readInt();
+            if (fis.skip(byteOffset)!=byteOffset){
+                throw new IOException();
+            }
 
             // number of bits
             int lowHalfLength = (int) Math.ceil(Math.log((float)U/n)/Math.log(2));          // number of bits for each group in low_bits
@@ -144,22 +140,22 @@ public class EliasFano implements EncoderInterface {
         return bitset1;
     }
 
-    private void dump(int U, int n, byte[] highBitset, byte[] lowBitset, String filename){
+    private long dump(byte[] highBitset, byte[] lowBitset, String filename){
         // dumps the encoded list on file
 
-        // STRUCTURE: U | n | low_bits | high_bits //
-        FileOutputStream fos;
-        try (DataOutputStream dos = new DataOutputStream(fos = new FileOutputStream(filename,true))) {
-            dos.writeInt(U);
-            dos.writeInt(n);
+        // STRUCTURE: low_bits | high_bits //
+        try (FileOutputStream fos = new FileOutputStream(filename,true)) {
+            long byteOffset = fos.getChannel().position();
             fos.write(lowBitset);
             fos.write(highBitset);
+            return byteOffset;
         } catch (IOException e) {
             System.err.println("Error in dumping EliasFano");
             e.printStackTrace();
+            return -1;
         }
     }
-
+    /*
     private void skipLists(FileInputStream fis, DataInputStream dis, int index) throws IOException {
         // skips unnecessary lists
 
@@ -180,4 +176,5 @@ public class EliasFano implements EncoderInterface {
             }
         }
     }
+     */
 }
