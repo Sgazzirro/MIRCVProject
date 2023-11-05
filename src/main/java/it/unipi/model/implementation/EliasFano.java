@@ -147,6 +147,7 @@ public class EliasFano implements EncoderInterface {
     private void dump(int U, int n, byte[] highBitset, byte[] lowBitset, String filename){
         // dumps the encoded list on file
 
+        // STRUCTURE: U | n | low_bits | high_bits //
         FileOutputStream fos;
         try (DataOutputStream dos = new DataOutputStream(fos = new FileOutputStream(filename,true))) {
             dos.writeInt(U);
