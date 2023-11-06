@@ -9,9 +9,10 @@ import java.util.List;
 
 public class LoadStructures {
 
-    public static String loadLine(BufferedReader reader) throws IOException {
+    public static String loadLine(ReadingInterface reader) throws IOException {
         // Get the term of the next line
         String lineK = reader.readLine();
+
         // If block is finished, just close its buffer
         if(lineK == null){
             reader.close();
@@ -22,29 +23,19 @@ public class LoadStructures {
     }
 
     public static Vocabulary loadVocabulary(String filename) {
-        try (
-                FileInputStream fileInput = new FileInputStream(filename);
-                BufferedReader reader = new BufferedReader(new InputStreamReader(fileInput, StandardCharsets.UTF_8))
-        ) {
+        try {
+            ReadingInterface reader = new ASCIIReader();
+            reader.open(filename);
             Vocabulary vocabulary = new Vocabulary();
 
             String line;
-            while ((line = reader.readLine()) != null) {
+            while ((line = loadLine(reader)) != null) {
                 String[] split = line.split(",");
 
                 // Vocabulary has csv structure
                 //  term | frequency | upper bound | offset in postings | length of postings
                 String term = split[0];
-                /*int frequency = Integer.parseInt(split[1]);
-                double upperBound = Double.parseDouble(split[2]);
-                int offset = Integer.parseInt(split[3]);
-                int length = Integer.parseInt(split[4]);
 
-                VocabularyEntry entry = new VocabularyEntry();
-                entry.setDocumentFrequency(frequency);
-                entry.setPostingList(new PostingList(offset, length));
-                entry.setUpperBound(upperBound);
-                */
                 VocabularyEntry entry = new VocabularyEntry(split);
                 vocabulary.setEntry(term, entry);
             }

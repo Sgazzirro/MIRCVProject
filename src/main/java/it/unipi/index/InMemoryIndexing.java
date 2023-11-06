@@ -3,16 +3,12 @@ package it.unipi.index;
 
 import it.unipi.model.implementation.*;
 import it.unipi.model.*;
+import it.unipi.utils.ASCIIWriter;
 import it.unipi.utils.Constants;
-import opennlp.tools.stemmer.PorterStemmer;
+import it.unipi.utils.WritingInterface;
 
 import java.io.*;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.StringJoiner;
+import java.util.*;
 
 public class InMemoryIndexing {
     /*
@@ -32,6 +28,10 @@ public class InMemoryIndexing {
 
     public TokenizerInterface tokenizerInterface;
 
+    public static WritingInterface writerVOC;
+    public static WritingInterface writerID;
+    public static WritingInterface writerTF;
+
     public InMemoryIndexing(DocumentStreamInterface d, DocumentIndexInterface doc, VocabularyInterface v, TokenizerInterface tok){
         documentStreamInterface = d;
         docIndex = doc;
@@ -39,18 +39,49 @@ public class InMemoryIndexing {
         tokenizerInterface = tok;
     }
 
-    public void buildIndex() {
+    public static void closeWriters() throws IOException {
+        writerTF.close();
+        writerID.close();
+        writerVOC.close();
+    }
+
+    public static void assignWriters(String fvoc, String fids, String ffreq, int mode) throws IOException {
+        if(mode == 0){
+            writerID = new ASCIIWriter();
+            writerVOC = new ASCIIWriter();
+            writerTF = new ASCIIWriter();
+        }
+        else{
+            // TODO : BINARY WRITERS
+        }
+        // If writers were already assigned, close them
+        if(writerID != null && writerID.isOpen())
+            writerID.close();
+        if(writerTF != null && writerTF.isOpen())
+            writerTF.close();
+        if(writerVOC != null && writerVOC.isOpen())
+            writerVOC.close();
+
+        writerVOC.open(fvoc);
+        writerID.open(fids);
+        writerTF.open(ffreq);
+    }
+
+    public void buildIndex() throws IOException {
         Document document;
 
         while((document = documentStreamInterface.nextDoc()) != null)
             processDocument(document);
 
         // Compute idf and upper bound for each term in the vocabulary
-        computeScores();
+        // computeScores();
 
         // TODO - Improve the following methods by periodically dumping the memory instead of dumping it all at once
         dumpVocabulary();
         dumpDocumentIndex();
+        writerVOC.close();
+        writerID.close();
+        writerTF.close();
     }
 
     private void computeScores() {
@@ -80,58 +111,44 @@ public class InMemoryIndexing {
     public void processDocument(Document document) {
         List<String> tokenized = tokenizerInterface.tokenizeBySpace(document.getText());
 
-        for (String token : tokenized)
+        for (String token : tokenized) {
             vocabulary.addEntry(token, document.getId());
+        }
 
         docIndex.addDocument(document.getId(), tokenized.size());
     }
+    protected static void dumpVocabularyLine(Map.Entry<String, VocabularyEntry> entry) throws IOException {
+        // Onto the vocabulary
+        // Term | DF | UpperBound | IDF | OffsetID | OffsetTF | #Posting
+        String term = entry.getKey();
+        VocabularyEntry vocEntry = entry.getValue();
 
-    protected void dumpVocabulary(){
-        dumpVocabulary(Constants.VOCABULARY_FILE,
-                Constants.DOC_IDS_POSTING_FILE,
-                Constants.TF_POSTING_FILE);
+        int termFrequency = vocEntry.getDocumentFrequency();
+        double upperBound = vocEntry.getUpperBound();
+        double IDF = vocEntry.getPostingList().getTermIdf();
+
+        PostingList postingList = vocEntry.getPostingList();
+        long[] offsets = postingList.dumpPostings(writerID, writerTF);
+        int length = postingList.getDocIdList().size();
+
+        String result =  new StringBuilder().append(term).append(",")
+                        .append(termFrequency).append(",")
+                        .append(upperBound).append(",")
+                        .append(IDF).append(",")
+                        .append(offsets[0]).append(",")
+                        .append(offsets[1]).append(",")
+                        .append(length).append("\n").toString();
+
+        writerVOC.write(result);
     }
 
-    protected void dumpVocabulary(String fvoc, String fids, String ffreq) {
 
-        // Dump vocabulary as csv with structure
-        //  term | frequency | upper bound | offset in postings | length of postings
-        StringBuilder vocabulary = new StringBuilder();
-        StringJoiner docIds = new StringJoiner("\n");
-        StringJoiner termFrequencies = new StringJoiner("\n");
-
-        // Keep track of the offset of each term in the posting list
-        int offset = 0;
-
-        for (Map.Entry<String, VocabularyEntry> entry : this.vocabulary.getEntries()) {
-            String term = entry.getKey();
-            VocabularyEntry vocEntry = entry.getValue();
-
-            int termFrequency = vocEntry.getDocumentFrequency();
-            double upperBound = vocEntry.getUpperBound();
-
-            PostingList postingList = vocEntry.getPostingList();
-            int length = postingList.dumpPostings(docIds, termFrequencies);
-
-            vocabulary.append(term).append(",")
-                    .append(termFrequency).append(",")
-                    .append(upperBound).append(",")
-                    .append(offset).append(",")
-                    .append(length).append("\n");
-            offset += length;   // Advance the offset by the length of the current posting list
-        }
-
-        // Write everything to file
-        try (
-                PrintWriter vocabularyWriter = new PrintWriter(fvoc);
-                PrintWriter docIdsWriter = new PrintWriter(fids);
-                PrintWriter termFrequenciesWriter = new PrintWriter(ffreq);
-        ) {
-            vocabularyWriter.print(vocabulary);
-            docIdsWriter.print(docIds);
-            termFrequenciesWriter.print(termFrequencies);
-
-        } catch (FileNotFoundException e) {
+    protected void dumpVocabulary() {
+        try{
+            for (Map.Entry<String, VocabularyEntry> entry : this.vocabulary.getEntries()) {
+                dumpVocabularyLine(entry);
+            }
+        } catch (IOException e) {
             System.err.println("There has been an error in writing the vocabulary to file");
             e.printStackTrace();
         }

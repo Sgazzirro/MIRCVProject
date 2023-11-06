@@ -6,6 +6,7 @@ import it.unipi.model.implementation.*;
 import it.unipi.utils.Constants;
 import it.unipi.utils.LoadStructures;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.Objects;
 
@@ -15,8 +16,7 @@ import java.util.Objects;
  */
 public class App 
 {
-    public static void main( String[] args )
-    {
+    public static void main( String[] args ) throws IOException {
         DocumentStream ds = new DocumentStream(Constants.COLLECTION_FILE);
 
         DocumentIndex documentIndex = new DocumentIndex();
@@ -24,8 +24,13 @@ public class App
         Tokenizer tokenizer = new Tokenizer();
 /*
         InMemoryIndexing inMemoryIndexing = new InMemoryIndexing(ds, documentIndex, vocabulary, tokenizer);
+        inMemoryIndexing.assignWriters(Constants.VOCABULARY_FILE, Constants.DOC_IDS_POSTING_FILE, Constants.TF_POSTING_FILE,0);
         inMemoryIndexing.buildIndex();
-
+*/
+/*
+       SPIMIIndex index = new SPIMIIndex(ds, tokenizer);
+       index.buildIndexSPIMI();
+*/
         Vocabulary vocabularyLoaded = LoadStructures.loadVocabulary(Constants.VOCABULARY_FILE);
         DocumentIndex documentIndexLoaded = LoadStructures.loadDocumentIndex(Constants.DOCUMENT_INDEX_FILE);
 
@@ -41,10 +46,7 @@ public class App
             System.out.println();
             System.out.println(documentIndexLoaded);
         }
-*/
 
-       SPIMIIndex index = new SPIMIIndex(ds, tokenizer);
-        index.buildIndexSPIMI();
 
 
     }

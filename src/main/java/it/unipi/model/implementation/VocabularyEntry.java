@@ -26,7 +26,10 @@ public class VocabularyEntry {
     public VocabularyEntry(String[] lineParam){
         this(Integer.parseInt(lineParam[1]),
                 Double.parseDouble(lineParam[2]),
-                new PostingList(Integer.parseInt(lineParam[3]), Integer.parseInt(lineParam[4])));
+                new PostingList(Double.parseDouble(lineParam[3]),
+                        Integer.parseInt(lineParam[4]),
+                        Integer.parseInt(lineParam[5]),
+                        Integer.parseInt(lineParam[6])));
     }
 
     public void addPosting(int docId) {

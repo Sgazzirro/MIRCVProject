@@ -1,6 +1,7 @@
 package it.unipi.utils;
 
 public class Constants {
+    private static boolean COMPRESSION = false;
 
     public static String COLLECTION_FILE = "data/reduced_collection.tar.gz";
     public static String VOCABULARY_FILE = "data/vocabulary.csv";
@@ -12,4 +13,13 @@ public class Constants {
 
     public static String DOC_IDS_POSTING_FILE = "data/doc_ids.txt";
     public static String TF_POSTING_FILE = "data/term_frequencies.txt";
+
+    public static void setCompression(boolean c) {
+        COMPRESSION = c;
+    }
+
+    public static boolean getCompression(){
+        return COMPRESSION;
+    }
 }
+

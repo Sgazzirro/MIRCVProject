@@ -3,7 +3,7 @@ package it.unipi.index;
 import it.unipi.model.DocumentStreamInterface;
 import it.unipi.model.TokenizerInterface;
 import it.unipi.model.implementation.*;
-import it.unipi.utils.LoadStructures;
+import it.unipi.utils.*;
 
 import java.io.*;
 import java.util.*;
@@ -14,7 +14,6 @@ public class SPIMIIndex {
     private long block_size = 10000; // Each block 10KB
     private int next_block = 0;
     private boolean finish = false;
-    private int vocOffset;
 
     public SPIMIIndex(DocumentStreamInterface d, TokenizerInterface tok){
         documentStreamInterface = d;
@@ -25,7 +24,7 @@ public class SPIMIIndex {
         block_size = size;
     }
 
-    public void buildIndexSPIMI(){
+    public void buildIndexSPIMI() throws IOException {
         for(File file: Objects.requireNonNull(new File("./data/blocks").listFiles()))
             if (!file.isDirectory())
                 file.delete();
@@ -44,7 +43,7 @@ public class SPIMIIndex {
     }
 
 
-    public void invertBlock(){
+    public void invertBlock() throws IOException {
         // Get the current state of memory
         long startMemory = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
         long usedMemory = startMemory;
@@ -67,16 +66,17 @@ public class SPIMIIndex {
         // When out of memory:
         // 1) sort vocabulary by term (already done by the tree map)
         // 2) write block to the disk
-
         writeBlock(intermediateIndex);
+        InMemoryIndexing.closeWriters();
         next_block++;
     }
 
-    private void writeBlock(InMemoryIndexing intermediateIndex) {
+    private void writeBlock(InMemoryIndexing intermediateIndex) throws IOException {
         intermediateIndex.dumpDocumentIndex("data/blocks/document_index"+next_block+".csv");
-        intermediateIndex.dumpVocabulary("data/blocks/vocabulary" + next_block + ".csv",
+        intermediateIndex.assignWriters("data/blocks/vocabulary" + next_block + ".csv",
                 "data/blocks/doc_ids" + next_block + ".txt",
-                "data/blocks/term_frequencies" + next_block + ".txt");
+                "data/blocks/term_frequencies" + next_block + ".txt", 0);
+        intermediateIndex.dumpVocabulary();
     }
     /*
     private void writeBlock(TreeMap<String, VocabularyEntry> currentVoc, DocumentIndexInterface currentDocIndex) {
@@ -156,7 +156,7 @@ public class SPIMIIndex {
         return (usedMemory - startMemory) <= block_size;
     }
 
-    private void mergeAllBlocks() {
+    private void mergeAllBlocks() throws IOException {
         // Key idea to merge all blocks together
         // To do the merging, we open all block files simultaneously
         // We maintain small read buffers for blocks we are reading
@@ -167,15 +167,10 @@ public class SPIMIIndex {
         // Each read buffer is refilled from its file when necessary.
 
         // Initialize all buffers
-        List<BufferedReader> readVocabularyBuffers = new ArrayList<>();
-        List<BufferedReader> readFrequenciesBuffers = new ArrayList<>();
-        List<BufferedReader> readDocIdBuffers = new ArrayList<>();
-        List<BufferedReader> readDocIndexBuffers = new ArrayList<>();
+        List<ReadingInterface> readVocabularyBuffers = new ArrayList<>();
+        List<ReadingInterface> readDocIndexBuffers = new ArrayList<>();
 
-        BufferedWriter writerDocId;
-        BufferedWriter writerDocIndex;
-        BufferedWriter writerTermFrequencies;
-        BufferedWriter writerVocabulary;
+        InMemoryIndexing.assignWriters(Constants.VOCABULARY_FILE, Constants.DOC_IDS_POSTING_FILE, Constants.TF_POSTING_FILE,0);
 
         // Initialize a Boolean list to check if the block has been processed
         List<Boolean> processed = new ArrayList<>();
@@ -184,30 +179,11 @@ public class SPIMIIndex {
 
         try{
             for(int i = 0; i < next_block; i++){
-                readVocabularyBuffers.add(
-                        new BufferedReader(
-                                new FileReader("./data/blocks/vocabulary" + i + ".csv")));
-               /* readFrequenciesBuffers.add(
-                        new BufferedReader(
-                                new FileReader("./data/blocks/term_frequencies" + i + ".txt")));
-                readDocIdBuffers.add(
-                        new BufferedReader(
-                                new FileReader("./data/blocks/doc_ids" + i + ".txt")));
-
-                */
-                readFrequenciesBuffers.add(
-                        new BufferedReader(
-                                new FileReader("./data/blocks/document_index" + i + ".csv")));
+                readVocabularyBuffers.add(new ASCIIReader());
+                readVocabularyBuffers.get(i).open("./data/blocks/vocabulary" + i + ".csv");
+                // TODO: DocIndex reader
             }
-            writerDocId = new BufferedWriter(new FileWriter("./data/doc_ids.txt"));
-            writerDocIndex = new BufferedWriter(new FileWriter("./data/document_index.json"));
-            writerTermFrequencies = new BufferedWriter(new FileWriter("./data/term_frequencies.txt"));
-            writerVocabulary = new BufferedWriter(new FileWriter("./data/vocabulary.csv"));
 
-            writerDocId.write("");
-            writerDocIndex.write("");
-            writerVocabulary.write("");
-            writerTermFrequencies.write("");
 
             int blockClosed = 0;
             boolean[] closed = new boolean[next_block];
@@ -228,6 +204,7 @@ public class SPIMIIndex {
                         // Term | TermFrequency | UpperBound | #Posting | Offset
 
                         String lineK = LoadStructures.loadLine(readVocabularyBuffers.get(k));
+                        System.out.println("PARAM:"+ lineK);
                         if(lineK == null) {
                             blockClosed++;
                             System.out.println("BLOCK CLOSED: " + k);
@@ -282,12 +259,10 @@ public class SPIMIIndex {
                 }
 
                 // Write the merge onto the output file
-                mergeEntries(lowestTerm, toMerge, involvedBlocks, writerVocabulary, writerDocId, writerTermFrequencies);
+                VocabularyEntry entry = mergeEntries(toMerge, involvedBlocks);
+                InMemoryIndexing.dumpVocabularyLine(new AbstractMap.SimpleEntry<>(lowestTerm, entry));
             }
-            writerDocId.close();
-            writerDocIndex.close();
-            writerVocabulary.close();
-            writerTermFrequencies.close();
+            InMemoryIndexing.closeWriters();
         } catch (FileNotFoundException e) {
             throw new RuntimeException(e);
         } catch (IOException e) {
@@ -298,41 +273,30 @@ public class SPIMIIndex {
 
     }
 
-    private void mergeEntries(String term, List<VocabularyEntry> toMerge,
-                              List<Integer> involvedBlocks,
-                              BufferedWriter writerVocabulary, BufferedWriter writerDocId, BufferedWriter writerTermFrequencies) throws IOException {
+    private VocabularyEntry mergeEntries(List<VocabularyEntry> toMerge,
+                                         List<Integer> involvedBlocks
+                                         ) throws IOException {
 
         // Make each entry to fetch relative postings
         PostingList mergedList = new PostingList();
         Integer frequency = 0;
         Double upperBound = 0.0;
-        Integer length = 0;
-        StringJoiner docids = new StringJoiner("\n");
-        StringJoiner termFrequencies = new StringJoiner("\n");
         for(int k = 0; k < toMerge.size(); k++){
             toMerge.get(k).getPostingList().loadPosting(involvedBlocks.get(k));
-            mergedList.mergePosting(toMerge.get(k).getPostingList());
+            int L = mergedList.mergePosting(toMerge.get(k).getPostingList());
 
             // Update term frequency and upper bound
             frequency += toMerge.get(k).getDocumentFrequency();
             if(toMerge.get(k).getUpperBound() > upperBound)
                 upperBound = toMerge.get(k).getUpperBound();
-
         }
 
-        // Get length
-        length = mergedList.dumpPostings(docids, termFrequencies);
-        StringBuilder result = new StringBuilder();
-        result.append(term).append(",")
-                .append(frequency).append(",")
-                .append(upperBound).append(",")
-                .append(vocOffset).append(",")
-                .append(length).append("\n");
-        vocOffset += length;   // Advance the offset by the length of the current posting list
+        VocabularyEntry result = new VocabularyEntry();
+        result.setDocumentFrequency(frequency);
+        result.setUpperBound(upperBound);
+        result.setPostingList(mergedList);
 
-        writerVocabulary.append(result.toString());
-        writerDocId.append(docids + "\n");
-        writerTermFrequencies.append(termFrequencies + "\n");
+        return result;
     }
 
 }
