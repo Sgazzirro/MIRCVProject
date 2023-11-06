@@ -1,5 +1,4 @@
 package it.unipi.model.implementation;
-import com.fasterxml.jackson.annotation.JsonProperty;
 import it.unipi.model.VocabularyInterface;
 
 import java.io.Serializable;
@@ -24,15 +23,15 @@ public class Vocabulary implements VocabularyInterface, Serializable {
         VocabularyEntry ve;
         if (!isPresent(token)) {
             ve = new VocabularyEntry();
-            ve.setFrequency(0);
+            ve.setDocumentFrequency(0);
             ve.setPostingList(new PostingList());
             ve.setUpperBound((double) 0);
             table.put(token,ve);
         }
-        else ve=getEntry(token);
-        ve.setFrequency(getEntry(token).getFrequency() + 1);
+        else
+            ve = getEntry(token);
 
-        ve.getPostingList().addPosting(docId);
+        ve.addPosting(docId);
     }
 
     @Override

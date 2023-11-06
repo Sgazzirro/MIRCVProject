@@ -314,7 +314,7 @@ public class SPIMIIndex {
             mergedList.mergePosting(toMerge.get(k).getPostingList());
 
             // Update term frequency and upper bound
-            frequency += toMerge.get(k).getFrequency();
+            frequency += toMerge.get(k).getDocumentFrequency();
             if(toMerge.get(k).getUpperBound() > upperBound)
                 upperBound = toMerge.get(k).getUpperBound();
 

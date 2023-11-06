@@ -10,12 +10,17 @@ public class DocumentStream implements DocumentStreamInterface {
     private BufferedReader br;
     boolean firstLine=true;
 
-    public DocumentStream(String filename){
-        try{
+    public DocumentStream(String filename) {
+        try {
             FileInputStream fileInput = new FileInputStream(filename);
-            GZIPInputStream gzipInput = new GZIPInputStream(fileInput);
+
+            // Check if file is compressed
+            InputStream inputStream = fileInput;
+            if (filename.endsWith(".tar.gz"))
+                inputStream = new GZIPInputStream(fileInput);
+
             // Forces Unicode decoding (it should be on by default)
-            InputStreamReader reader = new InputStreamReader(gzipInput, StandardCharsets.UTF_8);
+            InputStreamReader reader = new InputStreamReader(inputStream, StandardCharsets.UTF_8);
             br = new BufferedReader(reader);
         } catch (IOException e){
             e.printStackTrace();

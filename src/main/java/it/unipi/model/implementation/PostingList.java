@@ -11,27 +11,31 @@ import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.Objects;
-import java.util.StringJoiner;
+import java.util.*;
 
 public class PostingList implements PostingListInterface {
 
-    Integer offset;
-    Integer length;
-    ArrayList<Integer> docIdList;
-    ArrayList<Integer> termFrequencyList;
+    private Integer offset;
+    private Integer length;
+    private List<Integer> docIdList;
+    private List<Integer> termFrequencyList;
+
+    private Double termIdf;
+    private int pointer;
 
     // Used when building the index
     public PostingList() {
         this.docIdList = new ArrayList<>();
         this.termFrequencyList = new ArrayList<>();
+        this.length = 0;
+        this.pointer = 0;
     }
 
     // Used when reading the index
     public PostingList(int offset, int length) {
         this.offset = offset;
         this.length = length;
+        this.pointer = 0;
     }
 
     public Integer getOffset() {
@@ -42,21 +46,26 @@ public class PostingList implements PostingListInterface {
         return length;
     }
 
-    public ArrayList<Integer> getDocIdList() {
+    public List<Integer> getDocIdList() {
         return docIdList;
     }
 
-    public ArrayList<Integer> getTermFrequencyList() {
+    public List<Integer> getTermFrequencyList() {
         return termFrequencyList;
+    }
+
+    public void setTermIdf(Double termIdf) {
+        this.termIdf = termIdf;
     }
 
     public void mergePosting(PostingList p2){
         docIdList.addAll(p2.getDocIdList());
         termFrequencyList.addAll(p2.getTermFrequencyList());
     }
-    public boolean loadPosting(){
+    public boolean loadPosting() {
         return loadPosting(-1);
     }
+
     public boolean loadPosting(int blockNumber) {
         // Method that loads the posting list in memory if not present
         if (docIdList == null) {
@@ -112,32 +121,43 @@ public class PostingList implements PostingListInterface {
 
     @Override
     public int docId() {
-        if (!loadPosting()) {
-            // Do something
-        }
-        return 0;
+        loadPosting();
+
+        return docIdList.get(pointer);
     }
 
     @Override
     public double score() {
-        if (!loadPosting()) {
-            // Do something
-        }
-        return 0;
+        loadPosting();
+
+        int tf = termFrequencyList.get(pointer);
+        return (1 + Math.log10(tf)) * termIdf;
     }
 
     @Override
     public void next() {
-        if (!loadPosting()) {
-            // Do something
-        }
+        loadPosting();
+
+        if (!hasNext())
+            throw new NoSuchElementException();
+
+        pointer++;
+    }
+
+    public void reset() {
+        pointer = 0;
+    }
+
+    public boolean hasNext() {
+        return pointer < docIdList.size() - 1;
     }
 
     @Override
     public void nextGEQ(int docId) {
-        if (!loadPosting()) {
-            // Do something
-        }
+        loadPosting();
+
+        while (this.docId() < docId)
+            next();
     }
 
     @Override
@@ -155,6 +175,7 @@ public class PostingList implements PostingListInterface {
         } else
             termFrequencyList.set(lastIndex, termFrequencyList.get(lastIndex)+termFrequency);
 
+        this.length++;
     }
 
     public int dumpPostings(StringJoiner docIds, StringJoiner termFrequencies) {

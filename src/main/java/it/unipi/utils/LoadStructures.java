@@ -2,11 +2,10 @@ package it.unipi.utils;
 
 import it.unipi.model.implementation.*;
 
-import java.io.BufferedReader;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStreamReader;
+import java.io.*;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.util.List;
 
 public class LoadStructures {
 
@@ -42,7 +41,7 @@ public class LoadStructures {
                 int length = Integer.parseInt(split[4]);
 
                 VocabularyEntry entry = new VocabularyEntry();
-                entry.setFrequency(frequency);
+                entry.setDocumentFrequency(frequency);
                 entry.setPostingList(new PostingList(offset, length));
                 entry.setUpperBound(upperBound);
                 */
@@ -84,6 +83,15 @@ public class LoadStructures {
             System.err.println("There has been an error loading the document index");
             e.printStackTrace();
             return null;
+        }
+    }
+
+    public static List<String> loadStopwords(String filename) {
+        try {
+            return Files.readAllLines(new File(filename).toPath(), StandardCharsets.UTF_8);
+        } catch (IOException e) {
+            System.err.println("Error loading stopwords");
+            return List.of();
         }
     }
 }
