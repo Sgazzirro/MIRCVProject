@@ -8,7 +8,7 @@ import java.nio.file.Files;
 import java.util.List;
 
 public class LoadStructures {
-
+/*
     public static String loadLine(ReadingInterface reader) throws IOException {
         // Get the term of the next line
         String lineK = reader.readLine();
@@ -22,11 +22,11 @@ public class LoadStructures {
 
     }
 
-    public static Vocabulary loadVocabulary(String filename) {
+    public static VocabularyImpl loadVocabulary(String filename) {
         try {
             ReadingInterface reader = new ASCIIReader();
             reader.open(filename);
-            Vocabulary vocabulary = new Vocabulary();
+            VocabularyImpl vocabularyImpl = new VocabularyImpl();
 
             String line;
             while ((line = loadLine(reader)) != null) {
@@ -37,10 +37,10 @@ public class LoadStructures {
                 String term = split[0];
 
                 VocabularyEntry entry = new VocabularyEntry(split);
-                vocabulary.setEntry(term, entry);
+                vocabularyImpl.setEntry(term, entry);
             }
 
-            return vocabulary;
+            return vocabularyImpl;
 
         } catch (IOException e) {
             System.err.println("There has been an error loading the vocabulary");
@@ -49,12 +49,12 @@ public class LoadStructures {
         }
     }
 
-    public static DocumentIndex loadDocumentIndex(String filename) {
+    public static DocumentIndexImpl loadDocumentIndex(String filename) {
         try (
                 FileInputStream fileInput = new FileInputStream(filename);
                 BufferedReader reader = new BufferedReader(new InputStreamReader(fileInput, StandardCharsets.UTF_8))
         ) {
-            DocumentIndex documentIndex = new DocumentIndex();
+            DocumentIndexImpl documentIndexImpl = new DocumentIndexImpl();
 
             String line;
             while ((line = reader.readLine()) != null) {
@@ -65,10 +65,10 @@ public class LoadStructures {
                 int docId = Integer.parseInt(split[0]);
                 int docLength = Integer.parseInt(split[1]);
 
-                documentIndex.addDocument(docId, docLength);
+                documentIndexImpl.addDocument(docId, docLength);
             }
 
-            return documentIndex;
+            return documentIndexImpl;
 
         } catch (IOException e) {
             System.err.println("There has been an error loading the document index");
@@ -76,7 +76,7 @@ public class LoadStructures {
             return null;
         }
     }
-
+*/
     public static List<String> loadStopwords(String filename) {
         try {
             return Files.readAllLines(new File(filename).toPath(), StandardCharsets.UTF_8);
@@ -85,4 +85,6 @@ public class LoadStructures {
             return List.of();
         }
     }
+
+
 }

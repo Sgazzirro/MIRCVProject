@@ -8,7 +8,7 @@ public class VocabularyEntry {
 
     private Integer documentFrequency;
     private Double upperBound;
-    private PostingList postingList;
+    private PostingListImpl postingListImpl;
 
     public Integer getDocumentFrequency() {
         return documentFrequency;
@@ -17,16 +17,16 @@ public class VocabularyEntry {
     public VocabularyEntry() {
     }
 
-    public VocabularyEntry(Integer documentFrequency, Double upperBound, PostingList postingList) {
+    public VocabularyEntry(Integer documentFrequency, Double upperBound, PostingListImpl postingListImpl) {
         this.documentFrequency = documentFrequency;
         this.upperBound = upperBound;
-        this.postingList = postingList;
+        this.postingListImpl = postingListImpl;
     }
 
     public VocabularyEntry(String[] lineParam){
         this(Integer.parseInt(lineParam[1]),
                 Double.parseDouble(lineParam[2]),
-                new PostingList(Double.parseDouble(lineParam[3]),
+                new PostingListImpl(Double.parseDouble(lineParam[3]),
                         Integer.parseInt(lineParam[4]),
                         Integer.parseInt(lineParam[5]),
                         Integer.parseInt(lineParam[6])));
@@ -34,12 +34,12 @@ public class VocabularyEntry {
 
     public void addPosting(int docId) {
         // If the docId is already been happened don't increase the document frequency
-        List<Integer> docIdList = postingList.getDocIdList();
+        List<Integer> docIdList = postingListImpl.getDocIdList();
 
         if (docIdList.isEmpty() || docIdList.get(docIdList.size() - 1) < docId)
             documentFrequency++;
 
-        postingList.addPosting(docId);
+        postingListImpl.addPosting(docId);
     }
     public void setDocumentFrequency(Integer documentFrequency) {
         this.documentFrequency = documentFrequency;
@@ -53,12 +53,12 @@ public class VocabularyEntry {
         this.upperBound = upperBound;
     }
 
-    public PostingList getPostingList() {
-        return postingList;
+    public PostingListImpl getPostingList() {
+        return postingListImpl;
     }
 
-    public void setPostingList(PostingList postingList) {
-        this.postingList = postingList;
+    public void setPostingList(PostingListImpl postingListImpl) {
+        this.postingListImpl = postingListImpl;
     }
 
     @Override
@@ -66,7 +66,7 @@ public class VocabularyEntry {
         return "VocabularyEntry{" +
                 "documentFrequency=" + documentFrequency +
                 ", upperBound=" + upperBound +
-                ", postingList=" + postingList +
+                ", postingList=" + postingListImpl +
                 '}';
     }
 
@@ -75,12 +75,12 @@ public class VocabularyEntry {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         VocabularyEntry that = (VocabularyEntry) o;
-        return Objects.equals(documentFrequency, that.documentFrequency) && Objects.equals(upperBound, that.upperBound) && Objects.equals(postingList, that.postingList);
+        return Objects.equals(documentFrequency, that.documentFrequency) && Objects.equals(upperBound, that.upperBound) && Objects.equals(postingListImpl, that.postingListImpl);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(documentFrequency, upperBound, postingList);
+        return Objects.hash(documentFrequency, upperBound, postingListImpl);
     }
 
 }

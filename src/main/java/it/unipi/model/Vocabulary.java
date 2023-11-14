@@ -3,9 +3,8 @@ package it.unipi.model;
 import it.unipi.model.implementation.VocabularyEntry;
 
 import java.util.Map;
-import java.util.TreeMap;
 
-public interface VocabularyInterface {
+public interface Vocabulary {
     
     // Returns whether the vocabulary has the term inside
     public boolean isPresent(String term);

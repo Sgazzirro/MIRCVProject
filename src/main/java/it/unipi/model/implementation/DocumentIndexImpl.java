@@ -1,20 +1,19 @@
 package it.unipi.model.implementation;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
-import it.unipi.model.DocumentIndexInterface;
+import it.unipi.model.DocumentIndex;
 
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 
-public class DocumentIndex implements DocumentIndexInterface, Serializable {
+public class DocumentIndexImpl implements DocumentIndex, Serializable {
 
     private int totalLength;
     private int numDocuments;
     private HashMap<Integer, DocumentIndexEntry> table;
 
-    public DocumentIndex(){
+    public DocumentIndexImpl(){
         table = new HashMap<>();
         numDocuments = 0;
         totalLength = 0;
@@ -80,7 +79,7 @@ public class DocumentIndex implements DocumentIndexInterface, Serializable {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        DocumentIndex that = (DocumentIndex) o;
+        DocumentIndexImpl that = (DocumentIndexImpl) o;
         return totalLength == that.totalLength && numDocuments == that.numDocuments && Objects.equals(table.entrySet(), that.table.entrySet());
     }
 

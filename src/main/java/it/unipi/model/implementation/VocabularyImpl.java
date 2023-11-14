@@ -1,14 +1,14 @@
 package it.unipi.model.implementation;
-import it.unipi.model.VocabularyInterface;
+import it.unipi.model.Vocabulary;
 
 import java.io.Serializable;
 import java.util.*;
 
-public class Vocabulary implements VocabularyInterface, Serializable {
+public class VocabularyImpl implements Vocabulary, Serializable {
 
     private final NavigableMap<String, VocabularyEntry> table;
 
-    public Vocabulary(){
+    public VocabularyImpl(){
         table = new TreeMap<>();
     }
 
@@ -24,7 +24,7 @@ public class Vocabulary implements VocabularyInterface, Serializable {
         if (!isPresent(token)) {
             ve = new VocabularyEntry();
             ve.setDocumentFrequency(0);
-            ve.setPostingList(new PostingList());
+            ve.setPostingList(new PostingListImpl());
             ve.setUpperBound((double) 0);
             table.put(token,ve);
         }
@@ -67,7 +67,7 @@ public class Vocabulary implements VocabularyInterface, Serializable {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        Vocabulary that = (Vocabulary) o;
+        VocabularyImpl that = (VocabularyImpl) o;
         return Objects.equals(table.entrySet(), that.table.entrySet());
     }
 

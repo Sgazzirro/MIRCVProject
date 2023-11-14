@@ -1,14 +1,13 @@
 package it.unipi.index;
 
-
-import it.unipi.model.implementation.*;
 import it.unipi.model.*;
-import it.unipi.utils.ASCIIWriter;
-import it.unipi.utils.Constants;
-import it.unipi.utils.WritingInterface;
+import it.unipi.model.implementation.*;
+import it.unipi.utils.Dumper;
 
 import java.io.*;
 import java.util.*;
+
+import static java.lang.System.exit;
 
 public class InMemoryIndexing {
     /*
@@ -21,6 +20,7 @@ public class InMemoryIndexing {
                 -> update postings
      */
 
+    /*
     public DocumentStreamInterface documentStreamInterface;
     public VocabularyInterface vocabulary;
 
@@ -198,5 +198,77 @@ public class InMemoryIndexing {
 
     public TokenizerInterface getTokenizerInterface() {
         return tokenizerInterface;
+    }
+
+     */
+    private Vocabulary vocabulary;
+    private DocumentStream tokenStream;
+    private Dumper dumper;
+    private Tokenizer tokenizer;
+    private DocumentIndex docIndex;
+
+    public InMemoryIndexing(DocumentStream stream, Vocabulary voc, Dumper d, Tokenizer tok, DocumentIndex di){
+        vocabulary = voc;
+        tokenStream = stream;
+        dumper = d;
+        tokenizer = tok;
+        docIndex = di;
+    }
+
+    boolean setup(String filename){
+        return dumper.start(filename);
+    }
+
+    boolean close(){
+        return dumper.end();
+    }
+
+    // FIXME: This function is only used when you write the fully index in memory
+    public void buildIndex(String filename){
+        Optional<Document> document;
+
+        if(!setup(filename)) {
+            System.err.println("Something strange in opening the file");
+            exit(1);
+        }
+
+        while((document = Optional.ofNullable(tokenStream.nextDoc())).isPresent())
+            processDocument(document.get());
+
+        dumpVocabulary();
+        dumpDocumentIndex();
+
+        if(!close()){
+            System.err.println("Something strange in closing the file");
+            exit(1);
+        }
+    }
+
+    public void processDocument(Document document) {
+        List<String> tokenized = tokenizer.tokenizeBySpace(document.getText());
+
+        for (String token : tokenized) {
+            vocabulary.addEntry(token, document.getId());
+        }
+
+        // TODO: Add Document Index Adding
+    }
+
+    void dumpVocabulary(){
+        dumper.dumpVocabulary(vocabulary);
+        // Flush
+        vocabulary = new VocabularyImpl();
+    }
+
+    private void dumpVocabularyLine(Map.Entry<String, VocabularyEntry> entry) throws IOException {
+        // Onto the vocabulary
+        // Term | DF | UpperBound | IDF | OffsetID | OffsetTF | #Posting
+        dumper.dumpEntry(entry);
+    }
+
+    private void dumpDocumentIndex(){
+        dumper.dumpDocumentIndex(docIndex);
+        // Flush
+        docIndex = new DocumentIndexImpl();
     }
 }

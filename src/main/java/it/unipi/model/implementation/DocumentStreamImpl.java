@@ -1,16 +1,15 @@
 package it.unipi.model.implementation;
-import it.unipi.model.DocumentStreamInterface;
+import it.unipi.model.DocumentStream;
 
 import java.io.*;
-import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.zip.GZIPInputStream;
 
-public class DocumentStream implements DocumentStreamInterface {
+public class DocumentStreamImpl implements DocumentStream {
     private BufferedReader br;
     boolean firstLine=true;
 
-    public DocumentStream(String filename) {
+    public DocumentStreamImpl(String filename) {
         try {
             FileInputStream fileInput = new FileInputStream(filename);
 

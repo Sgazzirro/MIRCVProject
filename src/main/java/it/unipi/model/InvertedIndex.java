@@ -11,7 +11,7 @@ public interface InvertedIndex {
     // Returns the posting list refered by a specific integer
     //  i -> index for in-memory indexing
     //    -> file offset otherwise
-    public PostingListInterface get(int location);
+    public PostingList get(int location);
 
     public void addPosting(int location, String docId);
 

@@ -5,7 +5,6 @@ import it.unipi.model.implementation.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.PriorityQueue;
-import java.util.stream.Collectors;
 
 public class Scorer {
 
@@ -33,15 +32,15 @@ public class Scorer {
         }
     }
 
-    private final Vocabulary vocabulary;
-    private final DocumentIndex documentIndex;
+    private final VocabularyImpl vocabularyImpl;
+    private final DocumentIndexImpl documentIndexImpl;
 
-    private final Tokenizer tokenizer;
+    private final TokenizerImpl tokenizerImpl;
 
-    public Scorer(Vocabulary vocabulary, DocumentIndex documentIndex, Tokenizer tokenizer) {
-        this.vocabulary = vocabulary;
-        this.documentIndex = documentIndex;
-        this.tokenizer = tokenizer;
+    public Scorer(VocabularyImpl vocabularyImpl, DocumentIndexImpl documentIndexImpl, TokenizerImpl tokenizerImpl) {
+        this.vocabularyImpl = vocabularyImpl;
+        this.documentIndexImpl = documentIndexImpl;
+        this.tokenizerImpl = tokenizerImpl;
     }
 
     public DocumentScore[] score(String query, int numResults) {
@@ -49,13 +48,13 @@ public class Scorer {
 
         PriorityQueue<DocumentScore> scores = new PriorityQueue<>();
 
-        List<String> tokens = tokenizer.tokenizeBySpace(query);
+        List<String> tokens = tokenizerImpl.tokenizeBySpace(query);
         int numTokens = tokens.size();
 
         // Get the posting lists of all the terms in the query
-        List<PostingList> postingLists = new ArrayList<>(numTokens);
+        List<PostingListImpl> postingListImpls = new ArrayList<>(numTokens);
         for (int i = 0; i < numTokens; i++) {
-            VocabularyEntry entry = vocabulary.getEntry(tokens.get(i));
+            VocabularyEntry entry = vocabularyImpl.getEntry(tokens.get(i));
 
             // If the entry is null (this means that the term of the query was not present in any document)
             // discard the term and decrease the num of Tokens
@@ -63,34 +62,34 @@ public class Scorer {
                 tokens.remove(i--);
                 numTokens--;
             } else
-                postingLists.add(entry.getPostingList());
+                postingListImpls.add(entry.getPostingList());
         }
 
         int docId, currentDocId;      // id of the current document
         double score;   // score of the current document
 
-        while (!postingLists.isEmpty()) {
-            docId = postingLists.get(0).docId();
-            score = postingLists.get(0).score();
+        while (!postingListImpls.isEmpty()) {
+            docId = postingListImpls.get(0).docId();
+            score = postingListImpls.get(0).score();
 
             for (int i = 1; i < numTokens; i++) {
-                currentDocId = postingLists.get(i).docId();
+                currentDocId = postingListImpls.get(i).docId();
                 if (currentDocId < docId) {
                     docId = currentDocId;
-                    score = postingLists.get(i).score();
+                    score = postingListImpls.get(i).score();
                 } else if (currentDocId == docId)
-                    score += postingLists.get(i).score();
+                    score += postingListImpls.get(i).score();
             }
 
             // Advance all posting lists related to the current docId
             for (int i = 0; i < numTokens; i++) {
-                if (postingLists.get(i).docId() == docId) {
+                if (postingListImpls.get(i).docId() == docId) {
                     // Advance the posting list
-                    if (postingLists.get(i).hasNext())
-                        postingLists.get(i).next();
+                    if (postingListImpls.get(i).hasNext())
+                        postingListImpls.get(i).next();
                     // If we are at the end of the posting list, remove it
                     else {
-                        postingLists.remove(i--);
+                        postingListImpls.remove(i--);
                         numTokens--;
                     }
                 }

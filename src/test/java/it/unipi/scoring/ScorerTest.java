@@ -1,10 +1,10 @@
 package it.unipi.scoring;
 
 import it.unipi.index.InMemoryIndexing;
-import it.unipi.model.implementation.DocumentIndex;
-import it.unipi.model.implementation.DocumentStream;
-import it.unipi.model.implementation.Tokenizer;
-import it.unipi.model.implementation.Vocabulary;
+import it.unipi.model.implementation.DocumentIndexImpl;
+import it.unipi.model.implementation.DocumentStreamImpl;
+import it.unipi.model.implementation.TokenizerImpl;
+import it.unipi.model.implementation.VocabularyImpl;
 import it.unipi.utils.Constants;
 import junit.framework.TestCase;
 
@@ -14,16 +14,16 @@ import static org.junit.Assert.assertArrayEquals;
 
 public class ScorerTest extends TestCase {
     public void testScore() {
-        DocumentStream ds = new DocumentStream(Constants.TEST_COLLECTION_FILE);
+        DocumentStreamImpl ds = new DocumentStreamImpl(Constants.TEST_COLLECTION_FILE);
 
-        DocumentIndex documentIndex = new DocumentIndex();
-        Vocabulary vocabulary = new Vocabulary();
-        Tokenizer tokenizer = new Tokenizer(false);
+        DocumentIndexImpl documentIndexImpl = new DocumentIndexImpl();
+        VocabularyImpl vocabularyImpl = new VocabularyImpl();
+        TokenizerImpl tokenizerImpl = new TokenizerImpl(false);
 
-        InMemoryIndexing inMemoryIndexing = new InMemoryIndexing(ds, documentIndex, vocabulary, tokenizer);
+        InMemoryIndexing inMemoryIndexing = new InMemoryIndexing(ds, documentIndexImpl, vocabularyImpl, tokenizerImpl);
         inMemoryIndexing.buildIndex();
 
-        Scorer scorer = new Scorer(vocabulary, documentIndex, tokenizer);
+        Scorer scorer = new Scorer(vocabularyImpl, documentIndexImpl, tokenizerImpl);
 
         String query = "beijing duck recipe";
         Scorer.DocumentScore[] scores  = scorer.score(query, 5);

@@ -1,7 +1,6 @@
 package it.unipi.model.implementation;
 
-import it.unipi.model.PostingListInterface;
-import it.unipi.utils.WritingInterface;
+import it.unipi.model.PostingList;
 import it.unipi.utils.Constants;
 
 import java.io.*;
@@ -12,10 +11,10 @@ import java.util.*;
 
 
 /**
- * Posting list object that implements {@link PostingListInterface}.
+ * Posting list object that implements {@link PostingList}.
  * Demanded to the load/write of postings from/into the secondary memory.
  */
-public class PostingList implements PostingListInterface {
+public class PostingListImpl implements PostingList {
     private Double termIdf;
     private Integer offsetID;
     private Integer offsetTF;
@@ -27,7 +26,7 @@ public class PostingList implements PostingListInterface {
     private int pointer;
 
     // Used when building the index
-    public PostingList() {
+    public PostingListImpl() {
         this.docIdList = new ArrayList<>();
         this.termFrequencyList = new ArrayList<>();
         this.length = 0;
@@ -36,7 +35,7 @@ public class PostingList implements PostingListInterface {
     }
 
     // Used when reading the index
-    public PostingList(Double IDF, Integer offsetID, Integer offsetTF, Integer len) {
+    public PostingListImpl(Double IDF, Integer offsetID, Integer offsetTF, Integer len) {
         this.offsetID = offsetID;
         this.offsetTF = offsetTF;
         this.termIdf = IDF;
@@ -64,7 +63,7 @@ public class PostingList implements PostingListInterface {
         this.termIdf = termIdf;
     }
 
-    public int mergePosting(PostingList p2){
+    public int mergePosting(PostingListImpl p2){
         docIdList.addAll(p2.getDocIdList());
         termFrequencyList.addAll(p2.getTermFrequencyList());
         return docIdList.size();
@@ -191,20 +190,6 @@ public class PostingList implements PostingListInterface {
     }
 
 
-
-    public long[] dumpPostings(WritingInterface writerID, WritingInterface writerTF) throws IOException {
-        long offsetID = writerID.getFilePointer();
-        long offsetTF = writerTF.getFilePointer();
-        if(!Constants.getCompression()){
-            //TXT DUMP
-            for(int i = 0; i < docIdList.size(); i++) {
-                writerID.write(docIdList.get(i) + "\n");
-                writerTF.write(termFrequencyList.get(i) + "\n");
-            }
-        }
-        return new long[]{offsetID, offsetTF};
-    }
-
     @Override
     public String toString() {
         return "DocIdList: " + docIdList + " TermFrequencyList: " + termFrequencyList;
@@ -214,7 +199,7 @@ public class PostingList implements PostingListInterface {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        PostingList that = (PostingList) o;
+        PostingListImpl that = (PostingListImpl) o;
         this.loadPosting();
         that.loadPosting();
         return Objects.equals(docIdList, that.docIdList) && Objects.equals(termFrequencyList, that.termFrequencyList);

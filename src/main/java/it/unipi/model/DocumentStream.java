@@ -3,7 +3,7 @@ package it.unipi.model;
 
 import it.unipi.model.implementation.Document;
 
-public interface DocumentStreamInterface {
+public interface DocumentStream {
     /*
         Represent a stream of documents
      */

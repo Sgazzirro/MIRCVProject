@@ -1,11 +1,10 @@
 package it.unipi.model;
 
-import it.unipi.model.implementation.Document;
 import it.unipi.model.implementation.DocumentIndexEntry;
 
 import java.util.Map;
 
-public interface DocumentIndexInterface {
+public interface DocumentIndex {
 
     public int getTotalLength();
     public int getNumDocuments();

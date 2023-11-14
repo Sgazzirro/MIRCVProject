@@ -1,6 +1,6 @@
 package it.unipi.model.implementation;
 
-import it.unipi.model.TokenizerInterface;
+import it.unipi.model.Tokenizer;
 import it.unipi.utils.Constants;
 import it.unipi.utils.LoadStructures;
 import opennlp.tools.stemmer.PorterStemmer;
@@ -10,7 +10,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-public class Tokenizer implements TokenizerInterface {
+public class TokenizerImpl implements Tokenizer {
 
     List<String> stopwords = LoadStructures.loadStopwords(Constants.STOPWORDS_FILE);
     // Use Porter stemmer
@@ -18,11 +18,11 @@ public class Tokenizer implements TokenizerInterface {
 
     private final boolean applyStemming;
 
-    public Tokenizer() {
+    public TokenizerImpl() {
         this(true);
     }
 
-    public Tokenizer(boolean applyStemming) {
+    public TokenizerImpl(boolean applyStemming) {
         this.applyStemming = applyStemming;
     }
 

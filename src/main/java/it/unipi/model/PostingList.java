@@ -1,11 +1,12 @@
 package it.unipi.model;
 
-import it.unipi.model.implementation.PostingList;
-import it.unipi.utils.WritingInterface;
+import it.unipi.model.implementation.PostingListImpl;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
-public interface PostingListInterface {
+public interface PostingList {
 
     /**
      * @return the document ID of the current posting
@@ -48,17 +49,10 @@ public interface PostingListInterface {
      * @param toMerge the posting list we have to merge to the current
      * @return the length of the new list
      */
-    public int mergePosting(PostingList toMerge);
-
-    /**
-     * Function demanded to writing posting lists onto the two dedicated file "doc_ids.txt" and
-     * "term_frequencies.txt". The function takes two Closeable object (Writers) as argument.
-     * Checks for compression using {@link it.unipi.utils.Constants#getCompression() getCompression}
-     * @param writerIDS the object demanded to write onto the document id file
-     * @param writerTF the object demanded to write onto the term frequencies file
-     * @return a long[2] containing the byte offset at which lists have been written
-     */
-    public long[] dumpPostings(WritingInterface writerIDS, WritingInterface writerTF) throws IOException;
+    public int mergePosting(PostingListImpl toMerge);
 
 
+    public List<Integer> getDocIdList();
+
+    public List<Integer> getTermFrequencyList();
 }
