@@ -117,6 +117,7 @@ public class FetcherCompressed implements Fetcher{
         try {
             if(opened){
                 fisDocIds.close();
+                opened = false;
                 return true;
             } else throw new IOException();
         } catch (IOException ie){
