@@ -27,6 +27,7 @@ public class DumpTXT implements Dumper {
         try{
             if(opened)
                 throw new IOException();
+            System.out.println(filename);
             writerVOC = new BufferedWriter(new FileWriter(filename + "vocabulary.csv"));
             writerDIX = new BufferedWriter(new FileWriter(filename + "document_index.csv"));
             writerDIDS = new BufferedWriter(new FileWriter(filename + "doc_ids.txt"));
@@ -67,7 +68,7 @@ public class DumpTXT implements Dumper {
                     .append(offsets[1]).append(",")
                     .append(length).append("\n").toString();
 
-
+            System.out.println(opened);
             writerVOC.write(result);
         } catch (IOException e) {
             throw new RuntimeException(e);

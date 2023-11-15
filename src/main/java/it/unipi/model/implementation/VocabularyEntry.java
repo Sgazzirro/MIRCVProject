@@ -1,6 +1,8 @@
 package it.unipi.model.implementation;
 
 
+import it.unipi.model.PostingList;
+
 import java.util.List;
 import java.util.Objects;
 
@@ -8,7 +10,7 @@ public class VocabularyEntry {
 
     private Integer documentFrequency;
     private Double upperBound;
-    private PostingListImpl postingListImpl;
+    private PostingList postingListImpl;
 
     public Integer getDocumentFrequency() {
         return documentFrequency;
@@ -17,7 +19,7 @@ public class VocabularyEntry {
     public VocabularyEntry() {
     }
 
-    public VocabularyEntry(Integer documentFrequency, Double upperBound, PostingListImpl postingListImpl) {
+    public VocabularyEntry(Integer documentFrequency, Double upperBound, PostingList postingListImpl) {
         this.documentFrequency = documentFrequency;
         this.upperBound = upperBound;
         this.postingListImpl = postingListImpl;
@@ -27,8 +29,8 @@ public class VocabularyEntry {
         this(Integer.parseInt(lineParam[1]),
                 Double.parseDouble(lineParam[2]),
                 new PostingListImpl(Double.parseDouble(lineParam[3]),
-                        Integer.parseInt(lineParam[4]),
-                        Integer.parseInt(lineParam[5]),
+                        Long.parseLong(lineParam[4]),
+                        Long.parseLong(lineParam[5]),
                         Integer.parseInt(lineParam[6])));
     }
 
@@ -53,7 +55,7 @@ public class VocabularyEntry {
         this.upperBound = upperBound;
     }
 
-    public PostingListImpl getPostingList() {
+    public PostingList getPostingList() {
         return postingListImpl;
     }
 

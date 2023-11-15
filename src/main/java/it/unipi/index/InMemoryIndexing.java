@@ -260,13 +260,13 @@ public class InMemoryIndexing {
         vocabulary = new VocabularyImpl();
     }
 
-    private void dumpVocabularyLine(Map.Entry<String, VocabularyEntry> entry) throws IOException {
+    void dumpVocabularyLine(Map.Entry<String, VocabularyEntry> entry) throws IOException {
         // Onto the vocabulary
         // Term | DF | UpperBound | IDF | OffsetID | OffsetTF | #Posting
         dumper.dumpEntry(entry);
     }
 
-    private void dumpDocumentIndex(){
+    void dumpDocumentIndex(){
         dumper.dumpDocumentIndex(docIndex);
         // Flush
         docIndex = new DocumentIndexImpl();

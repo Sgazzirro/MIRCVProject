@@ -62,7 +62,8 @@ public class Scorer {
                 tokens.remove(i--);
                 numTokens--;
             } else
-                postingListImpls.add(entry.getPostingList());
+                ;
+                // postingListImpls.add(entry.getPostingList());
         }
 
         int docId, currentDocId;      // id of the current document

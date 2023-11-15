@@ -73,7 +73,7 @@ public class PostingListImpl implements PostingList {
         this.termIdf = termIdf;
     }
 
-    public int mergePosting(PostingListImpl p2){
+    public int mergePosting(PostingList p2){
         docIdList.addAll(p2.getDocIdList());
         termFrequencyList.addAll(p2.getTermFrequencyList());
         return docIdList.size();
@@ -180,6 +180,11 @@ public class PostingListImpl implements PostingList {
 
     public void addPosting(int docId, int termFrequency) {
         // Documents are supposed to be read sequentially with respect to docId
+        if(docIdList == null)
+            docIdList = new ArrayList<>();
+        if(termFrequencyList == null)
+            termFrequencyList = new ArrayList<>();
+
         int lastIndex = docIdList.size()-1;
 
         if (docIdList.isEmpty() || docIdList.get(lastIndex) != docId) {

@@ -51,7 +51,7 @@ public interface PostingList {
      * @param toMerge the posting list we have to merge to the current
      * @return the length of the new list
      */
-    public int mergePosting(PostingListImpl toMerge);
+    public int mergePosting(PostingList toMerge);
 
 
     public List<Integer> getDocIdList();
@@ -62,4 +62,6 @@ public interface PostingList {
     public long getOffsetTF();
 
     public int getLength();
+
+    public Double getTermIdf();
 }

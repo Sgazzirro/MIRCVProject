@@ -20,7 +20,8 @@ public class FetcherTXT implements Fetcher{
         try{
             if(opened)
                 throw new IOException();
-            globalReader = new BufferedReader(new FileReader(filename));
+            System.out.println("TRYING TO OPEN" + filename);
+            globalReader = new BufferedReader(new FileReader(filename + "vocabulary.csv"));
             opened = true;
             prefix = filename;
         }
@@ -73,14 +74,16 @@ public class FetcherTXT implements Fetcher{
                 return null;
         try {
             // Read next line
-            String[] params = globalReader.readLine().split(",");
+            String line = globalReader.readLine();
+            if(line == null)
+                return null;
+            String[] params = line.split(",");
             term = params[0];
             result = new VocabularyEntry(params);
             loadPosting(result.getPostingList(), prefix);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-        end();
         return Map.entry(term, result);
     }
 
