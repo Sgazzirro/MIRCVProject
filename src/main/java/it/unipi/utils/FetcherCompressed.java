@@ -2,9 +2,11 @@ package it.unipi.utils;
 
 import it.unipi.model.PostingList;
 import it.unipi.model.implementation.DocumentIndexEntry;
+import it.unipi.model.implementation.EliasFano;
 import it.unipi.model.implementation.VocabularyEntry;
 
 import java.io.*;
+import java.util.ArrayList;
 import java.util.Map;
 
 public class FetcherCompressed implements Fetcher{
@@ -32,11 +34,25 @@ public class FetcherCompressed implements Fetcher{
 
     @Override
     public void loadPosting(PostingList list) {
+        int docId = 0;
+        long byteOffsetStart = 0;
+        long byteOffsetEnd = 0;
+        String filename="";
 
+        start(filename);
+
+        byte [] docIdArrayCompressed = fetchDocIdListCompressed(byteOffsetStart, byteOffsetEnd);
+        // TO PUT IN CACHE!!!!
+        EliasFanoStruct efs = fetchDocIdSubList(docIdArrayCompressed, docId);
+        ArrayList<Integer> docIdsDecodedList = EliasFano.decode(efs);
+        for (int i=0; i<docIdsDecodedList.size(); i++){
+            list.addPosting(docIdsDecodedList.get(i), 0);
+        }
+
+        end();
     }
 
-    // questa non posso implementarla, intanto la aggiungo qua
-    public byte[] fetchDocIdListCompressed(String filename, long byteOffsetStart, long byteOffsetEnd){
+    public byte[] fetchDocIdListCompressed(long byteOffsetStart, long byteOffsetEnd){
         byte[] docIdArrayCompressed = new byte[(int) (byteOffsetEnd-byteOffsetStart)];
         try{
             if (opened){
