@@ -16,8 +16,8 @@ import java.util.*;
  */
 public class PostingListImpl implements PostingList {
     private Double termIdf;
-    private Integer offsetID;
-    private Integer offsetTF;
+    private Long offsetID;
+    private Long offsetTF;
     private Integer length;
     private List<Integer> docIdList;
     private List<Integer> termFrequencyList;
@@ -35,7 +35,7 @@ public class PostingListImpl implements PostingList {
     }
 
     // Used when reading the index
-    public PostingListImpl(Double IDF, Integer offsetID, Integer offsetTF, Integer len) {
+    public PostingListImpl(Double IDF, Long offsetID, Long offsetTF, Integer len) {
         this.offsetID = offsetID;
         this.offsetTF = offsetTF;
         this.termIdf = IDF;
@@ -47,7 +47,7 @@ public class PostingListImpl implements PostingList {
         return termIdf;
     }
 
-    public Integer getLength() {
+    public int getLength() {
         return length;
     }
 
@@ -57,6 +57,16 @@ public class PostingListImpl implements PostingList {
 
     public List<Integer> getTermFrequencyList() {
         return termFrequencyList;
+    }
+
+    @Override
+    public long getOffsetID() {
+        return offsetID;
+    }
+
+    @Override
+    public long getOffsetTF() {
+        return offsetTF;
     }
 
     public void setTermIdf(Double termIdf) {

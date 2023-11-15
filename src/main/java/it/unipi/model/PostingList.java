@@ -44,6 +44,8 @@ public interface PostingList {
      */
     public void addPosting(int docId);
 
+    public void addPosting(int docId, int freq);
+
     /**
      * Concatenate the passed list to the current one, assuming that no sorting is required
      * @param toMerge the posting list we have to merge to the current
@@ -55,4 +57,9 @@ public interface PostingList {
     public List<Integer> getDocIdList();
 
     public List<Integer> getTermFrequencyList();
+
+    public long getOffsetID();
+    public long getOffsetTF();
+
+    public int getLength();
 }

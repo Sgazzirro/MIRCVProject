@@ -1,17 +1,26 @@
 package it.unipi.utils;
 
 
+import it.unipi.model.PostingList;
 import it.unipi.model.implementation.DocumentIndexEntry;
 import it.unipi.model.implementation.PostingListImpl;
 import it.unipi.model.implementation.VocabularyEntry;
 
+import java.util.Map;
+
 public interface Fetcher {
-    public void loadPosting(PostingListImpl list);
+    public boolean start(String filename);
+    public void setScope(String filename);
+    public void loadPosting(PostingList list);
 
     //
     // TERM | DF | UB | PostingList
-    public VocabularyEntry loadVocEntry(String term);
+    public Map.Entry<String, VocabularyEntry> loadVocEntry(String term);
+
+    public Map.Entry<String, VocabularyEntry> loadVocEntry();
 
     public DocumentIndexEntry loadDocEntry(long docId);
+
+    public boolean end();
 
 }
