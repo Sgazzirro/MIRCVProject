@@ -23,4 +23,6 @@ public interface Fetcher {
 
     public boolean end();
 
+    //
+
 }

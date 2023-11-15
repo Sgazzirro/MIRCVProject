@@ -14,6 +14,8 @@ public class Constants {
     public static String DOC_IDS_POSTING_FILE = "data/doc_ids.txt";
     public static String TF_POSTING_FILE = "data/term_frequencies.txt";
 
+    public static int BLOCK_DIM_ELIASFANO = 10;
+
     public static void setCompression(boolean c) {
         COMPRESSION = c;
     }
