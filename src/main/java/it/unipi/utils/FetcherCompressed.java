@@ -52,7 +52,7 @@ public class FetcherCompressed implements Fetcher{
         end();
     }
 
-    public byte[] fetchDocIdListCompressed(long byteOffsetStart, long byteOffsetEnd){
+    private byte[] fetchDocIdListCompressed(long byteOffsetStart, long byteOffsetEnd){
         byte[] docIdArrayCompressed = new byte[(int) (byteOffsetEnd-byteOffsetStart)];
         try{
             if (opened){
@@ -71,7 +71,7 @@ public class FetcherCompressed implements Fetcher{
         return null;
     }
 
-    public EliasFanoStruct fetchDocIdSubList(byte[] compressedDocIds, int docId){
+    private EliasFanoStruct fetchDocIdSubList(byte[] compressedDocIds, int docId){
         // skips unnecessary lists
         try (
                 ByteArrayInputStream bais = new ByteArrayInputStream(compressedDocIds);
