@@ -114,6 +114,14 @@ public class FetcherCompressed implements Fetcher{
 
     @Override
     public boolean end() {
-        return false;
+        try {
+            if(opened){
+                fisDocIds.close();
+                return true;
+            } else throw new IOException();
+        } catch (IOException ie){
+            ie.printStackTrace();
+            return false;
+        }
     }
 }
