@@ -251,7 +251,7 @@ public class InMemoryIndexing {
             vocabulary.addEntry(token, document.getId());
         }
 
-        // TODO: Add Document Index Adding
+        docIndex.addDocument(document.getId(), tokenized.size());
     }
 
     void dumpVocabulary(){
@@ -270,5 +270,9 @@ public class InMemoryIndexing {
         dumper.dumpDocumentIndex(docIndex);
         // Flush
         docIndex = new DocumentIndexImpl();
+    }
+
+    void dumpDocumentIndexLine(Map.Entry<Integer,DocumentIndexEntry> entry){
+        dumper.dumpDocumentIndexEntry(entry);
     }
 }

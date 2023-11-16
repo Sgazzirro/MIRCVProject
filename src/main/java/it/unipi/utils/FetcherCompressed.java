@@ -129,6 +129,11 @@ public class FetcherCompressed implements Fetcher{
     }
 
     @Override
+    public Map.Entry<Integer, DocumentIndexEntry> loadDocEntry() {
+        return null;
+    }
+
+    @Override
     public boolean end() {
         try {
             if(opened){

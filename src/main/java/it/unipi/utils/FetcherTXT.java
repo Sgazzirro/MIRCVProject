@@ -8,7 +8,8 @@ import java.io.*;
 import java.util.Map;
 
 public class FetcherTXT implements Fetcher{
-    BufferedReader globalReader;
+    BufferedReader globalReaderVOC;
+    BufferedReader globalReaderDOC;
     boolean opened = false;
     String prefix;
 
@@ -21,7 +22,8 @@ public class FetcherTXT implements Fetcher{
             if(opened)
                 throw new IOException();
             System.out.println("TRYING TO OPEN" + filename);
-            globalReader = new BufferedReader(new FileReader(filename + "vocabulary.csv"));
+            globalReaderVOC = new BufferedReader(new FileReader(filename + "vocabulary.csv"));
+            globalReaderDOC = new BufferedReader(new FileReader(filename + "document_index.csv"));
             opened = true;
             prefix = filename;
         }
@@ -70,11 +72,11 @@ public class FetcherTXT implements Fetcher{
         VocabularyEntry result;
         String term;
         if(!opened)
-            if(!start(prefix + "vocabulary.csv"))
+            if(!start(prefix))
                 return null;
         try {
             // Read next line
-            String line = globalReader.readLine();
+            String line = globalReaderVOC.readLine();
             if(line == null)
                 return null;
             String[] params = line.split(",");
@@ -93,11 +95,34 @@ public class FetcherTXT implements Fetcher{
     }
 
     @Override
+    public Map.Entry<Integer, DocumentIndexEntry> loadDocEntry() {
+        // The loading of an entry without arguments uses the global reader
+        DocumentIndexEntry result = new DocumentIndexEntry();
+        int docId;
+        if(!opened)
+            if(!start(prefix))
+                return null;
+        try {
+            // Read next line
+            String line = globalReaderDOC.readLine();
+            if(line == null)
+                return null;
+            String[] params = line.split(",");
+            docId = Integer.parseInt(params[0]);
+            result.setDocumentLength(Integer.parseInt(params[1]));
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        return Map.entry(docId, result);
+    }
+
+    @Override
     public boolean end() {
         try{
             if(!opened)
                 throw new IOException();
-            globalReader.close();
+            globalReaderVOC.close();
+            globalReaderDOC.close();
             opened = false;
         }
         catch(IOException ie){

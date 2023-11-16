@@ -1,6 +1,7 @@
 package it.unipi.utils;
 
 
+import it.unipi.model.DocumentIndex;
 import it.unipi.model.PostingList;
 import it.unipi.model.implementation.DocumentIndexEntry;
 import it.unipi.model.implementation.PostingListImpl;
@@ -20,6 +21,8 @@ public interface Fetcher {
     public Map.Entry<String, VocabularyEntry> loadVocEntry();
 
     public DocumentIndexEntry loadDocEntry(long docId);
+
+    public Map.Entry<Integer, DocumentIndexEntry> loadDocEntry();
 
     public boolean end();
 
