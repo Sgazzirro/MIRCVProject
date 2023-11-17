@@ -64,4 +64,6 @@ public interface PostingList {
     public int getLength();
 
     public Double getTermIdf();
+
+    public byte[] getCompressedDocIdArray();
 }

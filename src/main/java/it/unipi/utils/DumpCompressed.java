@@ -70,6 +70,25 @@ public class DumpCompressed implements Dumper{
         }
     }
 
+    public void dumpMergedEntry(Map.Entry<String, VocabularyEntry> entry){
+        // TO REVIEW: QUALCUNO DOVRà PRENDERSI START OFFSET E ENDOFFSET
+        String term = entry.getKey();
+        VocabularyEntry vocabularyEntry = entry.getValue();
+
+        PostingList postingList = vocabularyEntry.getPostingList();
+        byte[] docIdCompressedArray = postingList.getCompressedDocIdArray();
+        try {
+            if (!opened){
+                throw new IOException();
+            }
+            long startOffset = fosDocIds.getChannel().position();
+            dosDocIds.write(docIdCompressedArray);
+            long endOffset = fosDocIds.getChannel().position();
+        } catch (IOException ie){
+            ie.printStackTrace();
+        }
+    }
+
     @Override
     public void dumpDocumentIndex(DocumentIndex docIndex) {
 

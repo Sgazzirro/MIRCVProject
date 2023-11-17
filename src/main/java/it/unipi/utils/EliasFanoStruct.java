@@ -6,11 +6,30 @@ public class EliasFanoStruct {
     private byte [] lowBytes;
     private byte [] highBytes;
 
-    public EliasFanoStruct(int u, int n, byte[] lowBytes, byte[] highBytes) {
+    private long readOffset=0;
+
+    public EliasFanoStruct(int u, int n, byte[] lowBytes, byte[] highBytes, long readOffset) {
         U = u;
         this.n = n;
         this.lowBytes = lowBytes;
         this.highBytes = highBytes;
+        this.readOffset=readOffset;
+    }
+
+    public EliasFanoStruct(int u, int n, byte[] lowBytes, byte[] highBytes){
+        U = u;
+        this.n = n;
+        this.lowBytes = lowBytes;
+        this.highBytes = highBytes;
+        this.readOffset=0;
+    }
+
+    public long getReadOffset() {
+        return readOffset;
+    }
+
+    public void setReadOffset(long readOffset) {
+        this.readOffset = readOffset;
     }
 
     public int getU() {

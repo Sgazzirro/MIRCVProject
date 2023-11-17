@@ -12,6 +12,7 @@ import java.util.Map;
 public class FetcherCompressed implements Fetcher{
     FileInputStream fisDocIds;
     boolean opened = false;
+
     @Override
     public boolean start(String filename) {
         try{
@@ -40,7 +41,7 @@ public class FetcherCompressed implements Fetcher{
         String filename="";
 
         start(filename);
-
+        /*
         byte [] docIdArrayCompressed = fetchDocIdListCompressed(byteOffsetStart, byteOffsetEnd);
         // TO PUT IN CACHE!!!!
         EliasFanoStruct efs = fetchDocIdSubList(docIdArrayCompressed, docId);
@@ -50,9 +51,11 @@ public class FetcherCompressed implements Fetcher{
         }
 
         end();
+
+         */
     }
 
-    private byte[] fetchDocIdListCompressed(long byteOffsetStart, long byteOffsetEnd){
+    public byte[] fetchDocIdListCompressed(long byteOffsetStart, long byteOffsetEnd){
         byte[] docIdArrayCompressed = new byte[(int) (byteOffsetEnd-byteOffsetStart)];
         try{
             if (opened){
@@ -71,12 +74,15 @@ public class FetcherCompressed implements Fetcher{
         return null;
     }
 
-    private EliasFanoStruct fetchDocIdSubList(byte[] compressedDocIds, int docId){
+    public EliasFanoStruct fetchDocIdSubList(byte[] compressedDocIds, int docId, long readOffsetEF){
         // skips unnecessary lists
         try (
                 ByteArrayInputStream bais = new ByteArrayInputStream(compressedDocIds);
                 DataInputStream dis = new DataInputStream(bais);
         ) {
+            if(readOffsetEF!=dis.skip(readOffsetEF)){
+                throw new IOException();
+            }
             while(true){
                 // Read integers from the byte array
                 int U = dis.readInt();
@@ -91,6 +97,7 @@ public class FetcherCompressed implements Fetcher{
 
                 if (U<docId) {
                     // i have to read the next block
+                    readOffsetEF+=bytesToSkip;
                     if (bytesToSkip != bais.skip(bytesToSkip)) {
                         throw new IOException();
                     }
@@ -98,9 +105,10 @@ public class FetcherCompressed implements Fetcher{
                 else{
                     byte [] lowBytes = new byte[(int) Math.ceil((float) nTotLowBits/8)];
                     byte [] highBytes = new byte[(int) Math.ceil((float) nTotHighBits/8)];
-                    dis.read(highBytes);
-                    dis.read(lowBytes);
-                    return new EliasFanoStruct(U, n, lowBytes, highBytes);
+                    readOffsetEF+=dis.read(highBytes);
+                    readOffsetEF+=dis.read(lowBytes);
+                    dis.close();
+                    return new EliasFanoStruct(U, n, lowBytes, highBytes, readOffsetEF);
                 }
             }
         } catch (EOFException e){

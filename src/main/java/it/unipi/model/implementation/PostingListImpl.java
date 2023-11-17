@@ -224,4 +224,9 @@ public class PostingListImpl implements PostingList {
     public int hashCode() {
         return Objects.hash(offsetID, docIdList, termFrequencyList);
     }
+
+    @Override
+    public byte[] getCompressedDocIdArray() {
+        return new byte[0];
+    }
 }
