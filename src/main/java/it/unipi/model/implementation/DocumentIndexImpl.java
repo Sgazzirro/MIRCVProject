@@ -3,18 +3,16 @@ package it.unipi.model.implementation;
 import it.unipi.model.DocumentIndex;
 
 import java.io.Serializable;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 
 public class DocumentIndexImpl implements DocumentIndex, Serializable {
 
     private int totalLength;
     private int numDocuments;
-    private HashMap<Integer, DocumentIndexEntry> table;
+    private NavigableMap<Integer, DocumentIndexEntry> table;
 
     public DocumentIndexImpl(){
-        table = new HashMap<>();
+        table = new TreeMap<>();
         numDocuments = 0;
         totalLength = 0;
     }

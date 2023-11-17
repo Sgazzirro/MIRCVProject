@@ -3,6 +3,7 @@ package it.unipi.utils;
 import it.unipi.model.DocumentIndex;
 import it.unipi.model.PostingList;
 import it.unipi.model.Vocabulary;
+import it.unipi.model.implementation.DocumentIndexEntry;
 import it.unipi.model.implementation.EliasFano;
 import it.unipi.model.implementation.VocabularyEntry;
 
@@ -91,6 +92,11 @@ public class DumpCompressed implements Dumper{
 
     @Override
     public void dumpDocumentIndex(DocumentIndex docIndex) {
+
+    }
+
+    @Override
+    public void dumpDocumentIndexEntry(Map.Entry<Integer, DocumentIndexEntry> entry) {
 
     }
 

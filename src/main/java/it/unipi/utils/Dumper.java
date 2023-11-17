@@ -5,6 +5,7 @@ package it.unipi.utils;
 
 import it.unipi.model.DocumentIndex;
 import it.unipi.model.Vocabulary;
+import it.unipi.model.implementation.DocumentIndexEntry;
 import it.unipi.model.implementation.VocabularyEntry;
 
 import java.util.Map;
@@ -21,6 +22,7 @@ public interface Dumper {
     public boolean start(String filename);
     public void dumpEntry(Map.Entry<String, VocabularyEntry> entry);
     public void dumpDocumentIndex(DocumentIndex docIndex);
+    public void dumpDocumentIndexEntry(Map.Entry<Integer, DocumentIndexEntry> entry);
     public void dumpVocabulary(Vocabulary vocabulary);
 
     /**

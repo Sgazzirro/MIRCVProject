@@ -108,6 +108,16 @@ public class DumpTXT implements Dumper {
             throw new RuntimeException(e);
         }
     }
+
+    @Override
+    public void dumpDocumentIndexEntry(Map.Entry<Integer, DocumentIndexEntry> entry) {
+        try {
+            writerDIX.write(entry.getKey().toString() + "," + entry.getValue().getDocumentLength() + "\n");
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     @Override
     public boolean end() {
         try{

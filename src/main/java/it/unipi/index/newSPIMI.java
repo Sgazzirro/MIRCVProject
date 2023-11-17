@@ -3,9 +3,12 @@ package it.unipi.index;
 import it.unipi.model.DocumentStream;
 import it.unipi.model.PostingList;
 import it.unipi.model.implementation.Document;
+import it.unipi.model.implementation.DocumentIndexEntry;
 import it.unipi.model.implementation.PostingListImpl;
 import it.unipi.model.implementation.VocabularyEntry;
+import it.unipi.utils.Dumper;
 import it.unipi.utils.Fetcher;
+import it.unipi.utils.FetcherCompressed;
 import it.unipi.utils.FetcherTXT;
 
 import javax.print.Doc;
@@ -13,7 +16,6 @@ import java.io.*;
 import java.util.*;
 
 public class newSPIMI {
-    // FIXME: UnderLock [Angelo]
     private DocumentStream stream;
     private InMemoryIndexing indexer;
     private long block_size = 10000;
@@ -52,8 +54,16 @@ public class newSPIMI {
         }
 
         // TODO: Implement
-        mergeAllBlocks();
+        List<Fetcher> readVocBuffers = new ArrayList<>();
+        for (int i = 0; i < next_block; i++) {
+            readVocBuffers.add(new FetcherTXT());
+            readVocBuffers.get(i).start("data/blocks/_" + i);
+        }
+        mergeAllBlocks(readVocBuffers);
+        concatenateDocIndexes(readVocBuffers);
     }
+
+
 
     public void invertBlock(String filename) {
         // Get memory state
@@ -77,14 +87,14 @@ public class newSPIMI {
 
         // Dump when out of memory
         indexer.dumpVocabulary();
-        //indexer.dumpDocumentIndex();
+        indexer.dumpDocumentIndex();
 
         // Reset dumper
         indexer.close();
         next_block++;
     }
 
-    private void mergeAllBlocks() {
+    private void mergeAllBlocks(List<Fetcher> readVocBuffers) {
         // Key idea to merge all blocks together
         // To do the merging, we open all block files simultaneously
         // We maintain small read buffers for blocks we are reading
@@ -94,14 +104,12 @@ public class newSPIMI {
         // All postings lists for this termID are read and merged, and the merged list is written back to disk.
         // Each read buffer is refilled from its file when necessary.
 
-        List<Fetcher> readVocBuffers = new ArrayList<>();
+        //List<Fetcher> readVocBuffers = new ArrayList<>();
         List<Boolean> processed = new ArrayList<>();
         indexer.setup("data/");
 
         for (int i = 0; i < next_block; i++) {
-            readVocBuffers.add(new FetcherTXT());
             processed.add(true);
-            readVocBuffers.get(i).start("data/blocks/_" + i);
         }
 
         int blocksClosed = 0;
@@ -167,10 +175,23 @@ public class newSPIMI {
                 throw new RuntimeException(e);
             }
         }
-        indexer.close();
+        //indexer.close();
 
     }
 
+    private void concatenateDocIndexes(List<Fetcher> readers) {
+        //indexer.setup("data/");
+
+        for(int i = 0; i < next_block; i++){
+            // readers.get(i).start("_"+i+"document_index.csv");
+            Map.Entry<Integer, DocumentIndexEntry> entry;
+            while((entry = readers.get(i).loadDocEntry()) != null){
+                indexer.dumpDocumentIndexLine(entry);
+            }
+            readers.get(i).end();
+        }
+        indexer.close();
+    }
 
     private VocabularyEntry mergeEntries(List<VocabularyEntry> toMerge) throws IOException {
 
