@@ -102,7 +102,9 @@ public class DumpCompressed implements Dumper{
 
     @Override
     public void dumpVocabulary(Vocabulary vocabulary) {
-
+        for (Map.Entry<String, VocabularyEntry> entry : vocabulary.getEntries()) {
+            dumpEntry(entry);
+        }
     }
 
     @Override
