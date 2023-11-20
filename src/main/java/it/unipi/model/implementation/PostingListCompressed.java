@@ -1,5 +1,6 @@
 package it.unipi.model.implementation;
 
+import it.unipi.model.Encoder;
 import it.unipi.model.PostingList;
 import it.unipi.utils.EliasFanoStruct;
 import it.unipi.utils.FetcherCompressed;
@@ -10,6 +11,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class PostingListCompressed implements PostingList {
+
     // ELIAS FANO - DOC ID
     private int length;
     private long startOffsetEF;
@@ -22,22 +24,26 @@ public class PostingListCompressed implements PostingList {
     // SIMPLE9/UNARY - TERM FREQUENCIES
     private List<Integer> termFrequencyBlockList;
 
+    private Encoder encoder = new EliasFano();
+
     public PostingListCompressed(Integer length, long startOffsetEF, long endOffsetEF) {
         // VERRà UTILIZZATA DURANTE LA FASE DI SCORING
         this.length = length;
         this.startOffsetEF = startOffsetEF;
         this.endOffsetEF = endOffsetEF;
+
         // da modificare!!
         FetcherCompressed fc = new FetcherCompressed();
         String filename="boh";
         fc.start(filename);
         compressedDocIdList = fc.fetchDocIdListCompressed(startOffsetEF, endOffsetEF);
         fc.end();
-        if(compressedDocIdList!=null){
-            EliasFanoStruct efs = fc.fetchDocIdSubList(compressedDocIdList, 0, 0);
-            docIdBlockList = EliasFano.decode(efs);
-            compressedDocIdListOffset = efs.getReadOffset();
-            pointerDocIdBlockList=0;
+
+        if (compressedDocIdList != null) {
+            byte[] eliasFanoBytes = fc.fetchDocIdSubList(compressedDocIdList, 0, 0L);
+            docIdBlockList = encoder.decode(eliasFanoBytes);
+            compressedDocIdListOffset = eliasFanoBytes.length;
+            pointerDocIdBlockList = 0;
         }
     }
 
@@ -64,20 +70,19 @@ public class PostingListCompressed implements PostingList {
         }
         else{
             FetcherCompressed fc = new FetcherCompressed();
-            EliasFanoStruct efs = fc.fetchDocIdSubList(compressedDocIdList, 0, compressedDocIdListOffset);  // metto docId 0 di modo che skippando al blocco puntato da compressedDocListOffset, sicuramente prenderò il blocco subito successivo
-            if(efs!=null){
-                docIdBlockList=EliasFano.decode(efs);
-                pointerDocIdBlockList=0;
-                compressedDocIdListOffset=efs.getReadOffset();
-            }
+            byte[] eliasFanoBytes = fc.fetchDocIdSubList(compressedDocIdList, 0, compressedDocIdListOffset); // metto docId 0 di modo che skippando al blocco puntato da compressedDocListOffset, sicuramente prenderò il blocco subito successivo
+
+            docIdBlockList = encoder.decode(eliasFanoBytes);
+            pointerDocIdBlockList=0;
+            compressedDocIdListOffset = compressedDocIdListOffset + eliasFanoBytes.length;
             // else throw new EOFException (non dovrebbe succedere mai se uno chiama hasNext, ma chissà....
         }
     }
 
     @Override
     public void nextGEQ(int docId) {
-        if(docIdBlockList.get(docIdBlockList.size()-1)>docId){
-            for(int i=pointerDocIdBlockList; i<docIdBlockList.size(); i++){
+        if (docIdBlockList.get(docIdBlockList.size()-1) > docId){
+            for (int i=pointerDocIdBlockList; i<docIdBlockList.size(); i++){
                 if(docIdBlockList.get(i)>=docId){
                     pointerDocIdBlockList=i;
                     return;
@@ -86,12 +91,11 @@ public class PostingListCompressed implements PostingList {
         }
         // devo scorrere al nuovo blocco
         FetcherCompressed fc = new FetcherCompressed();
-        EliasFanoStruct efs = fc.fetchDocIdSubList(compressedDocIdList, docId, compressedDocIdListOffset);
-        if(efs!=null){
-            docIdBlockList=EliasFano.decode(efs);
-            pointerDocIdBlockList=0;
-            compressedDocIdListOffset=efs.getReadOffset();
-        }
+        byte[] eliasFanoBytes = fc.fetchDocIdSubList(compressedDocIdList, docId, compressedDocIdListOffset);
+
+        docIdBlockList = encoder.decode(eliasFanoBytes);
+        pointerDocIdBlockList = 0;
+        compressedDocIdListOffset = compressedDocIdListOffset + eliasFanoBytes.length;
         // else throw new EOFException (non dovrebbe succedere mai se uno chiama hasNext, ma chissà....
     }
 

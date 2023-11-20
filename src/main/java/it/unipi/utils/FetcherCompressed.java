@@ -55,7 +55,7 @@ public class FetcherCompressed implements Fetcher{
          */
     }
 
-    public byte[] fetchDocIdListCompressed(long byteOffsetStart, long byteOffsetEnd){
+    public byte[] fetchDocIdListCompressed(long byteOffsetStart, long byteOffsetEnd) {
         byte[] docIdArrayCompressed = new byte[(int) (byteOffsetEnd-byteOffsetStart)];
         try{
             if (opened){
@@ -74,7 +74,7 @@ public class FetcherCompressed implements Fetcher{
         return null;
     }
 
-    public EliasFanoStruct fetchDocIdSubList(byte[] compressedDocIds, int docId, long readOffsetEF){
+    public byte[] fetchDocIdSubList(byte[] compressedDocIds, int docId, Long readOffsetEF){
         // skips unnecessary lists
         try (
                 ByteArrayInputStream bais = new ByteArrayInputStream(compressedDocIds);
@@ -83,7 +83,7 @@ public class FetcherCompressed implements Fetcher{
             if(readOffsetEF!=dis.skip(readOffsetEF)){
                 throw new IOException();
             }
-            while(true){
+            while(true) {
                 // Read integers from the byte array
                 int U = dis.readInt();
                 int n = dis.readInt();
@@ -96,19 +96,24 @@ public class FetcherCompressed implements Fetcher{
                 int bytesToSkip = (int) Math.ceil((float) nTotLowBits / 8) + (int) Math.ceil((float) nTotHighBits / 8);
 
                 if (U<docId) {
-                    // i have to read the next block
-                    readOffsetEF+=bytesToSkip;
+                    // I have to read the next block
+                    readOffsetEF += bytesToSkip;
                     if (bytesToSkip != bais.skip(bytesToSkip)) {
                         throw new IOException();
                     }
                 }
-                else{
-                    byte [] lowBytes = new byte[(int) Math.ceil((float) nTotLowBits/8)];
-                    byte [] highBytes = new byte[(int) Math.ceil((float) nTotHighBits/8)];
-                    readOffsetEF+=dis.read(highBytes);
-                    readOffsetEF+=dis.read(lowBytes);
+                else {
+                    int numLowBytes = (int) Math.ceil((float) nTotLowBits/8);
+                    int numHighBytes = (int) Math.ceil((float) nTotHighBits/8);
+
+                    byte[] byteArray = new byte[4 + 4 + numLowBytes + numHighBytes];
+                    ByteUtils.intToBytes(U, byteArray, 0);
+                    ByteUtils.intToBytes(n, byteArray, 4);
+                    readOffsetEF += dis.read(byteArray, 8, numHighBytes);
+                    readOffsetEF += dis.read(byteArray, 8+numHighBytes, numLowBytes);
                     dis.close();
-                    return new EliasFanoStruct(U, n, lowBytes, highBytes, readOffsetEF);
+
+                    return byteArray;
                 }
             }
         } catch (EOFException e){

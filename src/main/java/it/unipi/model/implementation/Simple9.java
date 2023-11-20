@@ -1,9 +1,14 @@
 package it.unipi.model.implementation;
 
+import it.unipi.model.Encoder;
+import it.unipi.utils.ByteUtils;
+
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-public class Simple9 {
+public class Simple9 implements Encoder {
 
     // Each block is 4 byte large
     //  - First 4 bit describe the layout of the other 28 bits
@@ -28,9 +33,9 @@ public class Simple9 {
             {28, 1,  0, 128*128*128*128-1}
     };
 
-    // Encode a list of numbers using the Simple9 compression algorithm
-    public static int[] encode(List<Integer> intList) {
-        List<Integer> byteList = new ArrayList<>();
+    public byte[] encode(List<Integer> intList) {
+        // Encode a list of numbers using the Simple9 compression algorithm
+        List<Integer> blockList = new ArrayList<>();
 
         int conf, block; // Encode a block as an int (4 byte long)
         while (!intList.isEmpty()) {
@@ -49,27 +54,39 @@ public class Simple9 {
             block <<= CONFIGURATIONS[conf][2];
             block <<= (CONFIGURATIONS[conf][1] - blockEnd) * nBits;     // Only if the list is ended and the block is incomplete
 
-            byteList.add(block);
+            blockList.add(block);
         }
 
-        return byteList.stream().mapToInt(Integer::intValue).toArray();
+        byte[] byteArray = new byte[4 * blockList.size()];
+        int offset = 0;
+        for (int b : blockList) {
+            ByteUtils.intToBytes(b, byteArray, offset);
+            offset += 4;
+        }
+
+        return byteArray;
     }
 
-    public static List<Integer> decode(int[] byteList) {
+    public List<Integer> decode(byte[] byteList) {
         List<Integer> intList = new ArrayList<>();
 
-        int conf;
-        for (int b : byteList) {
+        // Read 4 bytes at a time
+        for (int offset = 0; offset < byteList.length; offset += 4) {
+            // Convert the 4 bytes to int
+            int b = ByteUtils.bytesToInt(byteList, offset);
             // The first 4 bits represent the configuration of the block
-            conf = b >>> 28;
+            int conf = b >>> 28;
 
             int nBits = CONFIGURATIONS[conf][0];
-            // Get only the bits we are interested in: for example if nBits = 4
-            // then mask = [0....00001111]_2
+            // Get only the bits we are interested in: for example if nBits = 3
+            // then mask = [0....00000111]_2
             int mask = (1 << nBits) - 1;
 
+            // Example: if nBits = 3
+            //  - first get  0000xxx0000000...
+            //  - second get 0000000xxx0000... and so on
             for (int shift = 28-nBits; shift >= 0; shift -= nBits)
-                intList.add( (b >>> shift) & mask);
+                intList.add( (b >>> shift) & mask );
         }
 
         return intList;
@@ -96,6 +113,6 @@ public class Simple9 {
 
         // If we reached this point it means that the first number of the list
         // is not representable in 28 bits
-        throw new RuntimeException("Simple9 error: cannot encode n = " + intList.get(0) + " (n > 2^28)");
+        throw new RuntimeException("Simple9 error: cannot encode n = " + intList.get(0) + " (n >= 2^28)");
     }
 }

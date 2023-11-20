@@ -40,14 +40,16 @@ public class DumpTXT implements Dumper {
         }
         return true;
     }
+
     @Override
     public void dumpVocabulary(Vocabulary vocabulary) {
         for (Map.Entry<String, VocabularyEntry> entry : vocabulary.getEntries()) {
-            dumpEntry(entry);
+            dumpVocabularyEntry(entry);
         }
     }
+
     @Override
-    public void dumpEntry(Map.Entry<String, VocabularyEntry> entry) {
+    public void dumpVocabularyEntry(Map.Entry<String, VocabularyEntry> entry) {
         try {
             String term = entry.getKey();
             VocabularyEntry vocEntry = entry.getValue();
@@ -91,6 +93,7 @@ public class DumpTXT implements Dumper {
 
         return new long[]{offsetID, offsetTF};
     }
+
     @Override
     public void dumpDocumentIndex(DocumentIndex docIndex) {
         StringBuilder result = new StringBuilder();

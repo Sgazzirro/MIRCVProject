@@ -1,6 +1,7 @@
 package it.unipi.utils;
 
 import it.unipi.model.DocumentIndex;
+import it.unipi.model.Encoder;
 import it.unipi.model.PostingList;
 import it.unipi.model.Vocabulary;
 import it.unipi.model.implementation.DocumentIndexEntry;
@@ -10,7 +11,6 @@ import it.unipi.model.implementation.VocabularyEntry;
 import java.io.DataOutputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -39,13 +39,14 @@ public class DumpCompressed implements Dumper{
     }
 
     @Override
-    public void dumpEntry(Map.Entry<String, VocabularyEntry> entry) {
+    public void dumpVocabularyEntry(Map.Entry<String, VocabularyEntry> entry) {
         // TO REVIEW: QUALCUNO DOVRà PRENDERSI START OFFSET E ENDOFFSET
         String term = entry.getKey();
         VocabularyEntry vocabularyEntry = entry.getValue();
 
         PostingList postingList = vocabularyEntry.getPostingList();
         // ELIAS FANO
+        Encoder eliasFano = new EliasFano();
         List<Integer> docIdList = postingList.getDocIdList();
 
         try {
@@ -57,12 +58,9 @@ public class DumpCompressed implements Dumper{
 
             for (int i = 0; i < docIdList.size(); i += Constants.BLOCK_DIM_ELIASFANO) {
                 List<Integer> blockDocIdList = docIdList.subList(i, Math.min(docIdList.size(), i + Constants.BLOCK_DIM_ELIASFANO));
-                EliasFanoStruct efs = EliasFano.encode((ArrayList<Integer>) blockDocIdList);
+                byte[] byteList = eliasFano.encode(blockDocIdList);
 
-                dosDocIds.writeInt(efs.getU());
-                dosDocIds.writeInt(efs.getN());
-                dosDocIds.write(efs.getHighBytes());
-                dosDocIds.write(efs.getLowBytes());
+                dosDocIds.write(byteList);
             }
 
             long endOffset = fosDocIds.getChannel().position();
@@ -103,7 +101,7 @@ public class DumpCompressed implements Dumper{
     @Override
     public void dumpVocabulary(Vocabulary vocabulary) {
         for (Map.Entry<String, VocabularyEntry> entry : vocabulary.getEntries()) {
-            dumpEntry(entry);
+            dumpVocabularyEntry(entry);
         }
     }
 

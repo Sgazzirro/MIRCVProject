@@ -1,13 +1,16 @@
 package it.unipi.model.implementation;
 
-import it.unipi.model.EncoderInterface;
+import it.unipi.model.Encoder;
+import it.unipi.utils.ByteUtils;
 import it.unipi.utils.EliasFanoStruct;
 
-import java.io.*;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.util.*;
 
-public class EliasFano {
-    public static EliasFanoStruct encode (ArrayList<Integer> array){
+public class EliasFano implements Encoder {
+
+    public byte[] encode(List<Integer> array) {
         // data needed to compress
         int U = array.get(array.size()-1);
         int n = array.size();
@@ -44,20 +47,38 @@ public class EliasFano {
             index+=integerToUnary(value).length()+1;
         }
 
-        return new EliasFanoStruct(U, n, lowBitset.toByteArray(), highBitset.toByteArray());
+        // Convert everything as byte array
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+
+        // Write U and n byte by byte
+        outputStream.write(U >> 24); outputStream.write(U >> 16); outputStream.write(U >> 8); outputStream.write(U);
+        outputStream.write(n >> 24); outputStream.write(n >> 16); outputStream.write(n >> 8); outputStream.write(n);
+
+        try {
+            outputStream.write(lowBitset.toByteArray());
+            outputStream.write(highBitset.toByteArray());
+        } catch (IOException e) {
+            // This exception can never be thrown
+            System.err.println("Unknown error: Elias Fano");
+            e.printStackTrace();
+        }
+
+        return outputStream.toByteArray();
     }
 
-    public static ArrayList<Integer> decode (EliasFanoStruct efs){
-        ArrayList<Integer> decoded = null;
+    public List<Integer> decode(byte[] byteList) {
+        List<Integer> decoded = new ArrayList<>();
+        int U = ByteUtils.bytesToInt(byteList, 0);
+        int n = ByteUtils.bytesToInt(byteList, 4);
+
         // number of bits
-        int lowHalfLength = (int) Math.ceil(Math.log((float)efs.getU()/efs.getN())/Math.log(2));
-        int highHalfLength = (int) Math.ceil(Math.log(efs.getU())/Math.log(2))-lowHalfLength;
-        int nTotHighBits = (int) (efs.getN()+Math.pow(2,highHalfLength));
+        int lowHalfLength = (int) Math.ceil(Math.log((float) U / n) / Math.log(2));
+        int highHalfLength = (int) Math.ceil(Math.log(U) / Math.log(2)) - lowHalfLength;
+        int nTotHighBits = (int) (n + Math.pow(2, highHalfLength));
 
-        BitSet lowBitset = BitSet.valueOf(efs.getLowBytes());
-        BitSet highBitset = BitSet.valueOf(efs.getHighBytes());
-
-        decoded=new ArrayList<>();
+        BitSet bytes = BitSet.valueOf(byteList);
+        BitSet lowBitset = bytes.get(8, 8+nTotHighBits);
+        BitSet highBitset = bytes.get(8+nTotHighBits, bytes.length());
 
         int groupValue = 0;
         int lowBitsetIndex =0;
@@ -66,7 +87,7 @@ public class EliasFano {
                 int shifted = groupValue;
                 for(int j=lowBitsetIndex*lowHalfLength; j<lowBitsetIndex*lowHalfLength+lowHalfLength; j++){
                     int bitValue = lowBitset.get(j)? 1:0;
-                    shifted = shifted<<1|bitValue;
+                    shifted = shifted << 1 | bitValue;
                 }
                 lowBitsetIndex++;
                 decoded.add(shifted);
@@ -75,6 +96,7 @@ public class EliasFano {
 
         return decoded;
     }
+
     private static BitSet extractLowBitset(int number, int nLowBits) {
         // Create a BitSet with nLowBits bits
         BitSet bitSet = new BitSet(0);
@@ -100,11 +122,9 @@ public class EliasFano {
         return unaryBitset;
     }
 
-    private static BitSet append(BitSet bitset1, BitSet bitset2, int nbits, int index){
+    private static void append(BitSet bitset1, BitSet bitset2, int nbits, int index) {
         // appends bitset2 to bitset1, for nbits, starting from index.
-        for(int i=0; i<nbits; i++){
+        for (int i=0; i<nbits; i++)
             bitset1.set(index++, bitset2.get(i));
-        }
-        return bitset1;
     }
 }

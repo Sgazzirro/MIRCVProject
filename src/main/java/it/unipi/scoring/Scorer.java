@@ -25,9 +25,8 @@ public class Scorer {
 
         @Override
         public String toString() {
-            return "{" +
-                    "docId=" + docId +
-                    ", score=" + String.format("%.3f", score) +
+            return "{docId=" + docId +
+                    ", score=" + String.format("%.4f", score) +
                     '}';
         }
     }

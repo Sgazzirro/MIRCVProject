@@ -3,13 +3,13 @@ package it.unipi.utils;
 public class EliasFanoStruct {
     private int U;
     private int n;
-    private byte [] lowBytes;
-    private byte [] highBytes;
+    private byte[] lowBytes;
+    private byte[] highBytes;
 
-    private long readOffset=0;
+    private long readOffset;
 
-    public EliasFanoStruct(int u, int n, byte[] lowBytes, byte[] highBytes, long readOffset) {
-        U = u;
+    public EliasFanoStruct(int U, int n, byte[] lowBytes, byte[] highBytes, long readOffset) {
+        this.U = U;
         this.n = n;
         this.lowBytes = lowBytes;
         this.highBytes = highBytes;

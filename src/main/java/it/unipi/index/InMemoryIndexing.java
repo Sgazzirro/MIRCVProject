@@ -263,7 +263,7 @@ public class InMemoryIndexing {
     void dumpVocabularyLine(Map.Entry<String, VocabularyEntry> entry) throws IOException {
         // Onto the vocabulary
         // Term | DF | UpperBound | IDF | OffsetID | OffsetTF | #Posting
-        dumper.dumpEntry(entry);
+        dumper.dumpVocabularyEntry(entry);
     }
 
     void dumpDocumentIndex(){

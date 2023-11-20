@@ -20,7 +20,7 @@ public interface Dumper {
      * @return whether the stream has been open correctly or an IOException has been raised
      */
     public boolean start(String filename);
-    public void dumpEntry(Map.Entry<String, VocabularyEntry> entry);
+    public void dumpVocabularyEntry(Map.Entry<String, VocabularyEntry> entry);
     public void dumpDocumentIndex(DocumentIndex docIndex);
     public void dumpDocumentIndexEntry(Map.Entry<Integer, DocumentIndexEntry> entry);
     public void dumpVocabulary(Vocabulary vocabulary);
