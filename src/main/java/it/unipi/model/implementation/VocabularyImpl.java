@@ -1,5 +1,6 @@
 package it.unipi.model.implementation;
 import it.unipi.model.Vocabulary;
+import it.unipi.model.VocabularyEntry;
 
 import java.io.Serializable;
 import java.util.*;

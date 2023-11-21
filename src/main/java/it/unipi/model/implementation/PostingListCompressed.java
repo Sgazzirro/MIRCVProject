@@ -2,6 +2,7 @@ package it.unipi.model.implementation;
 
 import it.unipi.model.Encoder;
 import it.unipi.model.PostingList;
+import it.unipi.utils.ByteUtils;
 import it.unipi.utils.EliasFanoStruct;
 import it.unipi.utils.FetcherCompressed;
 
@@ -10,168 +11,163 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-public class PostingListCompressed implements PostingList {
+public class PostingListCompressed extends PostingList {
 
-    // ELIAS FANO - DOC ID
-    private int length;
-    private long startOffsetEF;
-    private long endOffsetEF;
-    private byte[] compressedDocIdList;
-    long compressedDocIdListOffset;
-    private List<Integer> docIdBlockList;
-    int pointerDocIdBlockList;
+    public static class ByteBlock {
 
-    // SIMPLE9/UNARY - TERM FREQUENCIES
-    private List<Integer> termFrequencyBlockList;
+        private byte[] bytes;
+        private long offset;
 
-    private Encoder encoder = new EliasFano();
+        public ByteBlock(byte[] bytes, long offset) {
+            this.bytes = bytes;
+            this.offset = offset;
+        }
 
-    public PostingListCompressed(Integer length, long startOffsetEF, long endOffsetEF) {
-        // VERRà UTILIZZATA DURANTE LA FASE DI SCORING
-        this.length = length;
-        this.startOffsetEF = startOffsetEF;
-        this.endOffsetEF = endOffsetEF;
+        public byte[] getBytes() {
+            return bytes;
+        }
 
-        // da modificare!!
-        FetcherCompressed fc = new FetcherCompressed();
-        String filename="boh";
-        fc.start(filename);
-        compressedDocIdList = fc.fetchDocIdListCompressed(startOffsetEF, endOffsetEF);
-        fc.end();
-
-        if (compressedDocIdList != null) {
-            byte[] eliasFanoBytes = fc.fetchDocIdSubList(compressedDocIdList, 0, 0L);
-            docIdBlockList = encoder.decode(eliasFanoBytes);
-            compressedDocIdListOffset = eliasFanoBytes.length;
-            pointerDocIdBlockList = 0;
+        public long getOffset() {
+            return offset;
         }
     }
 
-    public PostingListCompressed(){
-        // VERRà UTILIZZATO DURANTE LA FASE DI INDEXING
-        docIdBlockList = new ArrayList<>();
-        termFrequencyBlockList = new ArrayList<>();
+    private byte[] compressedDocIds;
+    private byte[] compressedTermFrequencies;
+
+    private List<Integer> docIdsBlockList;           // ELIAS FANO    - DOC IDS
+    private List<Integer> termFrequenciesBlockList;  // SIMPLE9/UNARY - TERM FREQUENCIES
+    private int blockPointer;
+    private long docIdsBlockPointer;                    // This represents the offset of the next docIdsBlock
+    private long termFrequenciesBlockPointer;           // This represents the index of the actual block of term frequencies
+
+    private final Encoder docIdsEncoder = new EliasFano();
+    private final Encoder termFrequenciesEncoder = new Simple9(true);
+    FetcherCompressed fetcher = new FetcherCompressed();
+
+    public PostingListCompressed(long docIdsOffset, long termFreqOffset, int docIdsLength, int termFreqLength, double idf) {
+        super(docIdsOffset, termFreqOffset, docIdsLength, termFreqLength, idf);
+        docIdsBlockList = new ArrayList<>();
+        termFrequenciesBlockList = new ArrayList<>();
+        
+        // Load the blocks corresponding to these offset provided to the constructor
+        String path = "data/";
+        fetcher.start(path);
+        loadPosting();
+    }
+
+    public PostingListCompressed() {
+        docIdsBlockList = new ArrayList<>();
+        termFrequenciesBlockList = new ArrayList<>();
     }
 
     @Override
     public int docId() {
-        return docIdBlockList.get(pointerDocIdBlockList);
+        return docIdsBlockList.get(blockPointer);
+    }
+
+    @Override
+    public double score() {
+        // TODO - To implement
+        return 0;
     }
 
     @Override
     public boolean hasNext() {
-        return !(compressedDocIdListOffset==endOffsetEF && pointerDocIdBlockList==docIdBlockList.size()-1);
+        long docIdsEndOffset = getDocIdsOffset() + getDocIdsLength();
+        return (blockPointer + 1 < docIdsBlockList.size()) || (docIdsBlockPointer < docIdsEndOffset);
     }
 
     @Override
     public void next() {
-        if(pointerDocIdBlockList + 1< docIdBlockList.size()){
-            pointerDocIdBlockList++;
-        }
-        else{
-            FetcherCompressed fc = new FetcherCompressed();
-            byte[] eliasFanoBytes = fc.fetchDocIdSubList(compressedDocIdList, 0, compressedDocIdListOffset); // metto docId 0 di modo che skippando al blocco puntato da compressedDocListOffset, sicuramente prenderò il blocco subito successivo
-
-            docIdBlockList = encoder.decode(eliasFanoBytes);
-            pointerDocIdBlockList=0;
-            compressedDocIdListOffset = compressedDocIdListOffset + eliasFanoBytes.length;
-            // else throw new EOFException (non dovrebbe succedere mai se uno chiama hasNext, ma chissà....
-        }
+        if (blockPointer + 1 < docIdsBlockList.size())
+            blockPointer++;
+        else
+            loadNextBlock();
     }
 
     @Override
     public void nextGEQ(int docId) {
-        if (docIdBlockList.get(docIdBlockList.size()-1) > docId){
-            for (int i=pointerDocIdBlockList; i<docIdBlockList.size(); i++){
-                if(docIdBlockList.get(i)>=docId){
-                    pointerDocIdBlockList=i;
-                    return;
+        while (true) {
+            // If we are in the correct block advance the pointer to the right place
+            if (docIdsBlockList.get(docIdsBlockList.size() - 1) > docId) {
+                for (int i = blockPointer; i < docIdsBlockList.size(); i++) {
+                    if (docIdsBlockList.get(i) >= docId) {
+                        blockPointer = i;
+                        return;
+                    }
                 }
             }
-        }
-        // devo scorrere al nuovo blocco
-        FetcherCompressed fc = new FetcherCompressed();
-        byte[] eliasFanoBytes = fc.fetchDocIdSubList(compressedDocIdList, docId, compressedDocIdListOffset);
 
-        docIdBlockList = encoder.decode(eliasFanoBytes);
-        pointerDocIdBlockList = 0;
-        compressedDocIdListOffset = compressedDocIdListOffset + eliasFanoBytes.length;
-        // else throw new EOFException (non dovrebbe succedere mai se uno chiama hasNext, ma chissà....
+            // Else get the next block
+            loadNextBlock();
+        }
     }
 
     @Override
-    public void addPosting(int docId) {
-        addPosting(docId,1);
-    }
-
-    @Override
-    public void addPosting(int docId, int termFreq) {
-        if (docIdBlockList.isEmpty() || docIdBlockList.get(docIdBlockList.size()-1)!=docId){
-            docIdBlockList.add(docId);
-            termFrequencyBlockList.add(termFreq);
+    public boolean addPosting(int docId, int termFreq) {
+        if (docIdsBlockList.isEmpty() || docIdsBlockList.get(docIdsBlockList.size()-1)!=docId){
+            docIdsBlockList.add(docId);
+            termFrequenciesBlockList.add(termFreq);
+            return true;
         }
+
         // se il docId è già presente come ultima entry, aumenta solo la term freq
-        termFrequencyBlockList.set(termFrequencyBlockList.size()-1,termFrequencyBlockList.get(termFrequencyBlockList.size()-1)+termFreq);
+        termFrequenciesBlockList.set(termFrequenciesBlockList.size() - 1, termFrequenciesBlockList.get(termFrequenciesBlockList.size() - 1) + termFreq);
+        return false;
     }
 
+    @Override
+    public boolean loadPosting(String docIdsFilename, String termFreqFilename) {
+        try {
+            compressedDocIds = fetcher.fetchCompressedDocIds(getDocIdsOffset(), getDocIdsOffset() + getDocIdsLength());
+            compressedTermFrequencies = fetcher.fetchCompressedTermFrequencies(getTermFreqOffset(), getTermFreqOffset() + getTermFreqLength());
+
+            docIdsBlockPointer = termFrequenciesBlockPointer = 0;
+            loadNextBlock();
+
+            return true;
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+
+    private void loadNextBlock() {
+        ByteBlock docIdsBlock = fetcher.fetchDocIdsBlock(compressedDocIds, 0, docIdsBlockPointer);  // Read the first block
+        docIdsBlockPointer = docIdsBlock.getOffset();
+        docIdsBlockList = docIdsEncoder.decode(docIdsBlock.getBytes());
+
+        ByteBlock termFrequenciesBlock = fetcher.fetchNextTermFrequenciesBlock(compressedTermFrequencies, termFrequenciesBlockPointer);
+        termFrequenciesBlockPointer = termFrequenciesBlock.getOffset();
+        termFrequenciesBlockList = termFrequenciesEncoder.decode(termFrequenciesBlock.getBytes());
+
+        blockPointer = 0;
+    }
+
+    /*      Abbiamo detto che verranno mergiate solo postingLists non compresse
     @Override
     public int mergePosting(PostingList toMerge) {
+        if (!(toMerge instanceof PostingListImpl))
+            throw new RuntimeException("Cannot merge PostingLists with different implementations");
+
+        PostingListCompressed other = (PostingListCompressed) toMerge;
+
         // chiamato solo in fase di indexing
-        length += toMerge.getLength();
+        length += other.getLength();
         // devo concatenare i 2 array di bytes
         try {
             ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-            outputStream.write(compressedDocIdList);
-            outputStream.write(toMerge.getCompressedDocIdArray());
-            compressedDocIdList = outputStream.toByteArray();
-            return compressedDocIdList.length;
+            outputStream.write(compressedDocIds);
+            outputStream.write(other.compressedDocIds);
+            compressedDocIds = outputStream.toByteArray();
+            return compressedDocIds.length;
         } catch (IOException e){
             System.err.println("Error in mergePosting");
             e.printStackTrace();
         }
         return 0;
     }
+     */
 
-    @Override
-    public List<Integer> getDocIdList() {
-        return docIdBlockList;
-    }
-
-    @Override
-    public List<Integer> getTermFrequencyList() {
-        return termFrequencyBlockList;
-    }
-
-    @Override
-    public long getOffsetID() {
-        // da fare
-        return 0;
-    }
-
-    @Override
-    public long getOffsetTF() {
-        // da fare
-        return 0;
-    }
-
-    @Override
-    public int getLength() {
-        return length;
-    }
-
-    @Override
-    public Double getTermIdf() {
-        // da fare
-        return null;
-    }
-    @Override
-    public double score() {
-        // da fare
-        return 0;
-    }
-
-    @Override
-    public byte[] getCompressedDocIdArray() {
-        return compressedDocIdList;
-    }
 }

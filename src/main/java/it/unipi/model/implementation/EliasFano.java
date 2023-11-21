@@ -2,7 +2,7 @@ package it.unipi.model.implementation;
 
 import it.unipi.model.Encoder;
 import it.unipi.utils.ByteUtils;
-import it.unipi.utils.EliasFanoStruct;
+import it.unipi.utils.Constants;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -55,8 +55,8 @@ public class EliasFano implements Encoder {
         outputStream.write(n >> 24); outputStream.write(n >> 16); outputStream.write(n >> 8); outputStream.write(n);
 
         try {
-            outputStream.write(lowBitset.toByteArray());
             outputStream.write(highBitset.toByteArray());
+            outputStream.write(lowBitset.toByteArray());
         } catch (IOException e) {
             // This exception can never be thrown
             System.err.println("Unknown error: Elias Fano");
@@ -77,8 +77,8 @@ public class EliasFano implements Encoder {
         int nTotHighBits = (int) (n + Math.pow(2, highHalfLength));
 
         BitSet bytes = BitSet.valueOf(byteList);
-        BitSet lowBitset = bytes.get(8, 8+nTotHighBits);
-        BitSet highBitset = bytes.get(8+nTotHighBits, bytes.length());
+        BitSet highBitset = bytes.get(8, 8+nTotHighBits);
+        BitSet lowBitset = bytes.get(8+nTotHighBits, bytes.length());
 
         int groupValue = 0;
         int lowBitsetIndex =0;

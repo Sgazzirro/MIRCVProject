@@ -14,103 +14,63 @@ import java.util.*;
  * Posting list object that implements {@link PostingList}.
  * Demanded to the load/write of postings from/into the secondary memory.
  */
-public class PostingListImpl implements PostingList {
-    private Double termIdf;
-    private Long offsetID;
-    private Long offsetTF;
-    private Integer length;
+public class PostingListImpl extends PostingList {
+
     private List<Integer> docIdList;
     private List<Integer> termFrequencyList;
-
-
     private int pointer;
 
     // Used when building the index
     public PostingListImpl() {
+        super();
         this.docIdList = new ArrayList<>();
         this.termFrequencyList = new ArrayList<>();
-        this.length = 0;
-        this.termIdf = 0.0;
-        this.pointer = 0;
     }
 
     // Used when reading the index
-    public PostingListImpl(Double IDF, Long offsetID, Long offsetTF, Integer len) {
-        this.offsetID = offsetID;
-        this.offsetTF = offsetTF;
-        this.termIdf = IDF;
-        this.length = len;
-        this.pointer = 0;
+    public PostingListImpl(long docIdsOffset, long termFreqOffset, int docIdsLength, int termFreqLength, double idf) {
+        super(docIdsOffset, termFreqOffset, docIdsLength, termFreqLength, idf);
+        this.docIdList = new ArrayList<>();
+        this.termFrequencyList = new ArrayList<>();
     }
 
-    public Double getTermIdf() {
-        return termIdf;
-    }
 
-    public int getLength() {
-        return length;
-    }
+    /**
+     * Concatenate the passed list to the current one, assuming that no sorting is required
+     * @param toMerge the posting list we have to merge to the current
+     * @return the length of the new list
+     */
+    public int mergePosting(PostingList toMerge) {
+        if (!(toMerge instanceof PostingListImpl))
+            throw new RuntimeException("Cannot merge PostingLists with different implementations");
 
-    public List<Integer> getDocIdList() {
-        return docIdList;
-    }
-
-    public List<Integer> getTermFrequencyList() {
-        return termFrequencyList;
-    }
-
-    @Override
-    public long getOffsetID() {
-        return offsetID;
-    }
-
-    @Override
-    public long getOffsetTF() {
-        return offsetTF;
-    }
-
-    public void setTermIdf(Double termIdf) {
-        this.termIdf = termIdf;
-    }
-
-    public int mergePosting(PostingList p2){
-        docIdList.addAll(p2.getDocIdList());
-        termFrequencyList.addAll(p2.getTermFrequencyList());
+        PostingListImpl other = (PostingListImpl) toMerge;
+        docIdList.addAll(other.getDocIds());
+        termFrequencyList.addAll(other.getTermFrequencies());
         return docIdList.size();
     }
 
-
-    public boolean loadPosting() {
-        return loadPosting(-1);
-    }
-
-    public boolean loadPosting(int blockNumber) {
+    @Override
+    public boolean loadPosting(String docIdsFilename, String termFreqFilename) {
         // Method that loads the posting list in memory if not present
         if (docIdList == null) {
             docIdList = new ArrayList<>();
             termFrequencyList = new ArrayList<>();
 
-            String idsFilename;
-            String freqFilename;
-            if(blockNumber < 0){
-                idsFilename = Constants.DOC_IDS_POSTING_FILE;
-                freqFilename = Constants.TF_POSTING_FILE;
-            }
-            else{
-                idsFilename = "./data/blocks/doc_ids" + blockNumber + ".txt";
-                freqFilename = "./data/blocks/term_frequencies" + blockNumber + ".txt";
-            }
             try (
-                    BufferedReader docIdsReader = new BufferedReader(new InputStreamReader(Files.newInputStream(Paths.get(idsFilename)), StandardCharsets.UTF_8));
-                    BufferedReader termFreqReader = new BufferedReader(new InputStreamReader(Files.newInputStream(Paths.get(freqFilename)), StandardCharsets.UTF_8));
+                    BufferedReader docIdsReader = new BufferedReader(new InputStreamReader(Files.newInputStream(Paths.get(docIdsFilename)), StandardCharsets.UTF_8));
+                    BufferedReader termFreqReader = new BufferedReader(new InputStreamReader(Files.newInputStream(Paths.get(termFreqFilename)), StandardCharsets.UTF_8))
             ) {
                 // Skip lines to reach the start of the posting list
-                docIdsReader.skip(offsetID);
-                termFreqReader.skip(offsetTF);
+                long docIdsOffset = getDocIdsOffset();
+                long termFreqOffset = getTermFreqOffset();
+                int length = getDocIdsLength();     // It should be the same as termFrequenciesLength
+                docIdsReader.skip(docIdsOffset);
+                termFreqReader.skip(termFreqOffset);
                 int count = 0;
 
                 String docIdsLine, termFreqLine;
-                while (count < this.length) {
+                while (count < length) {
                     docIdsLine = docIdsReader.readLine();
                     termFreqLine = termFreqReader.readLine();
                     if (docIdsLine == null || termFreqLine == null)
@@ -144,7 +104,7 @@ public class PostingListImpl implements PostingList {
         loadPosting();
 
         int tf = termFrequencyList.get(pointer);
-        return (1 + Math.log10(tf)) * termIdf;
+        return (1 + Math.log10(tf)) * getIdf();
     }
 
     @Override
@@ -155,10 +115,6 @@ public class PostingListImpl implements PostingList {
             throw new NoSuchElementException();
 
         pointer++;
-    }
-
-    public void reset() {
-        pointer = 0;
     }
 
     public boolean hasNext() {
@@ -174,15 +130,11 @@ public class PostingListImpl implements PostingList {
     }
 
     @Override
-    public void addPosting(int docId) {
-        addPosting(docId, 1);
-    }
-
-    public void addPosting(int docId, int termFrequency) {
+    public boolean addPosting(int docId, int termFrequency) {
         // Documents are supposed to be read sequentially with respect to docId
-        if(docIdList == null)
+        if (docIdList == null)
             docIdList = new ArrayList<>();
-        if(termFrequencyList == null)
+        if (termFrequencyList == null)
             termFrequencyList = new ArrayList<>();
 
         int lastIndex = docIdList.size()-1;
@@ -190,20 +142,20 @@ public class PostingListImpl implements PostingList {
         if (docIdList.isEmpty() || docIdList.get(lastIndex) != docId) {
             docIdList.add(docId);
             termFrequencyList.add(termFrequency);
-        } else
-            termFrequencyList.set(lastIndex, termFrequencyList.get(lastIndex)+termFrequency);
-
+            return true;
+        } else {
+            termFrequencyList.set(lastIndex, termFrequencyList.get(lastIndex) + termFrequency);
+            return false;
+        }
     }
 
-    public int dumpPostings(StringJoiner docIds, StringJoiner termFrequencies) {
-        for (int docId : docIdList)
-            docIds.add(Integer.toString(docId));
-        for (int tf : termFrequencyList)
-            termFrequencies.add(Integer.toString(tf));
-
-        return docIdList.size();
+    public List<Integer> getDocIds() {
+        return docIdList;
     }
 
+    public List<Integer> getTermFrequencies() {
+        return termFrequencyList;
+    }
 
     @Override
     public String toString() {
@@ -222,11 +174,6 @@ public class PostingListImpl implements PostingList {
 
     @Override
     public int hashCode() {
-        return Objects.hash(offsetID, docIdList, termFrequencyList);
-    }
-
-    @Override
-    public byte[] getCompressedDocIdArray() {
-        return new byte[0];
+        return Objects.hash(docIdList, termFrequencyList);
     }
 }

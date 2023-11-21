@@ -17,12 +17,22 @@ public class Simple9Test extends TestCase {
         simple9 = new Simple9();
     }
 
+    public void testSkippingPointer() {
+        Simple9 simple9Skipping = new Simple9(true);
+        List<Integer> list = Arrays.asList(1,3,6,2,10,11,2,
+                500, 128, 109);
+        byte[] bytes = simple9Skipping.encode(list);
+        int bytesToSkip = ByteUtils.bytesToInt(bytes);
+
+        assertEquals(bytesToSkip, 2*4);
+    }
+
     public void testEncodeAll1() {
         List<Integer> list = new ArrayList<>();
         for (int i = 0; i < 27; i++)
             list.add(1);
         byte[] bytes = simple9.encode(list);
-        int block = ByteUtils.bytesToInt(bytes, 0);
+        int block = ByteUtils.bytesToInt(bytes);
 
         assertEquals(getBinaryRepresentation(block), "00001111111111111111111111111110");
     }
@@ -30,7 +40,7 @@ public class Simple9Test extends TestCase {
     public void testEncodeSecondConfiguration() {
         List<Integer> list = Arrays.asList(1,2,3,1,1,3,3,2,1,2,1);
         byte[] bytes = simple9.encode(list);
-        int block = ByteUtils.bytesToInt(bytes, 0);
+        int block = ByteUtils.bytesToInt(bytes);
 
         assertEquals(getBinaryRepresentation(block), "00010110110101111110011001000000");
     }
@@ -38,7 +48,7 @@ public class Simple9Test extends TestCase {
     public void testFifthConfiguration() {
         List<Integer> list = Arrays.asList(6, 19, 31, 1, 10);
         byte[] bytes = simple9.encode(list);
-        int block = ByteUtils.bytesToInt(bytes, 0);
+        int block = ByteUtils.bytesToInt(bytes);
 
         assertEquals(getBinaryRepresentation(block), "01000011010011111110000101010000");
     }
@@ -46,7 +56,7 @@ public class Simple9Test extends TestCase {
     public void testLastConfiguration() {
         List<Integer> list = List.of(128 * 128);
         byte[] bytes = simple9.encode(list);
-        int block = ByteUtils.bytesToInt(bytes, 0);
+        int block = ByteUtils.bytesToInt(bytes);
 
         assertEquals(getBinaryRepresentation(block), "10000000000000000100000000000000");
     }

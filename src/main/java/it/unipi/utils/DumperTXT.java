@@ -5,36 +5,37 @@ import it.unipi.model.DocumentIndex;
 import it.unipi.model.PostingList;
 import it.unipi.model.Vocabulary;
 import it.unipi.model.implementation.DocumentIndexEntry;
-import it.unipi.model.implementation.VocabularyEntry;
+import it.unipi.model.VocabularyEntry;
+import it.unipi.model.implementation.PostingListImpl;
 
 import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.Map;
 
-public class DumpTXT implements Dumper {
+public class DumperTXT implements Dumper {
+
     private BufferedWriter writerVOC;
     private BufferedWriter writerDIX;
     private BufferedWriter writerDIDS;
     private BufferedWriter writerTF;
     private boolean opened = false;
-    private long writtenTF = 0;
-    private long writtenDIDS = 0;
-
+    private long writtenTF;
+    private long writtenDIDS;
 
     @Override
-    public boolean start(String filename) {
-        try{
-            if(opened)
+    public boolean start(String path) {
+        try {
+            if (opened)
                 throw new IOException();
-            System.out.println(filename);
-            writerVOC = new BufferedWriter(new FileWriter(filename + "vocabulary.csv"));
-            writerDIX = new BufferedWriter(new FileWriter(filename + "document_index.csv"));
-            writerDIDS = new BufferedWriter(new FileWriter(filename + "doc_ids.txt"));
-            writerTF = new BufferedWriter(new FileWriter(filename + "term_frequencies.txt"));
+
+            writerVOC  = new BufferedWriter(new FileWriter(path + Constants.VOCABULARY_FILENAME));
+            writerDIX  = new BufferedWriter(new FileWriter(path + Constants.DOCUMENT_INDEX_FILENAME));
+            writerDIDS = new BufferedWriter(new FileWriter(path + Constants.DOC_IDS_POSTING_FILENAME));
+            writerTF   = new BufferedWriter(new FileWriter(path + Constants.TF_POSTING_FILENAME));
             opened = true;
-        }
-        catch(IOException ie){
+
+        } catch(IOException ie) {
             System.out.println("Error in opening the file");
             return false;
         }
@@ -43,9 +44,8 @@ public class DumpTXT implements Dumper {
 
     @Override
     public void dumpVocabulary(Vocabulary vocabulary) {
-        for (Map.Entry<String, VocabularyEntry> entry : vocabulary.getEntries()) {
+        for (Map.Entry<String, VocabularyEntry> entry : vocabulary.getEntries())
             dumpVocabularyEntry(entry);
-        }
     }
 
     @Override
@@ -56,11 +56,11 @@ public class DumpTXT implements Dumper {
 
             int termFrequency = vocEntry.getDocumentFrequency();
             double upperBound = vocEntry.getUpperBound();
-            double IDF = vocEntry.getPostingList().getTermIdf();
+            double IDF = vocEntry.getPostingList().getIdf();
 
-            PostingList postingListImpl = vocEntry.getPostingList();
+            PostingListImpl postingListImpl = (PostingListImpl) vocEntry.getPostingList();
             long[] offsets = dumpPostings(postingListImpl);
-            int length = postingListImpl.getDocIdList().size();
+            int length = postingListImpl.getDocIds().size();
 
             String result =  new StringBuilder().append(term).append(",")
                     .append(termFrequency).append(",")
@@ -72,19 +72,20 @@ public class DumpTXT implements Dumper {
 
             System.out.println(opened);
             writerVOC.write(result);
+
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
     }
 
-    private long[] dumpPostings(PostingList postingListImpl) throws IOException {
+    private long[] dumpPostings(PostingListImpl postingListImpl) throws IOException {
         long offsetID = writtenDIDS;
         long offsetTF = writtenTF;
-        int length = postingListImpl.getDocIdList().size();
+        int length = postingListImpl.getDocIds().size();
 
         for(int i = 0; i < length; i++) {
-            String bufferID = postingListImpl.getDocIdList().get(i) + "\n";
-            String bufferTF = postingListImpl.getTermFrequencyList().get(i) + "\n";
+            String bufferID = postingListImpl.getDocIds().get(i) + "\n";
+            String bufferTF = postingListImpl.getTermFrequencies().get(i) + "\n";
             writerDIDS.write(bufferID);
             writerTF.write(bufferTF);
             writtenDIDS += bufferID.getBytes().length;
@@ -123,8 +124,8 @@ public class DumpTXT implements Dumper {
 
     @Override
     public boolean end() {
-        try{
-            if(!opened)
+        try {
+            if (!opened)
                 throw new IOException();
             writerVOC.close();
             writerDIDS.close();
@@ -133,12 +134,12 @@ public class DumpTXT implements Dumper {
             opened = false;
             writtenTF = 0;
             writtenDIDS = 0;
-        }
-        catch(IOException ie){
+        } catch(IOException ie) {
             System.out.println("Error in opening the file");
-            return false;
+            ie.printStackTrace();
         }
-        return true;
+
+        return !opened;
     }
 }
 

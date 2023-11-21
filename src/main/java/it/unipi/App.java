@@ -1,7 +1,6 @@
 package it.unipi;
 
 import it.unipi.index.InMemoryIndexing;
-import it.unipi.index.SPIMIIndex;
 import it.unipi.index.newSPIMI;
 import it.unipi.model.*;
 import it.unipi.model.implementation.DocumentIndexImpl;
@@ -9,12 +8,10 @@ import it.unipi.model.implementation.DocumentStreamImpl;
 import it.unipi.model.implementation.TokenizerImpl;
 import it.unipi.model.implementation.VocabularyImpl;
 import it.unipi.utils.Constants;
-import it.unipi.utils.DumpTXT;
+import it.unipi.utils.DumperTXT;
 import it.unipi.utils.Dumper;
-import it.unipi.utils.LoadStructures;
 
 import java.io.IOException;
-import java.util.Objects;
 
 /**
  * Hello world!
@@ -62,7 +59,7 @@ public class App
         Tokenizer t = new TokenizerImpl();
         DocumentIndex di = new DocumentIndexImpl();
         Vocabulary v = new VocabularyImpl();
-        Dumper d = new DumpTXT();
+        Dumper d = new DumperTXT();
 
         InMemoryIndexing memoryIndexing = new InMemoryIndexing(ds, v, d, t, di);
         // memoryIndexing.buildIndex("data/");

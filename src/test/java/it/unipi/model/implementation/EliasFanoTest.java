@@ -1,5 +1,6 @@
 package it.unipi.model.implementation;
 
+import it.unipi.model.Encoder;
 import junit.framework.TestCase;
 
 import java.util.ArrayList;
@@ -7,10 +8,18 @@ import java.util.Arrays;
 import java.util.List;
 
 public class EliasFanoTest extends TestCase {
+
+    private Encoder eliasFano = new EliasFano();
+
+    @Override
+    public void setUp() throws Exception {
+        super.setUp();
+    }
+
     public void testEncode1(){
         Integer[] array = {3,4,7,13,14,15,21,25,36,38,54,62};
         ArrayList<Integer> list = new ArrayList<>(Arrays.asList(array));
-        byte [] compressedBytes = EliasFano.encode(list);
+        byte [] compressedBytes = eliasFano.encode(list);
         // U | n | list
         assertEquals(byteArrayToBinaryString(compressedBytes), "000000000000000000000000001111100000000000000000000000000000110011101110101011001010011100111101110111101001100110110110");
     }
@@ -18,7 +27,7 @@ public class EliasFanoTest extends TestCase {
     public void testDecode1(){
         String binaryString = "000000000000000000000000001111100000000000000000000000000000110011101110101011001010011100111101110111101001100110110110";
         byte[] byteArray = binaryStringToByteArray(binaryString);
-        assertEquals(EliasFano.decode(byteArray), Arrays.asList(3,4,7,13,14,15,21,25,36,38,54,62));
+        assertEquals(eliasFano.decode(byteArray), Arrays.asList(3,4,7,13,14,15,21,25,36,38,54,62));
     }
     private String byteArrayToBinaryString(byte[] byteArray) {
         StringBuilder binaryStringBuilder = new StringBuilder();

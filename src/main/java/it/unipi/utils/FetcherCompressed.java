@@ -2,35 +2,40 @@ package it.unipi.utils;
 
 import it.unipi.model.PostingList;
 import it.unipi.model.implementation.DocumentIndexEntry;
-import it.unipi.model.implementation.EliasFano;
-import it.unipi.model.implementation.VocabularyEntry;
+import it.unipi.model.VocabularyEntry;
+import it.unipi.model.implementation.PostingListCompressed;
 
 import java.io.*;
-import java.util.ArrayList;
+import java.nio.ByteBuffer;
 import java.util.Map;
 
-public class FetcherCompressed implements Fetcher{
-    FileInputStream fisDocIds;
+public class FetcherCompressed implements Fetcher {
+
+    FileInputStream vocabularyReader;
+    FileInputStream docIdsReader;
+    FileInputStream termFreqReader;
+    FileInputStream documentIndexReader;
     boolean opened = false;
 
-    @Override
-    public boolean start(String filename) {
-        try{
-            fisDocIds = new FileInputStream(filename);
+    private int vocabularySize;
 
+    @Override
+    public boolean start(String path) {
+        try {
+            vocabularyReader = new FileInputStream(path + Constants.VOCABULARY_FILENAME);
+            docIdsReader = new FileInputStream(path + Constants.DOC_IDS_POSTING_FILENAME);
+            termFreqReader = new FileInputStream(path + Constants.TF_POSTING_FILENAME);
+            documentIndexReader = new FileInputStream(path + Constants.DOCUMENT_INDEX_FILENAME);
+
+            // Read number of entries of the vocabulary
+            vocabularySize = ByteUtils.bytesToInt(vocabularyReader.readNBytes(Integer.BYTES));
             opened = true;
-            return true;
-        }
-        catch (IOException ie){
+
+        } catch (IOException ie) {
             ie.printStackTrace();
             opened = false;
         }
-        return false;
-    }
-
-    @Override
-    public void setScope(String filename) {
-
+        return opened;
     }
 
     @Override
@@ -55,35 +60,38 @@ public class FetcherCompressed implements Fetcher{
          */
     }
 
-    public byte[] fetchDocIdListCompressed(long byteOffsetStart, long byteOffsetEnd) {
-        byte[] docIdArrayCompressed = new byte[(int) (byteOffsetEnd-byteOffsetStart)];
-        try{
-            if (opened){
-                if (fisDocIds.skip(byteOffsetStart)!=byteOffsetStart){
-                    throw new IOException();
-                }
-                if(fisDocIds.read(docIdArrayCompressed)!=byteOffsetEnd-byteOffsetStart){
-                    throw new IOException();
-                }
-                return docIdArrayCompressed;
-            }
-        } catch (IOException ie){
-            ie.printStackTrace();
-            return null;
+    private byte[] fetchBytes(InputStream stream, long startOffset, long endOffset) throws IOException {
+        byte[] bytes = new byte[(int) (endOffset - startOffset)];
+        if (opened) {
+            if (stream.skip(startOffset) != startOffset)
+                throw new IOException();
+
+            if (stream.read(bytes) != endOffset - startOffset)
+                throw new IOException();
+
+            return bytes;
         }
-        return null;
+
+        throw new IOException("Fetcher not correctly opened");
     }
 
-    public byte[] fetchDocIdSubList(byte[] compressedDocIds, int docId, Long readOffsetEF){
+    public byte[] fetchCompressedDocIds(long startOffset, long endOffset) throws IOException {
+        return fetchBytes(docIdsReader, startOffset, endOffset);
+    }
+
+    public byte[] fetchCompressedTermFrequencies(long startOffset, long endOffset) throws IOException {
+        return fetchBytes(termFreqReader, startOffset, endOffset);
+    }
+
+    public PostingListCompressed.ByteBlock fetchDocIdsBlock(byte[] compressedDocIds, int docId, long docIdsBlockOffset) {
         // skips unnecessary lists
         try (
                 ByteArrayInputStream bais = new ByteArrayInputStream(compressedDocIds);
                 DataInputStream dis = new DataInputStream(bais);
         ) {
-            if(readOffsetEF!=dis.skip(readOffsetEF)){
+            if (docIdsBlockOffset != dis.skip(docIdsBlockOffset))
                 throw new IOException();
-            }
-            while(true) {
+            while (true) {
                 // Read integers from the byte array
                 int U = dis.readInt();
                 int n = dis.readInt();
@@ -95,40 +103,113 @@ public class FetcherCompressed implements Fetcher{
                 int nTotHighBits = (int) (n + Math.pow(2, highHalfLength));
                 int bytesToSkip = (int) Math.ceil((float) nTotLowBits / 8) + (int) Math.ceil((float) nTotHighBits / 8);
 
-                if (U<docId) {
+                if (U < docId) {
                     // I have to read the next block
-                    readOffsetEF += bytesToSkip;
-                    if (bytesToSkip != bais.skip(bytesToSkip)) {
+                    docIdsBlockOffset += bytesToSkip;
+                    if (bytesToSkip != bais.skip(bytesToSkip))
                         throw new IOException();
-                    }
-                }
-                else {
+
+                } else {
                     int numLowBytes = (int) Math.ceil((float) nTotLowBits/8);
                     int numHighBytes = (int) Math.ceil((float) nTotHighBits/8);
 
                     byte[] byteArray = new byte[4 + 4 + numLowBytes + numHighBytes];
                     ByteUtils.intToBytes(U, byteArray, 0);
                     ByteUtils.intToBytes(n, byteArray, 4);
-                    readOffsetEF += dis.read(byteArray, 8, numHighBytes);
-                    readOffsetEF += dis.read(byteArray, 8+numHighBytes, numLowBytes);
+                    docIdsBlockOffset += dis.read(byteArray, 8, numHighBytes);
+                    docIdsBlockOffset += dis.read(byteArray, 8+numHighBytes, numLowBytes);
                     dis.close();
 
-                    return byteArray;
+                    return new PostingListCompressed.ByteBlock(byteArray, docIdsBlockOffset);
                 }
             }
-        } catch (EOFException e){
+        } catch (EOFException e) {
             // end of file reached
             return null;
+        } catch (Exception e) {
+            e.printStackTrace();
         }
-        catch (Exception e){
+        return null;
+    }
+
+    public PostingListCompressed.ByteBlock fetchNextTermFrequenciesBlock(byte[] compressedTermFrequencies, long termFrequenciesBlockOffset) {
+        try (
+                ByteArrayInputStream bais = new ByteArrayInputStream(compressedTermFrequencies);
+                DataInputStream dis = new DataInputStream(bais);
+        ) {
+            if (termFrequenciesBlockOffset != dis.skip(termFrequenciesBlockOffset))
+                throw new IOException();
+
+            while (true) {
+                // Read length of the block
+                int length = dis.readInt();
+
+                byte[] byteArray = new byte[4 + length];
+                ByteUtils.intToBytes(length, byteArray, 0);
+                termFrequenciesBlockOffset += dis.read(byteArray, 4, length);
+                dis.close();
+
+                return new PostingListCompressed.ByteBlock(byteArray, termFrequenciesBlockOffset);
+            }
+        } catch (EOFException e) {
+            // end of file reached
+            return null;
+        } catch (Exception e) {
             e.printStackTrace();
         }
         return null;
     }
 
     @Override
-    public Map.Entry<String, VocabularyEntry> loadVocEntry(String term) {
+    public VocabularyEntry loadVocEntry(String term) {
+        // Binary search to find the term
+        // Remember to consider also the int at the beginning of file denoting vocabulary size
+        int start = 0, end = vocabularySize;
+        int middle;
+        byte[] vocabularyEntryBytes = new byte[Constants.VOCABULARY_ENTRY_BYTES_SIZE];
+
+        // Compare terms by truncating the bytes representation of the original term
+        byte[] termBytes = new byte[Constants.BYTES_STORED_STRING];
+        int termNumBytes = Math.min(term.getBytes().length, Constants.BYTES_STORED_STRING);
+        System.arraycopy(term.getBytes(), 0, termBytes, 0, termNumBytes);
+        String truncatedTerm = ByteUtils.bytesToString(termBytes, 0, Constants.BYTES_STORED_STRING);
+
+        try {
+            while (start < end) {
+                middle = (end + start) / 2;
+                vocabularyReader.getChannel().position(Integer.BYTES + (long) middle * Constants.VOCABULARY_ENTRY_BYTES_SIZE);
+                vocabularyReader.read(vocabularyEntryBytes, 0, Constants.VOCABULARY_ENTRY_BYTES_SIZE);
+
+                int comparison = truncatedTerm.compareTo(ByteUtils.bytesToString(vocabularyEntryBytes, 0, Constants.BYTES_STORED_STRING));
+                if (comparison > 0)         // This means term > entry
+                    start = middle;
+                else if (comparison < 0)    // This means term < entry
+                    end = middle;
+                else                        // This means term = entry
+                    return bytesToVocabularyEntry(vocabularyEntryBytes);
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
         return null;
+    }
+
+    private VocabularyEntry bytesToVocabularyEntry(byte[] byteList) {
+        ByteBuffer bytes = ByteBuffer.wrap(byteList);
+        bytes.position(Constants.BYTES_STORED_STRING);
+        int documentFrequency = bytes.getInt();
+        double upperBound = bytes.getDouble();
+        double idf = bytes.getDouble();
+        long docIdsOffset = bytes.getLong();
+        int docIdsLength = bytes.getInt();
+        long termFreqOffset = bytes.getLong();
+        int termFreqLength = bytes.getInt();
+
+        VocabularyEntry entry = new VocabularyEntry();
+        entry.setDocumentFrequency(documentFrequency);
+        entry.setUpperBound(upperBound);
+        PostingList postingList = new PostingListCompressed();
+        return entry;
     }
 
     @Override
@@ -149,14 +230,17 @@ public class FetcherCompressed implements Fetcher{
     @Override
     public boolean end() {
         try {
-            if(opened){
-                fisDocIds.close();
+            if (opened) {
+                vocabularyReader.close();
+                docIdsReader.close();
+                termFreqReader.close();
+                documentIndexReader.close();
                 opened = false;
-                return true;
-            } else throw new IOException();
-        } catch (IOException ie){
+            } else
+                throw new IOException();
+        } catch (IOException ie) {
             ie.printStackTrace();
-            return false;
         }
+        return !opened;
     }
 }

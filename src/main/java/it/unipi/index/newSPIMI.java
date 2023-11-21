@@ -5,13 +5,10 @@ import it.unipi.model.PostingList;
 import it.unipi.model.implementation.Document;
 import it.unipi.model.implementation.DocumentIndexEntry;
 import it.unipi.model.implementation.PostingListImpl;
-import it.unipi.model.implementation.VocabularyEntry;
-import it.unipi.utils.Dumper;
+import it.unipi.model.VocabularyEntry;
 import it.unipi.utils.Fetcher;
-import it.unipi.utils.FetcherCompressed;
 import it.unipi.utils.FetcherTXT;
 
-import javax.print.Doc;
 import java.io.*;
 import java.util.*;
 
@@ -196,7 +193,7 @@ public class newSPIMI {
     private VocabularyEntry mergeEntries(List<VocabularyEntry> toMerge) throws IOException {
 
         // Make each entry to fetch relative postings
-        PostingList mergedList = new PostingListImpl();
+        PostingListImpl mergedList = new PostingListImpl();
         Integer frequency = 0;
         Double upperBound = 0.0;
         for (int k = 0; k < toMerge.size(); k++) {

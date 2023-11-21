@@ -1,5 +1,7 @@
 package it.unipi.scoring;
 
+import it.unipi.model.PostingList;
+import it.unipi.model.VocabularyEntry;
 import it.unipi.model.implementation.*;
 
 import java.util.ArrayList;
@@ -51,7 +53,7 @@ public class Scorer {
         int numTokens = tokens.size();
 
         // Get the posting lists of all the terms in the query
-        List<PostingListImpl> postingListImpls = new ArrayList<>(numTokens);
+        List<PostingList> postingList = new ArrayList<>(numTokens);
         for (int i = 0; i < numTokens; i++) {
             VocabularyEntry entry = vocabularyImpl.getEntry(tokens.get(i));
 
@@ -61,35 +63,34 @@ public class Scorer {
                 tokens.remove(i--);
                 numTokens--;
             } else
-                ;
-                // postingListImpls.add(entry.getPostingList());
+                postingList.add(entry.getPostingList());
         }
 
         int docId, currentDocId;      // id of the current document
         double score;   // score of the current document
 
-        while (!postingListImpls.isEmpty()) {
-            docId = postingListImpls.get(0).docId();
-            score = postingListImpls.get(0).score();
+        while (!postingList.isEmpty()) {
+            docId = postingList.get(0).docId();
+            score = postingList.get(0).score();
 
             for (int i = 1; i < numTokens; i++) {
-                currentDocId = postingListImpls.get(i).docId();
+                currentDocId = postingList.get(i).docId();
                 if (currentDocId < docId) {
                     docId = currentDocId;
-                    score = postingListImpls.get(i).score();
+                    score = postingList.get(i).score();
                 } else if (currentDocId == docId)
-                    score += postingListImpls.get(i).score();
+                    score += postingList.get(i).score();
             }
 
             // Advance all posting lists related to the current docId
             for (int i = 0; i < numTokens; i++) {
-                if (postingListImpls.get(i).docId() == docId) {
+                if (postingList.get(i).docId() == docId) {
                     // Advance the posting list
-                    if (postingListImpls.get(i).hasNext())
-                        postingListImpls.get(i).next();
+                    if (postingList.get(i).hasNext())
+                        postingList.get(i).next();
                     // If we are at the end of the posting list, remove it
                     else {
-                        postingListImpls.remove(i--);
+                        postingList.remove(i--);
                         numTokens--;
                     }
                 }

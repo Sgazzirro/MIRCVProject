@@ -2,9 +2,8 @@ package it.unipi.model.implementation;
 
 import it.unipi.model.Encoder;
 import it.unipi.utils.ByteUtils;
+import it.unipi.utils.Constants;
 
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -33,6 +32,16 @@ public class Simple9 implements Encoder {
             {28, 1,  0, 128*128*128*128-1}
     };
 
+    private final boolean useSkippingPointer;
+
+    public Simple9(boolean useSkippingPointer) {
+        this.useSkippingPointer = useSkippingPointer;
+    }
+
+    public Simple9() {
+        this(false);
+    }
+
     public byte[] encode(List<Integer> intList) {
         // Encode a list of numbers using the Simple9 compression algorithm
         List<Integer> blockList = new ArrayList<>();
@@ -57,7 +66,18 @@ public class Simple9 implements Encoder {
             blockList.add(block);
         }
 
-        byte[] byteArray = new byte[4 * blockList.size()];
+        if (useSkippingPointer) {
+            // Add a skipping pointer at the beginning with structure
+            //     number of bytes to skip
+            int byteToSkip;
+            byteToSkip = 4 * blockList.size();
+
+            // Encode byteToSkip as the first block
+            blockList.add(0, byteToSkip);
+        }
+
+        int skippingPointerSize = (useSkippingPointer) ? 4 : 0;
+        byte[] byteArray = new byte[skippingPointerSize + 4 * blockList.size()];
         int offset = 0;
         for (int b : blockList) {
             ByteUtils.intToBytes(b, byteArray, offset);
@@ -70,8 +90,9 @@ public class Simple9 implements Encoder {
     public List<Integer> decode(byte[] byteList) {
         List<Integer> intList = new ArrayList<>();
 
-        // Read 4 bytes at a time
-        for (int offset = 0; offset < byteList.length; offset += 4) {
+        // Read 4 bytes at a time and skip the first 4 bytes if skipping pointer is used
+        int offset = (useSkippingPointer) ? 4 : 0;
+        for ( ; offset < byteList.length; offset += 4) {
             // Convert the 4 bytes to int
             int b = ByteUtils.bytesToInt(byteList, offset);
             // The first 4 bits represent the configuration of the block

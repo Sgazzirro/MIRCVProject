@@ -1,69 +1,116 @@
 package it.unipi.model;
 
 import it.unipi.model.implementation.PostingListImpl;
+import it.unipi.utils.Constants;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-public interface PostingList {
+public abstract class PostingList {
+
+    private long docIdsOffset;
+    private long termFreqOffset;
+    private int docIdsLength;
+    private int termFreqLength;
+    private double idf;
+
+    public PostingList() {
+    }
+
+    public PostingList(long docIdsOffset, long termFreqOffset, int docIdsLength, int termFreqLength, double idf) {
+        this.docIdsOffset = docIdsOffset;
+        this.termFreqOffset = termFreqOffset;
+        this.docIdsLength = docIdsLength;
+        this.termFreqLength = termFreqLength;
+        this.idf = idf;
+    }
 
     /**
      * @return the document ID of the current posting
      */
-    public int docId();
+    public abstract int docId();
 
 
     /**
      * Function that computes the score (according to the class settings) of that term in that document
      * @return the score of the current posting
      */
-    public double score();
+    public abstract double score();
 
     /**
      * @return whether the list has another posting or not
      */
-    public boolean hasNext();
+    public abstract boolean hasNext();
 
     /**
      * Moves sequentially the posting list to the next posting
      */
-    public void next();
+    public abstract void next();
 
     /**
      * Moves the iterator toward the next posting
      * with a document ID which is greater or equal than the specified one
      * @param docId the ID of the document we would like to reach
      */
-    public void nextGEQ(int docId);
+    public abstract void nextGEQ(int docId);
 
     /**
      * Add a posting to the current list. If the posting already exists, increment the frequency
      * of that term in that document by 1
      * @param docId the ID of the considered document
+     * @return true if a new posting has been added, false if only the term frequency has been increased
      */
-    public void addPosting(int docId);
+    public boolean addPosting(int docId) {
+        return addPosting(docId, 1);
+    }
 
-    public void addPosting(int docId, int freq);
+    public abstract boolean addPosting(int docId, int freq);
 
-    /**
-     * Concatenate the passed list to the current one, assuming that no sorting is required
-     * @param toMerge the posting list we have to merge to the current
-     * @return the length of the new list
-     */
-    public int mergePosting(PostingList toMerge);
+    public boolean loadPosting() {
+        return loadPosting(Constants.DOC_IDS_POSTING_FILENAME, Constants.TF_POSTING_FILENAME);
+    }
 
+    public abstract boolean loadPosting(String docIdsFilename, String termFreqFilename);
 
-    public List<Integer> getDocIdList();
+    public long getDocIdsOffset() {
+        return docIdsOffset;
+    }
 
-    public List<Integer> getTermFrequencyList();
+    public void setDocIdsOffset(long docIdsOffset) {
+        this.docIdsOffset = docIdsOffset;
+    }
 
-    public long getOffsetID();
-    public long getOffsetTF();
+    public long getTermFreqOffset() {
+        return termFreqOffset;
+    }
 
-    public int getLength();
+    public void setTermFreqOffset(long termFreqOffset) {
+        this.termFreqOffset = termFreqOffset;
+    }
 
-    public Double getTermIdf();
+    public double getIdf() {
+        return idf;
+    }
 
-    public byte[] getCompressedDocIdArray();
+    public void setIdf(double idf) {
+        this.idf = idf;
+    }
+
+    public int getDocIdsLength() {
+        return docIdsLength;
+    }
+
+    public void setDocIdsLength(int docIdsLength) {
+        this.docIdsLength = docIdsLength;
+    }
+
+    public int getTermFreqLength() {
+        return termFreqLength;
+    }
+
+    public void setTermFreqLength(int termFreqLength) {
+        this.termFreqLength = termFreqLength;
+    }
+
 }
