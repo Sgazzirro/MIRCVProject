@@ -4,8 +4,7 @@ import it.unipi.model.Encoder;
 import it.unipi.utils.ByteUtils;
 import it.unipi.utils.Constants;
 
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
+import java.io.*;
 import java.util.*;
 
 public class EliasFano implements Encoder {
@@ -50,11 +49,14 @@ public class EliasFano implements Encoder {
         // Convert everything as byte array
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
 
-        // Write U and n byte by byte
-        outputStream.write(U >> 24); outputStream.write(U >> 16); outputStream.write(U >> 8); outputStream.write(U);
-        outputStream.write(n >> 24); outputStream.write(n >> 16); outputStream.write(n >> 8); outputStream.write(n);
 
+        // Write U and n byte by byte
+        //outputStream.write(U >> 24); outputStream.write(U >> 16); outputStream.write(U >> 8); outputStream.write(U);
+        //outputStream.write(n >> 24); outputStream.write(n >> 16); outputStream.write(n >> 8); outputStream.write(n);
         try {
+            DataOutputStream dos = new DataOutputStream(outputStream);
+            dos.writeInt(U);
+            dos.writeInt(n);
             outputStream.write(highBitset.toByteArray());
             outputStream.write(lowBitset.toByteArray());
         } catch (IOException e) {
@@ -68,33 +70,46 @@ public class EliasFano implements Encoder {
 
     public List<Integer> decode(byte[] byteList) {
         List<Integer> decoded = new ArrayList<>();
-        int U = ByteUtils.bytesToInt(byteList, 0);
-        int n = ByteUtils.bytesToInt(byteList, 4);
+        ByteArrayInputStream bais = new ByteArrayInputStream(byteList);
+        DataInputStream dis = new DataInputStream(bais);
+        try {
+            int U = dis.readInt();
+            int n = dis.readInt();
 
-        // number of bits
-        int lowHalfLength = (int) Math.ceil(Math.log((float) U / n) / Math.log(2));
-        int highHalfLength = (int) Math.ceil(Math.log(U) / Math.log(2)) - lowHalfLength;
-        int nTotHighBits = (int) (n + Math.pow(2, highHalfLength));
+            // number of bits
+            int lowHalfLength = (int) Math.ceil(Math.log((float) U / n) / Math.log(2));
+            int highHalfLength = (int) Math.ceil(Math.log(U) / Math.log(2)) - lowHalfLength;
+            int nTotHighBits = (int) (n + Math.pow(2, highHalfLength));
+            int nTotLowBits = lowHalfLength*n;
 
-        BitSet bytes = BitSet.valueOf(byteList);
-        BitSet highBitset = bytes.get(8, 8+nTotHighBits);
-        BitSet lowBitset = bytes.get(8+nTotHighBits, bytes.length());
+            byte [] lowBytes = new byte[(int) Math.ceil((float) nTotLowBits/8)];
+            byte [] highBytes = new byte[(int) Math.ceil((float) nTotHighBits/8)];
 
-        int groupValue = 0;
-        int lowBitsetIndex =0;
-        for(int i=0; i<nTotHighBits; i++){
-            if(highBitset.get(i)){
-                int shifted = groupValue;
-                for(int j=lowBitsetIndex*lowHalfLength; j<lowBitsetIndex*lowHalfLength+lowHalfLength; j++){
-                    int bitValue = lowBitset.get(j)? 1:0;
-                    shifted = shifted << 1 | bitValue;
-                }
-                lowBitsetIndex++;
-                decoded.add(shifted);
-            } else groupValue++;
+            dis.read(highBytes);
+            dis.read(lowBytes);
+
+            BitSet lowBitset = BitSet.valueOf(lowBytes);
+            BitSet highBitset = BitSet.valueOf(highBytes);
+
+            int groupValue = 0;
+            int lowBitsetIndex =0;
+            for(int i=0; i<nTotHighBits; i++){
+                if(highBitset.get(i)){
+                    int shifted = groupValue;
+                    for(int j=lowBitsetIndex*lowHalfLength; j<lowBitsetIndex*lowHalfLength+lowHalfLength; j++){
+                        int bitValue = lowBitset.get(j)? 1:0;
+                        shifted = shifted << 1 | bitValue;
+                    }
+                    lowBitsetIndex++;
+                    decoded.add(shifted);
+                } else groupValue++;
+            }
+
+            return decoded;
+        } catch (IOException ie){
+            ie.printStackTrace();
+            return null;
         }
-
-        return decoded;
     }
 
     private static BitSet extractLowBitset(int number, int nLowBits) {

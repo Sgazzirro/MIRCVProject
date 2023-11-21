@@ -3,6 +3,9 @@ package it.unipi.model.implementation;
 import it.unipi.model.Encoder;
 import junit.framework.TestCase;
 
+import java.io.ByteArrayInputStream;
+import java.io.DataInputStream;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -21,13 +24,13 @@ public class EliasFanoTest extends TestCase {
         ArrayList<Integer> list = new ArrayList<>(Arrays.asList(array));
         byte [] compressedBytes = eliasFano.encode(list);
         // U | n | list
-        assertEquals(byteArrayToBinaryString(compressedBytes), "000000000000000000000000001111100000000000000000000000000000110011101110101011001010011100111101110111101001100110110110");
+        assertEquals( "00000000000000000000000000111110000000000000000000000000000011000111011100110101000001011100111010111011100101111101100100000110",byteArrayToBinaryString(compressedBytes));
     }
 
     public void testDecode1(){
-        String binaryString = "000000000000000000000000001111100000000000000000000000000000110011101110101011001010011100111101110111101001100110110110";
+        String binaryString = "00000000000000000000000000111110000000000000000000000000000011000111011100110101000001011100111010111011100101111101100100000110";
         byte[] byteArray = binaryStringToByteArray(binaryString);
-        assertEquals(eliasFano.decode(byteArray), Arrays.asList(3,4,7,13,14,15,21,25,36,38,54,62));
+        assertEquals(Arrays.asList(3,4,7,13,14,15,21,25,36,38,54,62),eliasFano.decode(byteArray));
     }
     private String byteArrayToBinaryString(byte[] byteArray) {
         StringBuilder binaryStringBuilder = new StringBuilder();
@@ -42,13 +45,15 @@ public class EliasFanoTest extends TestCase {
     private byte[] binaryStringToByteArray(String binaryString) {
         int length = binaryString.length();
         byte[] byteArray = new byte[length / 8];
+        int index = 0; // Added index variable
 
         for (int i = 0; i < length; i += 8) {
             String byteString = binaryString.substring(i, i + 8);
             byte b = (byte) Integer.parseInt(byteString, 2);
-            byteArray[i / 8] = b;
+            byteArray[index++] = b; // Use separate index variable
         }
 
         return byteArray;
     }
+
 }
