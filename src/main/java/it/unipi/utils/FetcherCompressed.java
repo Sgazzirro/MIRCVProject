@@ -147,6 +147,7 @@ public class FetcherCompressed implements Fetcher {
                 byte[] byteArray = new byte[4 + length];
                 ByteUtils.intToBytes(length, byteArray, 0);
                 termFrequenciesBlockOffset += dis.read(byteArray, 4, length);
+                termFrequenciesBlockOffset += 4;            // Consider also the first 4 bytes describing the block length
                 dis.close();
 
                 return new PostingListCompressed.ByteBlock(byteArray, termFrequenciesBlockOffset);
