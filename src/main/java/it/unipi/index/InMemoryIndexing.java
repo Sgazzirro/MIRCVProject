@@ -244,7 +244,9 @@ public class InMemoryIndexing {
         }
     }
 
-    public void processDocument(Document document) {
+    public boolean processDocument(Document document) {
+        if(document == null || document.getText().equals(""))
+            return false;
         List<String> tokenized = tokenizer.tokenizeBySpace(document.getText());
 
         for (String token : tokenized) {
@@ -252,6 +254,7 @@ public class InMemoryIndexing {
         }
 
         docIndex.addDocument(document.getId(), tokenized.size());
+        return true;
     }
 
     void dumpVocabulary(){

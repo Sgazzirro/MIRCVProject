@@ -28,11 +28,13 @@ public class newSPIMI {
         block_size = size;
     }
 
-    private boolean finished() {
+    boolean finished() {
         return finish;
     }
 
-    private boolean availableMemory(long usedMemory, long startMemory) {
+    int getNext_block(){return next_block;}
+
+    boolean availableMemory(long usedMemory, long startMemory) {
         // Returns if (usedMemory - starting memory) is less than a treshold
         return (usedMemory - startMemory) <= block_size;
     }
@@ -86,12 +88,12 @@ public class newSPIMI {
         indexer.dumpVocabulary();
         indexer.dumpDocumentIndex();
 
-        // Reset dumper
+        // Reset dump
         indexer.close();
         next_block++;
     }
 
-    private void mergeAllBlocks(List<Fetcher> readVocBuffers) {
+    void mergeAllBlocks(List<Fetcher> readVocBuffers) {
         // Key idea to merge all blocks together
         // To do the merging, we open all block files simultaneously
         // We maintain small read buffers for blocks we are reading
@@ -103,6 +105,7 @@ public class newSPIMI {
 
         //List<Fetcher> readVocBuffers = new ArrayList<>();
         List<Boolean> processed = new ArrayList<>();
+        int next_block = getNext_block();
         indexer.setup("data/");
 
         for (int i = 0; i < next_block; i++) {
@@ -115,7 +118,7 @@ public class newSPIMI {
         String[] terms = new String[next_block];
         VocabularyEntry[] entries = new VocabularyEntry[next_block];
         String lowestTerm = null;
-
+        System.out.println(next_block);
         while (true) {
             for (int k = 0; k < next_block; k++) {
                 if (closed[k]) {
@@ -167,13 +170,12 @@ public class newSPIMI {
             // Write the merge onto the output file
             try {
                 VocabularyEntry entry = mergeEntries(toMerge);
+                System.out.println(lowestTerm);
                 indexer.dumpVocabularyLine(new AbstractMap.SimpleEntry<>(lowestTerm, entry));
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
         }
-        //indexer.close();
-
     }
 
     private void concatenateDocIndexes(List<Fetcher> readers) {
@@ -190,7 +192,7 @@ public class newSPIMI {
         indexer.close();
     }
 
-    private VocabularyEntry mergeEntries(List<VocabularyEntry> toMerge) throws IOException {
+    VocabularyEntry mergeEntries(List<VocabularyEntry> toMerge) throws IOException {
 
         // Make each entry to fetch relative postings
         PostingListImpl mergedList = new PostingListImpl();
