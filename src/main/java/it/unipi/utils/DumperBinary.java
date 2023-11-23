@@ -107,6 +107,12 @@ public class DumperBinary implements Dumper{
 
     @Override
     public void dumpDocumentIndex(DocumentIndex docIndex) {
+        try{
+            documentIndexWriter.writeInt(docIndex.getTotalLength());
+            documentIndexWriter.writeInt(docIndex.getNumDocuments());
+        } catch (IOException ie){
+            ie.printStackTrace();
+        }
         for (Map.Entry<Integer, DocumentIndexEntry> entry : docIndex.getEntries()) {
             dumpDocumentIndexEntry(entry);
         }
