@@ -65,7 +65,7 @@ public class App
         // memoryIndexing.buildIndex("data/");
 
         newSPIMI spimi = new newSPIMI(ds, memoryIndexing);
-        spimi.buildIndexSPIMI();
+        spimi.buildIndexSPIMI("DEBUG");
 
     }
 

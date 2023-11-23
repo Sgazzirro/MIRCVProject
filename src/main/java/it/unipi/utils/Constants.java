@@ -7,9 +7,9 @@ public class Constants {
     public static final String TEST_COLLECTION_FILE = "data/test_collection.tsv";
 
     public static final String VOCABULARY_FILENAME = "vocabulary.dat";
-    public static final String DOCUMENT_INDEX_FILENAME = "data/document_index.dat";
-    public static final String DOC_IDS_POSTING_FILENAME = "data/doc_ids.txt";
-    public static final String TF_POSTING_FILENAME = "data/term_frequencies.txt";
+    public static final String DOCUMENT_INDEX_FILENAME = "document_index.dat";
+    public static final String DOC_IDS_POSTING_FILENAME = "doc_ids.txt";
+    public static final String TF_POSTING_FILENAME = "term_frequencies.txt";
 
     // Stopwords downloaded from https://raw.githubusercontent.com/stopwords-iso/stopwords-en/master/stopwords-en.txt
     public static final String STOPWORDS_FILE = "data/stopwords-en.txt";

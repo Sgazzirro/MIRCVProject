@@ -167,8 +167,8 @@ public class PostingListImpl extends PostingList {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         PostingListImpl that = (PostingListImpl) o;
-        this.loadPosting();
-        that.loadPosting();
+       // this.loadPosting();
+       // that.loadPosting();
         return Objects.equals(docIdList, that.docIdList) && Objects.equals(termFrequencyList, that.termFrequencyList);
     }
 

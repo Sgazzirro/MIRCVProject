@@ -7,6 +7,8 @@ import it.unipi.model.implementation.DocumentIndexEntry;
 import it.unipi.model.implementation.PostingListImpl;
 import it.unipi.model.VocabularyEntry;
 import it.unipi.utils.Fetcher;
+import it.unipi.utils.FetcherBinary;
+import it.unipi.utils.FetcherCompressed;
 import it.unipi.utils.FetcherTXT;
 
 import java.io.*;
@@ -39,7 +41,7 @@ public class newSPIMI {
         return (usedMemory - startMemory) <= block_size;
     }
 
-    public void buildIndexSPIMI() {
+    public void buildIndexSPIMI(String mode) {
         // Preliminary flush of files
         for (File file : Objects.requireNonNull(new File("./data/blocks").listFiles()))
             if (!file.isDirectory())
@@ -55,7 +57,12 @@ public class newSPIMI {
         // TODO: Implement
         List<Fetcher> readVocBuffers = new ArrayList<>();
         for (int i = 0; i < next_block; i++) {
-            readVocBuffers.add(new FetcherTXT());
+            if(mode.equals("DEBUG"))
+                readVocBuffers.add(new FetcherTXT());
+            if(mode.equals("NOT_COMPRESSED"))
+                readVocBuffers.add(new FetcherBinary());
+            if(mode.equals("COMPRESSED"))
+                readVocBuffers.add(new FetcherCompressed());
             readVocBuffers.get(i).start("data/blocks/_" + i);
         }
         mergeAllBlocks(readVocBuffers);

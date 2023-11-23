@@ -1,14 +1,6 @@
 package it.unipi.scoring;
 
-import it.unipi.index.InMemoryIndexing;
-import it.unipi.model.implementation.DocumentIndexImpl;
-import it.unipi.model.implementation.DocumentStreamImpl;
-import it.unipi.model.implementation.TokenizerImpl;
-import it.unipi.model.implementation.VocabularyImpl;
-import it.unipi.utils.Constants;
 import junit.framework.TestCase;
-
-import java.util.Arrays;
 
 import static org.junit.Assert.assertArrayEquals;
 

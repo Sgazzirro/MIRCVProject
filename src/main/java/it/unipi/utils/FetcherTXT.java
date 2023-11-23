@@ -37,11 +37,11 @@ public class FetcherTXT implements Fetcher {
     }
 
     public void loadPosting(PostingList list, String path) {
-        /*
+
         // The loading of a posting list uses two inner buffers
 
-        long[] offsets = new long[]{list.getOffsetID(), list.getOffsetTF()};
-        int len = list.getLength();
+        long[] offsets = new long[]{list.getDocIdsOffset(), list.getTermFreqOffset()};
+        int len = list.getDocIdsLength();
 
         try (
                 BufferedReader readerIds = new BufferedReader(new FileReader(path + Constants.DOC_IDS_POSTING_FILENAME));
@@ -56,10 +56,10 @@ public class FetcherTXT implements Fetcher {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-         */
+
 
         // TODO - Should we use this method or the inner method in PostingList???
-        list.loadPosting(path + Constants.DOC_IDS_POSTING_FILENAME, path + Constants.TF_POSTING_FILENAME);
+        //list.loadPosting(path + Constants.DOC_IDS_POSTING_FILENAME, path + Constants.TF_POSTING_FILENAME);
     }
 
     public VocabularyEntry loadVocEntry(String term) {

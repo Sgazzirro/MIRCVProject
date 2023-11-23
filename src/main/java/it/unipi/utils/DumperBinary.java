@@ -50,6 +50,7 @@ public class DumperBinary implements Dumper{
             documentIndexWriter = new DataOutputStream(documentIndexStream);
             opened = true;
             docIdsOffset = termFreqOffset = 0;
+            vocabularyWriter.writeInt(0);
 
         } catch(IOException ie) {
             System.out.println("Error in opening the file");
@@ -62,7 +63,6 @@ public class DumperBinary implements Dumper{
     public void dumpVocabularyEntry(Map.Entry<String, VocabularyEntry> entry) throws IOException {
         String term = entry.getKey();
         VocabularyEntry vocabularyEntry = entry.getValue();
-
         int documentFrequency = vocabularyEntry.getDocumentFrequency();
         Double upperBound = vocabularyEntry.getUpperBound();
         PostingList pList = vocabularyEntry.getPostingList();
@@ -100,7 +100,7 @@ public class DumperBinary implements Dumper{
         vocabularyWriter.writeInt(docIdsLength);
         vocabularyWriter.writeLong(termFreqOffset);
         vocabularyWriter.writeInt(termFreqLength);
-
+        System.out.println(stringTruncatedBytes.toString() +  " " + documentFrequency + " " + upperBound + " " + idf);
         docIdsOffset += docIdsLength;
         termFreqOffset += termFreqLength;
     }
@@ -134,7 +134,6 @@ public class DumperBinary implements Dumper{
     public void dumpVocabulary(Vocabulary vocabulary) {
         try {
             // Keep space at the beginning of file to store the number of entries
-            vocabularyWriter.writeInt(0);
             int numEntries = 0;
             for (Map.Entry<String, VocabularyEntry> entry : vocabulary.getEntries()) {
                 dumpVocabularyEntry(entry);

@@ -11,6 +11,9 @@ import java.io.DataInputStream;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Map;
 
 public class FetcherBinary implements Fetcher{
@@ -24,13 +27,16 @@ public class FetcherBinary implements Fetcher{
     @Override
     public boolean start(String path) {
         try {
+            Path vocpath = Paths.get(path + Constants.VOCABULARY_FILENAME);
+            vocabularySize =(int) Files.size(vocpath)/Constants.VOCABULARY_ENTRY_BYTES_SIZE;
             vocabularyReader = new FileInputStream(path + Constants.VOCABULARY_FILENAME);
             docIdsReader = new FileInputStream(path + Constants.DOC_IDS_POSTING_FILENAME);
             termFreqReader = new FileInputStream(path + Constants.TF_POSTING_FILENAME);
             documentIndexReader = new FileInputStream(path + Constants.DOCUMENT_INDEX_FILENAME);
 
             // Read number of entries of the vocabulary
-            vocabularySize = ByteUtils.bytesToInt(vocabularyReader.readNBytes(Integer.BYTES));
+            //vocabularySize = ByteUtils.bytesToInt(vocabularyReader.readNBytes(Integer.BYTES));
+            System.out.println("SIZE: " + vocabularySize);
             opened = true;
 
         } catch (IOException ie) {
@@ -60,9 +66,11 @@ public class FetcherBinary implements Fetcher{
             }
 
             // load docIds and termFreq
+            System.out.println(docIdsLength);
             for (int len = 0; len < docIdsLength; len += Integer.BYTES) {
                 int docId = disDocId.readInt();
                 int termFreq = disTermFreq.readInt();
+                System.out.println(docId + " " + termFreq);
                 list.addPosting(docId, termFreq);
             }
             disDocId.close();
@@ -94,7 +102,8 @@ public class FetcherBinary implements Fetcher{
                 middle = (end + start) / 2;
                 vocabularyReader.getChannel().position(Integer.BYTES + (long) middle * Constants.VOCABULARY_ENTRY_BYTES_SIZE);
                 vocabularyReader.read(vocabularyEntryBytes, 0, Constants.VOCABULARY_ENTRY_BYTES_SIZE);
-
+                System.out.println(truncatedTerm);
+                System.out.println(ByteUtils.bytesToString(vocabularyEntryBytes, 0, Constants.BYTES_STORED_STRING));
                 int comparison = truncatedTerm.compareTo(ByteUtils.bytesToString(vocabularyEntryBytes, 0, Constants.BYTES_STORED_STRING));
                 if (comparison > 0)         // This means term > entry
                     start = middle;
@@ -126,6 +135,7 @@ public class FetcherBinary implements Fetcher{
 
         PostingList postingList = new PostingListImpl();
         loadPosting(postingList, docIdsOffset, docIdsLength, termFreqOffset, termFreqLength);
+        entry.setPostingList(postingList);
         return entry;
     }
 
@@ -141,13 +151,14 @@ public class FetcherBinary implements Fetcher{
             if(vocabularyReader.getChannel().position()==0){
                 vocabularyReader.skip(Integer.BYTES);
             }
-            byte [] termByte = new byte[Constants.BYTES_STORED_STRING];
+           /* byte [] termByte = new byte[Constants.BYTES_STORED_STRING];
             if(vocabularyReader.read(termByte)!=Constants.BYTES_STORED_STRING) throw new IOException();
             term = ByteUtils.bytesToString(termByte, 0, Constants.BYTES_STORED_STRING);
-
+            */
             byte[] vocabularyEntryBytes = new byte[Constants.VOCABULARY_ENTRY_BYTES_SIZE];
             if(vocabularyReader.read(vocabularyEntryBytes)!=Constants.VOCABULARY_ENTRY_BYTES_SIZE) throw new IOException();
             vocabularyEntry = bytesToVocabularyEntry(vocabularyEntryBytes);
+            term = ByteUtils.bytesToString(vocabularyEntryBytes, 0, Constants.BYTES_STORED_STRING);
         } catch (IOException ie){
             ie.printStackTrace();
         }
