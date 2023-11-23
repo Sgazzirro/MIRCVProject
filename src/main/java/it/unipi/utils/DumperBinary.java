@@ -1,20 +1,25 @@
 package it.unipi.utils;
 
 import it.unipi.model.DocumentIndex;
-import it.unipi.model.Encoder;
 import it.unipi.model.PostingList;
 import it.unipi.model.Vocabulary;
-import it.unipi.model.implementation.*;
 import it.unipi.model.VocabularyEntry;
+import it.unipi.model.implementation.DocumentIndexEntry;
+import it.unipi.model.implementation.PostingListImpl;
 
-import java.io.*;
+import javax.xml.crypto.Data;
+import java.io.DataOutputStream;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Map;
 
-public class DumperCompressed implements Dumper {
+public class DumperBinary implements Dumper{
+    Boolean opened = false;
 
-    // Vocabulary writer
+    // vocabulary writer
     private FileOutputStream vocabularyStream;
     private DataOutputStream vocabularyWriter;
     // Doc Ids writer
@@ -23,17 +28,12 @@ public class DumperCompressed implements Dumper {
     // Term frequencies writer
     private FileOutputStream termFreqStream;
     private DataOutputStream termFreqWriter;
-    // Document index writer
+
+    // documentIndexWriter
     private FileOutputStream documentIndexStream;
     private DataOutputStream documentIndexWriter;
-
-    private final Encoder docIdsEncoder = new EliasFano();
-    private final Encoder tfEncoder = new Simple9(true);
-    private boolean opened = false;
-
     private long docIdsOffset;
     private long termFreqOffset;
-
     @Override
     public boolean start(String path) {
         try {
@@ -64,39 +64,27 @@ public class DumperCompressed implements Dumper {
         VocabularyEntry vocabularyEntry = entry.getValue();
 
         int documentFrequency = vocabularyEntry.getDocumentFrequency();
-        double upperBound = vocabularyEntry.getUpperBound();
-
+        Double upperBound = vocabularyEntry.getUpperBound();
         PostingList pList = vocabularyEntry.getPostingList();
-        if (!(pList instanceof PostingListImpl))
+        if(!(pList instanceof PostingListImpl))
             throw new RuntimeException("Cannot dump a compressed posting list, it must be full in memory");
 
         PostingListImpl postingList = (PostingListImpl) pList;
         double idf = postingList.getIdf();
         List<Integer> docIdList = postingList.getDocIds();
-        List<Integer> tfList = postingList.getTermFrequencies();
+        List<Integer> termFrequencyList = postingList.getTermFrequencies();
 
-        int docIdsLength = 0, termFreqLength = 0;
-        if (!opened)
-            throw new IOException();
-
-        // Dump doc ids
-        int blockSize = Constants.BLOCK_SIZE;
-        for (int i = 0; i < docIdList.size(); i += blockSize) {
-            List<Integer> blockDocIdList = docIdList.subList(i, Math.min(docIdList.size(), i + blockSize));
-            byte[] byteList = docIdsEncoder.encode(blockDocIdList);
-
-            docIdsWriter.write(byteList);
-            docIdsLength += byteList.length;
+        // dump docIds
+        for(Integer docId: docIdList){
+            docIdsWriter.writeInt(docId);
         }
+        int docIdsLength = docIdList.size()*Integer.BYTES;
 
-        // Dump term frequencies
-        for (int i = 0; i < docIdList.size(); i += blockSize) {
-            List<Integer> blockTFList = tfList.subList(i, Math.min(docIdList.size(), i + blockSize));
-            byte[] byteList = tfEncoder.encode(blockTFList);
-
-            termFreqWriter.write(byteList);
-            termFreqLength += byteList.length;
+        // dump term frequencies
+        for(Integer termFreq: termFrequencyList){
+            termFreqWriter.writeInt(termFreq);
         }
+        int termFreqLength = termFrequencyList.size()*Integer.BYTES;
 
         // Dump vocabulary entry
         byte[] stringBytes = term.getBytes(StandardCharsets.UTF_8);
@@ -116,27 +104,6 @@ public class DumperCompressed implements Dumper {
         docIdsOffset += docIdsLength;
         termFreqOffset += termFreqLength;
     }
-
-    /*
-    public void dumpMergedEntry(Map.Entry<String, VocabularyEntry> entry){
-        // TO REVIEW: QUALCUNO DOVRà PRENDERSI START OFFSET E ENDOFFSET
-        String term = entry.getKey();
-        VocabularyEntry vocabularyEntry = entry.getValue();
-
-        PostingList postingList = vocabularyEntry.getPostingList();
-        byte[] docIdCompressedArray = postingList.getCompressedDocIdArray();
-        try {
-            if (!opened){
-                throw new IOException();
-            }
-            long startOffset = docIdsStream.getChannel().position();
-            docIdsWriter.write(docIdCompressedArray);
-            long endOffset = docIdsStream.getChannel().position();
-        } catch (IOException ie){
-            ie.printStackTrace();
-        }
-    }
-     */
 
     @Override
     public void dumpDocumentIndex(DocumentIndex docIndex) {
