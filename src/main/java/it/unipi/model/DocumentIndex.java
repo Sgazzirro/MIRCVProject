@@ -17,5 +17,7 @@ public interface DocumentIndex {
 
     public boolean addDocument(int docId, int docLength);
 
+    public void setTotalLength(int L);
+    public void setNumDocuments(int N);
     Iterable<? extends Map.Entry<Integer, DocumentIndexEntry>> getEntries();
 }

@@ -7,9 +7,7 @@ import it.unipi.model.implementation.DocumentIndexImpl;
 import it.unipi.model.implementation.DocumentStreamImpl;
 import it.unipi.model.implementation.TokenizerImpl;
 import it.unipi.model.implementation.VocabularyImpl;
-import it.unipi.utils.Constants;
-import it.unipi.utils.DumperTXT;
-import it.unipi.utils.Dumper;
+import it.unipi.utils.*;
 
 import java.io.IOException;
 
@@ -59,13 +57,13 @@ public class App
         Tokenizer t = new TokenizerImpl();
         DocumentIndex di = new DocumentIndexImpl();
         Vocabulary v = new VocabularyImpl();
-        Dumper d = new DumperTXT();
+        Dumper d =  new DumperBinary();
 
         InMemoryIndexing memoryIndexing = new InMemoryIndexing(ds, v, d, t, di);
         // memoryIndexing.buildIndex("data/");
 
         newSPIMI spimi = new newSPIMI(ds, memoryIndexing);
-        spimi.buildIndexSPIMI("DEBUG");
+        spimi.buildIndexSPIMI("NOT_COMPRESSED");
 
     }
 

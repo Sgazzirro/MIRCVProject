@@ -244,4 +244,18 @@ public class FetcherCompressed implements Fetcher {
         }
         return !opened;
     }
+
+    public int[] getInformations() {
+        int N;
+        int l;
+        try {
+            DataInputStream disDocIndex = new DataInputStream(documentIndexReader);
+            l = disDocIndex.readInt();
+            N = disDocIndex.readInt();
+        }
+        catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        return new int[]{N, l};
+    }
 }

@@ -1,9 +1,11 @@
 package it.unipi.index;
 
+import it.unipi.model.DocumentIndex;
 import it.unipi.model.DocumentStream;
 import it.unipi.model.PostingList;
 import it.unipi.model.implementation.Document;
 import it.unipi.model.implementation.DocumentIndexEntry;
+import it.unipi.model.implementation.DocumentIndexImpl;
 import it.unipi.model.implementation.PostingListImpl;
 import it.unipi.model.VocabularyEntry;
 import it.unipi.utils.Fetcher;
@@ -20,6 +22,7 @@ public class newSPIMI {
     private long block_size = 10000;
     private int next_block = 0;
     private boolean finish = false;
+    private String mode = "DEBUG";
 
     public newSPIMI(DocumentStream s, InMemoryIndexing i) {
         stream = s;
@@ -42,6 +45,7 @@ public class newSPIMI {
     }
 
     public void buildIndexSPIMI(String mode) {
+        this.mode = mode;
         // Preliminary flush of files
         for (File file : Objects.requireNonNull(new File("./data/blocks").listFiles()))
             if (!file.isDirectory())
@@ -125,7 +129,6 @@ public class newSPIMI {
         String[] terms = new String[next_block];
         VocabularyEntry[] entries = new VocabularyEntry[next_block];
         String lowestTerm = null;
-        System.out.println(next_block);
         while (true) {
             for (int k = 0; k < next_block; k++) {
                 if (closed[k]) {
@@ -138,7 +141,6 @@ public class newSPIMI {
                     Map.Entry<String, VocabularyEntry> entry = readVocBuffers.get(k).loadVocEntry();
                     if (entry == null) {
                         blocksClosed++;
-                        System.out.println("BLOCK CLOSED: " + k);
                         closed[k] = true;
                         continue;
                     }
@@ -177,7 +179,6 @@ public class newSPIMI {
             // Write the merge onto the output file
             try {
                 VocabularyEntry entry = mergeEntries(toMerge);
-                System.out.println(lowestTerm);
                 indexer.dumpVocabularyLine(new AbstractMap.SimpleEntry<>(lowestTerm, entry));
             } catch (IOException e) {
                 throw new RuntimeException(e);
@@ -188,8 +189,21 @@ public class newSPIMI {
     private void concatenateDocIndexes(List<Fetcher> readers) {
         //indexer.setup("data/");
 
+        if(!mode.equals("DEBUG")) {
+            int N = 0;
+            int L = 0;
+            for (int i = 0; i < next_block; i++) {
+                int[] info = readers.get(i).getInformations();
+                N += info[0];
+                L += info[1];
+            }
+            DocumentIndex di = new DocumentIndexImpl();
+            di.setNumDocuments(N);
+            di.setTotalLength(L);
+            indexer.dumpDocumentIndex();
+        }
+
         for(int i = 0; i < next_block; i++){
-            // readers.get(i).start("_"+i+"document_index.csv");
             Map.Entry<Integer, DocumentIndexEntry> entry;
             while((entry = readers.get(i).loadDocEntry()) != null){
                 indexer.dumpDocumentIndexLine(entry);

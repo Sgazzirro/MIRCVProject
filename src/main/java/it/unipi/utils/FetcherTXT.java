@@ -163,4 +163,9 @@ public class FetcherTXT implements Fetcher {
         }
         return true;
     }
+
+    @Override
+    public int[] getInformations() {
+        return null;
+    }
 }

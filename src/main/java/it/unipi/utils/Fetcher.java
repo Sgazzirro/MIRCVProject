@@ -23,4 +23,5 @@ public interface Fetcher {
 
     boolean end();
 
+    int[] getInformations();
 }

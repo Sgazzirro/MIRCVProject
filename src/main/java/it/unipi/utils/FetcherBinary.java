@@ -8,6 +8,7 @@ import it.unipi.model.implementation.PostingListImpl;
 
 import javax.xml.crypto.Data;
 import java.io.DataInputStream;
+import java.io.EOFException;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -33,10 +34,6 @@ public class FetcherBinary implements Fetcher{
             docIdsReader = new FileInputStream(path + Constants.DOC_IDS_POSTING_FILENAME);
             termFreqReader = new FileInputStream(path + Constants.TF_POSTING_FILENAME);
             documentIndexReader = new FileInputStream(path + Constants.DOCUMENT_INDEX_FILENAME);
-
-            // Read number of entries of the vocabulary
-            //vocabularySize = ByteUtils.bytesToInt(vocabularyReader.readNBytes(Integer.BYTES));
-            System.out.println("SIZE: " + vocabularySize);
             opened = true;
 
         } catch (IOException ie) {
@@ -55,26 +52,29 @@ public class FetcherBinary implements Fetcher{
     }
     public void loadPosting(PostingList list, long docIdsOffset, int docIdsLength, long termFreqOffset, int termFreqLength) {
         try {
+            docIdsReader.getChannel().position(docIdsOffset);
             DataInputStream disDocId = new DataInputStream(docIdsReader);
+            /*System.out.println("OFFSET" + docIdsOffset);
             if(disDocId.skip(docIdsOffset)!=docIdsOffset){
                 throw new IOException();
-            }
+            }*/
 
+            termFreqReader.getChannel().position(termFreqOffset);
             DataInputStream disTermFreq = new DataInputStream(termFreqReader);
-            if(disTermFreq.skip(termFreqOffset)!=termFreqOffset){
+            /* if(disTermFreq.skip(termFreqOffset)!=termFreqOffset){
                 throw new IOException();
-            }
+            }*/
 
             // load docIds and termFreq
-            System.out.println(docIdsLength);
+
             for (int len = 0; len < docIdsLength; len += Integer.BYTES) {
                 int docId = disDocId.readInt();
                 int termFreq = disTermFreq.readInt();
-                System.out.println(docId + " " + termFreq);
+
                 list.addPosting(docId, termFreq);
             }
-            disDocId.close();
-            disTermFreq.close();
+            //disDocId.close();
+            //disTermFreq.close();
         } catch (IOException ie){
             ie.printStackTrace();
         }
@@ -89,6 +89,7 @@ public class FetcherBinary implements Fetcher{
             // Binary search to find the term
             // Remember to consider also the int at the beginning of file denoting vocabulary size
             int start = 0, end = vocabularySize;
+
             int middle;
             byte[] vocabularyEntryBytes = new byte[Constants.VOCABULARY_ENTRY_BYTES_SIZE];
 
@@ -100,10 +101,9 @@ public class FetcherBinary implements Fetcher{
 
             while (start < end) {
                 middle = (end + start) / 2;
-                vocabularyReader.getChannel().position(Integer.BYTES + (long) middle * Constants.VOCABULARY_ENTRY_BYTES_SIZE);
+                vocabularyReader.getChannel().position((long) middle * Constants.VOCABULARY_ENTRY_BYTES_SIZE);
                 vocabularyReader.read(vocabularyEntryBytes, 0, Constants.VOCABULARY_ENTRY_BYTES_SIZE);
-                System.out.println(truncatedTerm);
-                System.out.println(ByteUtils.bytesToString(vocabularyEntryBytes, 0, Constants.BYTES_STORED_STRING));
+
                 int comparison = truncatedTerm.compareTo(ByteUtils.bytesToString(vocabularyEntryBytes, 0, Constants.BYTES_STORED_STRING));
                 if (comparison > 0)         // This means term > entry
                     start = middle;
@@ -147,16 +147,12 @@ public class FetcherBinary implements Fetcher{
             if(!opened){
                 throw new IOException();
             }
-            // remember the integer at the start
-            if(vocabularyReader.getChannel().position()==0){
-                vocabularyReader.skip(Integer.BYTES);
-            }
            /* byte [] termByte = new byte[Constants.BYTES_STORED_STRING];
             if(vocabularyReader.read(termByte)!=Constants.BYTES_STORED_STRING) throw new IOException();
             term = ByteUtils.bytesToString(termByte, 0, Constants.BYTES_STORED_STRING);
             */
             byte[] vocabularyEntryBytes = new byte[Constants.VOCABULARY_ENTRY_BYTES_SIZE];
-            if(vocabularyReader.read(vocabularyEntryBytes)!=Constants.VOCABULARY_ENTRY_BYTES_SIZE) throw new IOException();
+            if(vocabularyReader.read(vocabularyEntryBytes)!=Constants.VOCABULARY_ENTRY_BYTES_SIZE) return null;
             vocabularyEntry = bytesToVocabularyEntry(vocabularyEntryBytes);
             term = ByteUtils.bytesToString(vocabularyEntryBytes, 0, Constants.BYTES_STORED_STRING);
         } catch (IOException ie){
@@ -178,10 +174,7 @@ public class FetcherBinary implements Fetcher{
             if (!opened) {
                 throw new IOException();
             }
-            // remember the 2 integers at the start
-            if(documentIndexReader.getChannel().position()==0){
-                documentIndexReader.skip(2*Integer.BYTES);
-            }
+
             DataInputStream disDocIndex = new DataInputStream(documentIndexReader);
 
             docId = disDocIndex.readInt();
@@ -189,11 +182,25 @@ public class FetcherBinary implements Fetcher{
             documentIndexEntry= new DocumentIndexEntry();
             documentIndexEntry.setDocumentLength(length);
         } catch(IOException ie){
-            ie.printStackTrace();
+            return null;
         }
         return Map.entry(docId, documentIndexEntry);
     }
 
+    @Override
+    public int[] getInformations() {
+        int N;
+        int l;
+        try {
+            DataInputStream disDocIndex = new DataInputStream(documentIndexReader);
+            l = disDocIndex.readInt();
+            N = disDocIndex.readInt();
+        }
+        catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        return new int[]{N, l};
+    }
     @Override
     public boolean end() {
         try {
@@ -210,4 +217,6 @@ public class FetcherBinary implements Fetcher{
         }
         return !opened;
     }
+
+
 }
