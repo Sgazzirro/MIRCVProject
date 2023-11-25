@@ -1,6 +1,7 @@
 package it.unipi.index;
 
 import it.unipi.model.DocumentStream;
+import it.unipi.model.PostingList;
 import it.unipi.model.VocabularyEntry;
 import it.unipi.model.implementation.*;
 import it.unipi.utils.Fetcher;
@@ -114,6 +115,41 @@ public class SPIMITest {
         );
         assertEquals(lowests.get(0), "aaa");
         assertEquals(lowests.get(1), "bab");
+    }
+
+    @Test
+    public void test_merge_entries() throws IOException {
+        List<VocabularyEntry> input = new ArrayList<>();
+        VocabularyEntry entry1 = new VocabularyEntry();
+        VocabularyEntry entry2 = new VocabularyEntry();
+        entry1.setDocumentFrequency(1);
+        entry2.setDocumentFrequency(3);
+        entry1.setUpperBound(2.3);
+        entry2.setUpperBound(4.5);
+        input.add(entry1);
+        input.add(entry2);
+
+        PostingList p1 = new PostingListImpl();
+        p1.addPosting(1, 2);
+        PostingList p2 = new PostingListImpl();
+        p1.addPosting(2,3);
+        p1.addPosting(3, 4);
+        p1.addPosting(4, 5);
+        entry1.setPostingList(p1);
+        entry2.setPostingList(p2);
+
+        PostingList merged = new PostingListImpl();
+        merged.addPosting(1, 2);
+        merged.addPosting(2, 3);
+        merged.addPosting(3, 4);
+        merged.addPosting(4, 5);
+
+        VocabularyEntry output = new VocabularyEntry();
+        output.setDocumentFrequency(4);
+        output.setUpperBound(4.5);
+        output.setPostingList(merged);
+
+        assertEquals(output, spimi.mergeEntries(input));
     }
 
 }

@@ -278,4 +278,12 @@ public class InMemoryIndexing {
     void dumpDocumentIndexLine(Map.Entry<Integer,DocumentIndexEntry> entry){
         dumper.dumpDocumentIndexEntry(entry);
     }
+
+    public Vocabulary getVocabulary() {
+        return vocabulary;
+    }
+
+    public DocumentIndex getDocIndex() {
+        return docIndex;
+    }
 }

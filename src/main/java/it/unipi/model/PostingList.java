@@ -67,9 +67,11 @@ public abstract class PostingList {
 
     public abstract boolean addPosting(int docId, int freq);
 
+
     public boolean loadPosting() {
         return loadPosting(Constants.DOC_IDS_POSTING_FILENAME, Constants.TF_POSTING_FILENAME);
     }
+
 
     public abstract boolean loadPosting(String docIdsFilename, String termFreqFilename);
 
