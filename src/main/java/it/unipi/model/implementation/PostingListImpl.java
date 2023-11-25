@@ -41,8 +41,8 @@ public class PostingListImpl extends PostingList {
      * @return the length of the new list
      */
     public int mergePosting(PostingList toMerge) {
-        if (!(toMerge instanceof PostingListImpl))
-            throw new RuntimeException("Cannot merge PostingLists with different implementations");
+        //if (!(toMerge instanceof PostingListImpl))
+        //    throw new RuntimeException("Cannot merge PostingLists with different implementations");
 
         PostingListImpl other = (PostingListImpl) toMerge;
         docIdList.addAll(other.getDocIds());
