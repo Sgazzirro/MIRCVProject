@@ -28,6 +28,7 @@
       <version>5.4.0</version>
       <scope>test</scope>
     </dependency>
+
     <!-- Jackson Core -->
     <dependency>
       <groupId>com.fasterxml.jackson.core</groupId>

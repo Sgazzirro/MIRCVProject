@@ -52,7 +52,7 @@ public class DumperCompressed implements Dumper {
             docIdsOffset = termFreqOffset = 0;
 
         } catch(IOException ie) {
-            System.out.println("Error in opening the file");
+            System.err.println("Error in opening the file");
             opened = false;
         }
         return opened;

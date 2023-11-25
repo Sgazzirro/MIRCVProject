@@ -19,7 +19,7 @@ public class FetcherTXT implements Fetcher {
         try{
             if (opened)
                 throw new IOException();
-            System.out.println("TRYING TO OPEN" + path);
+            // System.out.println("TRYING TO OPEN" + path);
             globalReaderVOC = new BufferedReader(new FileReader(path + Constants.VOCABULARY_FILENAME));
             globalReaderDOC = new BufferedReader(new FileReader(path + Constants.DOCUMENT_INDEX_FILENAME));
             opened = true;

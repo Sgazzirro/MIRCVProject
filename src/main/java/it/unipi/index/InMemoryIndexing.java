@@ -207,11 +207,11 @@ public class InMemoryIndexing {
     private Tokenizer tokenizer;
     private DocumentIndex docIndex;
 
-    public InMemoryIndexing(DocumentStream stream, Vocabulary voc, Dumper d, Tokenizer tok, DocumentIndex di){
+    public InMemoryIndexing(DocumentStream stream, Vocabulary voc, Dumper d, DocumentIndex di){
         vocabulary = voc;
         tokenStream = stream;
         dumper = d;
-        tokenizer = tok;
+        tokenizer = new TokenizerImpl();
         docIndex = di;
     }
 

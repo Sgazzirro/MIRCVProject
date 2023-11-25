@@ -70,7 +70,6 @@ public class DumperTXT implements Dumper {
                     .append(offsets[1]).append(",")
                     .append(length).append("\n").toString();
 
-            System.out.println(opened);
             writerVOC.write(result);
 
         } catch (IOException e) {

@@ -5,16 +5,11 @@ import it.unipi.index.newSPIMI;
 import it.unipi.model.*;
 import it.unipi.model.implementation.DocumentIndexImpl;
 import it.unipi.model.implementation.DocumentStreamImpl;
-import it.unipi.model.implementation.TokenizerImpl;
 import it.unipi.model.implementation.VocabularyImpl;
 import it.unipi.utils.*;
 
 import java.io.IOException;
 
-/**
- * Hello world!
- *
- */
 public class App 
 {
     public static void main( String[] args ) throws IOException {
@@ -54,18 +49,15 @@ public class App
          * NEW TESTS OF 14/11/2023
          */
         DocumentStream ds = new DocumentStreamImpl(Constants.COLLECTION_FILE);
-        Tokenizer t = new TokenizerImpl();
         DocumentIndex di = new DocumentIndexImpl();
         Vocabulary v = new VocabularyImpl();
-        Dumper d =  new DumperBinary();
+        Dumper d =  new DumperCompressed();
 
-        InMemoryIndexing memoryIndexing = new InMemoryIndexing(ds, v, d, t, di);
+        InMemoryIndexing memoryIndexing = new InMemoryIndexing(ds, v, d, di);
         // memoryIndexing.buildIndex("data/");
 
         newSPIMI spimi = new newSPIMI(ds, memoryIndexing);
-        spimi.buildIndexSPIMI("NOT_COMPRESSED");
-
+        spimi.buildIndexSPIMI("COMPRESSED");
     }
-
 
 }

@@ -102,7 +102,6 @@ public class SPIMITest {
         when(mockSpimi.getNext_block()).thenReturn(2);
         when(mockSpimi.mergeEntries(anyList())).thenReturn(new VocabularyEntry());
 
-
         mockSpimi.mergeAllBlocks(mockReadVocBuffers);
         ArrayList<String> lowests = new ArrayList<>();
         verify(i, atLeastOnce()).dumpVocabularyLine(

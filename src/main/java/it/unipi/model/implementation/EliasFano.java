@@ -11,12 +11,15 @@ public class EliasFano implements Encoder {
 
     public byte[] encode(List<Integer> array) {
         // data needed to compress
-        int U = array.get(array.size()-1);
+        int originalU = array.get(array.size() - 1);
+        int U = originalU > 0 ? originalU : 1;
+        // It could happen that U is 0 (if we only have one docId=0), in this case set U=1
+        // TODO - Check that in this way we don't break anything
         int n = array.size();
 
         // number of bits
-        int lowHalfLength = (int) Math.ceil(Math.log((float)U/n)/Math.log(2));
-        int highHalfLength = (int) Math.ceil(Math.log(U)/Math.log(2))-lowHalfLength;
+        int lowHalfLength = (int) Math.ceil(Math.log((float) U / n) / Math.log(2));
+        int highHalfLength = (int) Math.ceil(Math.log(U) / Math.log(2)) - lowHalfLength;
         int totBits = lowHalfLength+highHalfLength;
 
         // structures to maintain encoded numbers
@@ -24,12 +27,12 @@ public class EliasFano implements Encoder {
         BitSet lowBitset = new BitSet(lowHalfLength*n);
 
         // utility
-        int index =0;
-        Map<Integer,Integer> clusterComp = new HashMap<>();
+        int index = 0;
+        Map<Integer, Integer> clusterComp = new HashMap<>();
 
         for(int number: array){
             // parte bassa
-            BitSet extractedLowBitset = extractLowBitset(number,lowHalfLength);
+            BitSet extractedLowBitset = extractLowBitset(number, lowHalfLength);
             append(lowBitset, extractedLowBitset, lowHalfLength, index);
             index += lowHalfLength;
 
@@ -40,8 +43,8 @@ public class EliasFano implements Encoder {
 
         // high part
         index = 0;
-        for(int i=0; i<Math.pow(2,highHalfLength); i++){
-            int value = clusterComp.get(i) == null? 0:clusterComp.get(i);
+        for (int i=0; i<Math.pow(2,highHalfLength); i++){
+            int value = clusterComp.get(i) == null ? 0 : clusterComp.get(i);
             append(highBitset, integerToUnary(value), integerToUnary(value).length()+1, index);
             index+=integerToUnary(value).length()+1;
         }
@@ -49,13 +52,9 @@ public class EliasFano implements Encoder {
         // Convert everything as byte array
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
 
-
-        // Write U and n byte by byte
-        //outputStream.write(U >> 24); outputStream.write(U >> 16); outputStream.write(U >> 8); outputStream.write(U);
-        //outputStream.write(n >> 24); outputStream.write(n >> 16); outputStream.write(n >> 8); outputStream.write(n);
         try {
             DataOutputStream dos = new DataOutputStream(outputStream);
-            dos.writeInt(U);
+            dos.writeInt(originalU);
             dos.writeInt(n);
             outputStream.write(highBitset.toByteArray());
             outputStream.write(lowBitset.toByteArray());
@@ -73,7 +72,8 @@ public class EliasFano implements Encoder {
         ByteArrayInputStream bais = new ByteArrayInputStream(byteList);
         DataInputStream dis = new DataInputStream(bais);
         try {
-            int U = dis.readInt();
+            int originalU = dis.readInt();
+            int U = originalU > 0 ? originalU : 1;
             int n = dis.readInt();
 
             // number of bits
@@ -82,8 +82,8 @@ public class EliasFano implements Encoder {
             int nTotHighBits = (int) (n + Math.pow(2, highHalfLength));
             int nTotLowBits = lowHalfLength*n;
 
-            byte [] lowBytes = new byte[(int) Math.ceil((float) nTotLowBits/8)];
-            byte [] highBytes = new byte[(int) Math.ceil((float) nTotHighBits/8)];
+            byte[] lowBytes = new byte[(int) Math.ceil((float) nTotLowBits/8)];
+            byte[] highBytes = new byte[(int) Math.ceil((float) nTotHighBits/8)];
 
             dis.read(highBytes);
             dis.read(lowBytes);

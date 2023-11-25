@@ -1,19 +1,12 @@
 package it.unipi.index;
 
-import it.unipi.model.DocumentIndex;
-import it.unipi.model.DocumentStream;
-import it.unipi.model.PostingList;
-import it.unipi.model.implementation.Document;
-import it.unipi.model.implementation.DocumentIndexEntry;
-import it.unipi.model.implementation.DocumentIndexImpl;
-import it.unipi.model.implementation.PostingListImpl;
-import it.unipi.model.VocabularyEntry;
-import it.unipi.utils.Fetcher;
-import it.unipi.utils.FetcherBinary;
-import it.unipi.utils.FetcherCompressed;
-import it.unipi.utils.FetcherTXT;
+import it.unipi.model.*;
+import it.unipi.model.implementation.*;
+import it.unipi.utils.*;
 
 import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.*;
 
 public class newSPIMI {
@@ -24,9 +17,17 @@ public class newSPIMI {
     private boolean finish = false;
     private String mode = "DEBUG";
 
+    private InMemoryIndexing blockIndexer;
+
     public newSPIMI(DocumentStream s, InMemoryIndexing i) {
         stream = s;
         indexer = i;
+
+        DocumentStream ds = new DocumentStreamImpl(Constants.COLLECTION_FILE);
+        DocumentIndex di = new DocumentIndexImpl();
+        Vocabulary v = new VocabularyImpl();
+        Dumper d =  new DumperTXT();
+        blockIndexer = new InMemoryIndexing(ds, v, d, di);
     }
 
     public void setLimit(int size) {
@@ -45,6 +46,11 @@ public class newSPIMI {
     }
 
     public void buildIndexSPIMI(String mode) {
+        // Create working directory if not exists
+        try {
+            Files.createDirectories(Paths.get("./data/blocks"));
+        } catch (IOException ignored) { }
+
         this.mode = mode;
         // Preliminary flush of files
         for (File file : Objects.requireNonNull(new File("./data/blocks").listFiles()))
@@ -54,19 +60,19 @@ public class newSPIMI {
         // < Until documents are not finished >
         // < Create and Invert the block, write it to a file >
         // < Merge all blocks >
-        while (!finished()) {
+        while (!finished())
             invertBlock("data/blocks/_" + next_block);
-        }
 
-        // TODO: Implement
+        // Intermediate blocks are generated in debug mode
         List<Fetcher> readVocBuffers = new ArrayList<>();
         for (int i = 0; i < next_block; i++) {
-            if(mode.equals("DEBUG"))
+            // if(mode.equals("DEBUG"))
                 readVocBuffers.add(new FetcherTXT());
-            if(mode.equals("NOT_COMPRESSED"))
+            /* if(mode.equals("NOT_COMPRESSED"))
                 readVocBuffers.add(new FetcherBinary());
             if(mode.equals("COMPRESSED"))
                 readVocBuffers.add(new FetcherCompressed());
+             */
             readVocBuffers.get(i).start("data/blocks/_" + i);
         }
         mergeAllBlocks(readVocBuffers);
@@ -80,8 +86,8 @@ public class newSPIMI {
         long startMemory = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
         long usedMemory = startMemory;
 
-        // Setup dumper
-        indexer.setup(filename);
+        // Setup block index
+        blockIndexer.setup(filename);
 
         while (availableMemory(usedMemory, startMemory)) {
             // Get the next document
@@ -91,16 +97,16 @@ public class newSPIMI {
                 finish = true;
                 break;
             }
-            indexer.processDocument(doc.get());
+            blockIndexer.processDocument(doc.get());
             usedMemory = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
         }
 
         // Dump when out of memory
-        indexer.dumpVocabulary();
-        indexer.dumpDocumentIndex();
+        blockIndexer.dumpVocabulary();
+        blockIndexer.dumpDocumentIndex();
 
         // Reset dump
-        indexer.close();
+        blockIndexer.close();
         next_block++;
     }
 
@@ -128,12 +134,11 @@ public class newSPIMI {
 
         String[] terms = new String[next_block];
         VocabularyEntry[] entries = new VocabularyEntry[next_block];
-        String lowestTerm = null;
+        String lowestTerm;
         while (true) {
             for (int k = 0; k < next_block; k++) {
-                if (closed[k]) {
+                if (closed[k])
                     continue;
-                }
 
                 if (processed.get(k)) {
                     // Get a vocabulary entry
@@ -165,8 +170,8 @@ public class newSPIMI {
                     lowestTerm = terms[k];
                 }
             }
-            //Merge entries with equal terms
-            // Mark as processed correspondant blocks
+            // Merge entries with equal terms
+            // Mark as processed correspondent blocks
             List<VocabularyEntry> toMerge = new ArrayList<>();
             for (int k = 0; k < next_block; k++) {
                 if (lowestTerm.compareTo(terms[k]) == 0 && !closed[k]) {
@@ -187,8 +192,8 @@ public class newSPIMI {
     }
 
     private void concatenateDocIndexes(List<Fetcher> readers) {
-        //indexer.setup("data/");
 
+        /* This is useless at the moment since merging happens only for TXT blocks
         if(!mode.equals("DEBUG")) {
             int N = 0;
             int L = 0;
@@ -202,6 +207,7 @@ public class newSPIMI {
             di.setTotalLength(L);
             indexer.dumpDocumentIndex();
         }
+         */
 
         for(int i = 0; i < next_block; i++){
             Map.Entry<Integer, DocumentIndexEntry> entry;
