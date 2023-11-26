@@ -3,12 +3,12 @@ package it.unipi.model.implementation;
 import it.unipi.model.Encoder;
 import junit.framework.TestCase;
 
-import java.io.ByteArrayInputStream;
-import java.io.DataInputStream;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+
+import static it.unipi.utils.ByteUtils.binaryStringToByteArray;
+import static it.unipi.utils.ByteUtils.byteArrayToBinaryString;
 
 public class EliasFanoTest extends TestCase {
 
@@ -46,29 +46,9 @@ public class EliasFanoTest extends TestCase {
         assertEquals(Arrays.asList(3,4,7,13,14,15,21,25,36,38,54,62), eliasFano.decode(byteArray));
     }
 
-    private String byteArrayToBinaryString(byte[] byteArray) {
-        StringBuilder binaryStringBuilder = new StringBuilder();
-
-        for (byte b : byteArray) {
-            // Convert each byte to binary and append to the StringBuilder
-            binaryStringBuilder.append(String.format("%8s", Integer.toBinaryString(b & 0xFF)).replace(' ', '0'));
-        }
-
-        return binaryStringBuilder.toString();
+    public void testEncodeDecode() {
+        List<Integer> list = List.of(1, 2);
+        byte[] bytes = eliasFano.encode(list);
+        assertEquals(list, eliasFano.decode(bytes));
     }
-
-    private byte[] binaryStringToByteArray(String binaryString) {
-        int length = binaryString.length();
-        byte[] byteArray = new byte[length / 8];
-        int index = 0; // Added index variable
-
-        for (int i = 0; i < length; i += 8) {
-            String byteString = binaryString.substring(i, i + 8);
-            byte b = (byte) Integer.parseInt(byteString, 2);
-            byteArray[index++] = b; // Use separate index variable
-        }
-
-        return byteArray;
-    }
-
 }

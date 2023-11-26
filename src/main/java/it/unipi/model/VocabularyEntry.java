@@ -54,6 +54,26 @@ public class VocabularyEntry {
         this.postingList = postingList;
     }
 
+    public static VocabularyEntry parseTXT(String line) {
+        String[] params = line.split(",");
+
+        int documentFrequency = Integer.parseInt(params[1]);
+        double upperBound = Double.parseDouble(params[2]);
+        PostingList postingList;
+        if(!Constants.getCompression())
+            postingList = new PostingListImpl();
+        else
+            postingList = new PostingListCompressed();
+        postingList.setIdf(Double.parseDouble(params[3]));
+        postingList.setDocIdsOffset(Long.parseLong(params[4]));
+        postingList.setTermFreqOffset(Long.parseLong(params[5]));
+        int length = Integer.parseInt(params[6]);
+        postingList.setDocIdsLength(length);
+        postingList.setTermFreqLength(length);
+
+        return new VocabularyEntry(documentFrequency, upperBound, postingList);
+    }
+
     @Override
     public String toString() {
         return "VocabularyEntry{" +
@@ -76,23 +96,4 @@ public class VocabularyEntry {
         return Objects.hash(documentFrequency, upperBound, postingList);
     }
 
-    public static VocabularyEntry parseTXT(String line) {
-        String[] params = line.split(",");
-
-        int documentFrequency = Integer.parseInt(params[1]);
-        double upperBound = Double.parseDouble(params[2]);
-        PostingList postingList;
-        if(!Constants.getCompression())
-            postingList = new PostingListImpl();
-        else
-            postingList = new PostingListCompressed();
-        postingList.setIdf(Double.parseDouble(params[3]));
-        postingList.setDocIdsOffset(Long.parseLong(params[4]));
-        postingList.setTermFreqOffset(Long.parseLong(params[5]));
-        int length = Integer.parseInt(params[6]);
-        postingList.setDocIdsLength(length);
-        postingList.setTermFreqLength(length);
-
-        return new VocabularyEntry(documentFrequency, upperBound, postingList);
-    }
 }

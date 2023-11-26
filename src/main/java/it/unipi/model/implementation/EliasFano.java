@@ -129,9 +129,9 @@ public class EliasFano implements Encoder {
         BitSet unaryBitset = new BitSet();
 
         // Add 'true' to the list 'num' times
-        for (int i = 0; i < num; i++) {
+        for (int i = 0; i < num; i++)
             unaryBitset.set(unaryBitset.length(), true);
-        }
+
         unaryBitset.set(unaryBitset.length(), false);
 
         return unaryBitset;
@@ -141,5 +141,13 @@ public class EliasFano implements Encoder {
         // appends bitset2 to bitset1, for nbits, starting from index.
         for (int i=0; i<nbits; i++)
             bitset1.set(index++, bitset2.get(i));
+    }
+
+    public static void main(String[] args) {
+        EliasFano test = new EliasFano();
+        byte[] bytes12 = test.encode(List.of(1, 2));
+        byte[] bytes01 = test.encode(List.of(0, 1));
+        System.out.println(ByteUtils.byteArrayToBinaryString(bytes01));
+        System.out.println(ByteUtils.byteArrayToBinaryString(bytes12));
     }
 }

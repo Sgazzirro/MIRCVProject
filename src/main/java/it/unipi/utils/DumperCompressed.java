@@ -40,6 +40,8 @@ public class DumperCompressed implements Dumper {
             if (opened)
                 throw new IOException();
 
+            IOUtils.createDirectory(path);
+
             vocabularyStream = new FileOutputStream(path + Constants.VOCABULARY_FILENAME, true);
             vocabularyWriter = new DataOutputStream(vocabularyStream);
             docIdsStream = new FileOutputStream(path + Constants.DOC_IDS_POSTING_FILENAME, true);
@@ -52,10 +54,22 @@ public class DumperCompressed implements Dumper {
             docIdsOffset = termFreqOffset = 0;
 
         } catch(IOException ie) {
+            ie.printStackTrace();
             System.err.println("Error in opening the file");
             opened = false;
         }
         return opened;
+    }
+
+    @Override
+    public void dumpVocabulary(Vocabulary vocabulary) {
+        try {
+            for (Map.Entry<String, VocabularyEntry> entry : vocabulary.getEntries())
+                dumpVocabularyEntry(entry);
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     @Override
@@ -82,6 +96,8 @@ public class DumperCompressed implements Dumper {
         for (int i = 0; i < docIdList.size(); i += blockSize) {
             List<Integer> blockDocIdList = docIdList.subList(i, Math.min(docIdList.size(), i + blockSize));
             byte[] byteList = docIdsEncoder.encode(blockDocIdList);
+            System.out.println(blockDocIdList);
+            System.out.println(ByteUtils.byteArrayToBinaryString(byteList));
 
             docIdsWriter.write(byteList);
             docIdsLength += byteList.length;
@@ -158,21 +174,6 @@ public class DumperCompressed implements Dumper {
             documentIndexWriter.writeInt(documentIndexEntry.getDocumentLength());
         } catch (IOException ie){
             ie.printStackTrace();
-        }
-    }
-
-    @Override
-    public void dumpVocabulary(Vocabulary vocabulary) {
-        try {
-
-            for (Map.Entry<String, VocabularyEntry> entry : vocabulary.getEntries()) {
-                dumpVocabularyEntry(entry);
-
-            }
-
-
-        } catch (IOException e) {
-            e.printStackTrace();
         }
     }
 

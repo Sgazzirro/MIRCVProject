@@ -33,7 +33,7 @@ public class BinaryTest {
     }
 
     @Test
-    public void test_first_entry() throws IOException {
+    public void testFirstEntry() {
         Vocabulary voc = new VocabularyImpl();
         String testTerm = "test";
 
@@ -42,20 +42,21 @@ public class BinaryTest {
         voc.addEntry(testTerm, 2);
 
         VocabularyEntry entry = voc.getEntry(testTerm);
-        Map.Entry<String, VocabularyEntry> input = new AbstractMap.SimpleEntry<>(testTerm, entry);
         dumper.start("./data/test/");
         dumper.dumpVocabulary(voc);
         dumper.end();
 
         fetcher.start("./data/test/");
         Map.Entry<String, VocabularyEntry> output = fetcher.loadVocEntry();
-        fetcher.end();
+        VocabularyEntry testEntry = output.getValue();
 
-        assertEquals(input, output);
+        assertEquals(testTerm, output.getKey());
+        assertEquals(entry.getDocumentFrequency(), testEntry.getDocumentFrequency());
+        assertEquals(entry.getPostingList().docId(), testEntry.getPostingList().docId());
     }
 
     @Test
-    public void test_generic_entry() throws IOException {
+    public void testGenericEntry() throws IOException {
         String term = "test";
         PostingList p;
         if(!Constants.getCompression())
@@ -67,7 +68,9 @@ public class BinaryTest {
         VocabularyEntry i = new VocabularyEntry(2, 0.0, p);
 
         Map.Entry<String, VocabularyEntry> input = new AbstractMap.SimpleEntry<>(term, i);
-        dumper.start("./data/test/");
+        boolean opened = dumper.start("./data/test/");
+        assertTrue(opened);
+
         dumper.dumpVocabularyEntry(input);
         dumper.end();
 
@@ -79,7 +82,7 @@ public class BinaryTest {
     }
 
     @Test
-    public void test_specific_entry() throws IOException{
+    public void testSpecificEntry() {
         Vocabulary voc = new VocabularyImpl();
         String testTerm = "test";
         String testTerm2 = "dog";

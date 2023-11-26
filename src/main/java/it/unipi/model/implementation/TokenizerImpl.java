@@ -1,8 +1,7 @@
 package it.unipi.model.implementation;
 
 import it.unipi.model.Tokenizer;
-import it.unipi.utils.Constants;
-import it.unipi.utils.LoadStructures;
+import it.unipi.utils.IOUtils;
 import opennlp.tools.stemmer.PorterStemmer;
 
 import java.util.Arrays;
@@ -12,7 +11,7 @@ import java.util.stream.Stream;
 
 public class TokenizerImpl implements Tokenizer {
 
-    List<String> stopwords = LoadStructures.loadStopwords(Constants.STOPWORDS_FILE);
+    List<String> stopwords = IOUtils.loadStopwords();
     // Use Porter stemmer
     PorterStemmer stemmer = new PorterStemmer();
 

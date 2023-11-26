@@ -40,6 +40,8 @@ public class DumperBinary implements Dumper{
             if (opened)
                 throw new IOException();
 
+            IOUtils.createDirectory(path);
+
             vocabularyStream = new FileOutputStream(path + Constants.VOCABULARY_FILENAME, true);
             vocabularyWriter = new DataOutputStream(vocabularyStream);
             docIdsStream = new FileOutputStream(path + Constants.DOC_IDS_POSTING_FILENAME, true);

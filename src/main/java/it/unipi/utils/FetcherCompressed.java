@@ -189,7 +189,7 @@ public class FetcherCompressed implements Fetcher {
                 else if (comparison < 0)    // This means term < entry
                     end = middle;
                 else                        // This means term = entry
-                    return bytesToVocabularyEntry(vocabularyEntryBytes);
+                    return ByteUtils.bytesToVocabularyEntry(vocabularyEntryBytes);
             }
         } catch (IOException e) {
             e.printStackTrace();
@@ -197,43 +197,27 @@ public class FetcherCompressed implements Fetcher {
         return null;
     }
 
-    private VocabularyEntry bytesToVocabularyEntry(byte[] byteList) {
-        ByteBuffer bytes = ByteBuffer.wrap(byteList);
-        bytes.position(Constants.BYTES_STORED_STRING);
-        int documentFrequency = bytes.getInt();
-        double upperBound = bytes.getDouble();
-        double idf = bytes.getDouble();
-        long docIdsOffset = bytes.getLong();
-        int docIdsLength = bytes.getInt();
-        long termFreqOffset = bytes.getLong();
-        int termFreqLength = bytes.getInt();
-
-        VocabularyEntry entry = new VocabularyEntry();
-        entry.setDocumentFrequency(documentFrequency);
-        entry.setUpperBound(upperBound);
-        PostingList postingList = new PostingListCompressed(docIdsOffset, termFreqOffset, docIdsLength, termFreqLength, idf);
-        entry.setPostingList(postingList);
-        return entry;
-    }
-
     @Override
     public Map.Entry<String, VocabularyEntry> loadVocEntry() {
-        VocabularyEntry vocabularyEntry = null;
-        String term = null;
+        VocabularyEntry vocabularyEntry;
+        String term;
         try{
-            if(!opened){
+            if(!opened)
                 throw new IOException();
-            }
+
            /* byte [] termByte = new byte[Constants.BYTES_STORED_STRING];
             if(vocabularyReader.read(termByte)!=Constants.BYTES_STORED_STRING) throw new IOException();
             term = ByteUtils.bytesToString(termByte, 0, Constants.BYTES_STORED_STRING);
             */
             byte[] vocabularyEntryBytes = new byte[Constants.VOCABULARY_ENTRY_BYTES_SIZE];
-            if(vocabularyReader.read(vocabularyEntryBytes)!=Constants.VOCABULARY_ENTRY_BYTES_SIZE) return null;
-            vocabularyEntry = bytesToVocabularyEntry(vocabularyEntryBytes);
+            if (vocabularyReader.read(vocabularyEntryBytes) != Constants.VOCABULARY_ENTRY_BYTES_SIZE)
+                return null;
+            vocabularyEntry = ByteUtils.bytesToVocabularyEntry(vocabularyEntryBytes);
             term = ByteUtils.bytesToString(vocabularyEntryBytes, 0, Constants.BYTES_STORED_STRING);
-        } catch (IOException ie){
+
+        } catch (IOException ie) {
             ie.printStackTrace();
+            return null;
         }
         return Map.entry(term, vocabularyEntry);
     }
