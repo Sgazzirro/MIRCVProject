@@ -3,12 +3,10 @@ package it.unipi.io;
 import it.unipi.model.PostingList;
 import it.unipi.model.Vocabulary;
 import it.unipi.model.VocabularyEntry;
+import it.unipi.model.implementation.PostingListCompressed;
 import it.unipi.model.implementation.PostingListImpl;
 import it.unipi.model.implementation.VocabularyImpl;
-import it.unipi.utils.Dumper;
-import it.unipi.utils.DumperBinary;
-import it.unipi.utils.Fetcher;
-import it.unipi.utils.FetcherBinary;
+import it.unipi.utils.*;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -29,8 +27,9 @@ public class BinaryTest {
 
     @Before
     public void setup(){
-        dumper = new DumperBinary();
-        fetcher = new FetcherBinary();
+        dumper = new DumperCompressed();
+        fetcher = new FetcherCompressed();
+        Constants.setCompression(true);
     }
 
     @Test
@@ -58,7 +57,11 @@ public class BinaryTest {
     @Test
     public void test_generic_entry() throws IOException {
         String term = "test";
-        PostingList p = new PostingListImpl();
+        PostingList p;
+        if(!Constants.getCompression())
+            p = new PostingListImpl();
+        else
+            p = new PostingListCompressed();
         p.addPosting(1, 1);
         p.addPosting(2, 2);
         VocabularyEntry i = new VocabularyEntry(2, 0.0, p);

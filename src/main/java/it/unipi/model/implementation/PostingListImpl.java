@@ -16,22 +16,20 @@ import java.util.*;
  */
 public class PostingListImpl extends PostingList {
 
-    private List<Integer> docIdList;
-    private List<Integer> termFrequencyList;
     private int pointer;
 
     // Used when building the index
     public PostingListImpl() {
         super();
-        this.docIdList = new ArrayList<>();
-        this.termFrequencyList = new ArrayList<>();
+        this.docIdsDecompressedList = new ArrayList<>();
+        this.termFrequenciesDecompressedList = new ArrayList<>();
     }
 
     // Used when reading the index
     public PostingListImpl(long docIdsOffset, long termFreqOffset, int docIdsLength, int termFreqLength, double idf) {
         super(docIdsOffset, termFreqOffset, docIdsLength, termFreqLength, idf);
-        this.docIdList = new ArrayList<>();
-        this.termFrequencyList = new ArrayList<>();
+        this.docIdsDecompressedList = new ArrayList<>();
+        this.termFrequenciesDecompressedList = new ArrayList<>();
     }
 
 
@@ -45,17 +43,17 @@ public class PostingListImpl extends PostingList {
         //    throw new RuntimeException("Cannot merge PostingLists with different implementations");
 
         PostingListImpl other = (PostingListImpl) toMerge;
-        docIdList.addAll(other.getDocIds());
-        termFrequencyList.addAll(other.getTermFrequencies());
-        return docIdList.size();
+        docIdsDecompressedList.addAll(other.getDocIds());
+        termFrequenciesDecompressedList.addAll(other.getTermFrequencies());
+        return docIdsDecompressedList.size();
     }
 
     @Override
     public boolean loadPosting(String docIdsFilename, String termFreqFilename) {
         // Method that loads the posting list in memory if not present
-        if (docIdList == null) {
-            docIdList = new ArrayList<>();
-            termFrequencyList = new ArrayList<>();
+        if (docIdsDecompressedList == null) {
+            docIdsDecompressedList = new ArrayList<>();
+            termFrequenciesDecompressedList = new ArrayList<>();
 
             try (
                     BufferedReader docIdsReader = new BufferedReader(new InputStreamReader(Files.newInputStream(Paths.get(docIdsFilename)), StandardCharsets.UTF_8));
@@ -82,8 +80,8 @@ public class PostingListImpl extends PostingList {
                 }
 
             } catch (IOException e) {
-                docIdList = null;
-                termFrequencyList = null;
+                docIdsDecompressedList = null;
+                termFrequenciesDecompressedList = null;
 
                 e.printStackTrace();
                 return false;
@@ -96,14 +94,14 @@ public class PostingListImpl extends PostingList {
     public int docId() {
         loadPosting();
 
-        return docIdList.get(pointer);
+        return docIdsDecompressedList.get(pointer);
     }
 
     @Override
     public double score() {
         loadPosting();
 
-        int tf = termFrequencyList.get(pointer);
+        int tf = termFrequenciesDecompressedList.get(pointer);
         return (1 + Math.log10(tf)) * getIdf();
     }
 
@@ -118,7 +116,7 @@ public class PostingListImpl extends PostingList {
     }
 
     public boolean hasNext() {
-        return pointer < docIdList.size() - 1;
+        return pointer < docIdsDecompressedList.size() - 1;
     }
 
     @Override
@@ -132,48 +130,40 @@ public class PostingListImpl extends PostingList {
     @Override
     public boolean addPosting(int docId, int termFrequency) {
         // Documents are supposed to be read sequentially with respect to docId
-        if (docIdList == null)
-            docIdList = new ArrayList<>();
-        if (termFrequencyList == null)
-            termFrequencyList = new ArrayList<>();
+        if (docIdsDecompressedList == null)
+            docIdsDecompressedList = new ArrayList<>();
+        if (termFrequenciesDecompressedList == null)
+            termFrequenciesDecompressedList = new ArrayList<>();
 
-        int lastIndex = docIdList.size()-1;
+        int lastIndex = docIdsDecompressedList.size()-1;
 
-        if (docIdList.isEmpty() || docIdList.get(lastIndex) != docId) {
-            docIdList.add(docId);
-            termFrequencyList.add(termFrequency);
+        if (docIdsDecompressedList.isEmpty() || docIdsDecompressedList.get(lastIndex) != docId) {
+            docIdsDecompressedList.add(docId);
+            termFrequenciesDecompressedList.add(termFrequency);
             return true;
         } else {
-            termFrequencyList.set(lastIndex, termFrequencyList.get(lastIndex) + termFrequency);
+            termFrequenciesDecompressedList.set(lastIndex, termFrequenciesDecompressedList.get(lastIndex) + termFrequency);
             return false;
         }
     }
 
     public List<Integer> getDocIds() {
-        return docIdList;
+        return docIdsDecompressedList;
     }
 
     public List<Integer> getTermFrequencies() {
-        return termFrequencyList;
+        return termFrequenciesDecompressedList;
     }
 
     @Override
     public String toString() {
-        return "DocIdList: " + docIdList + " TermFrequencyList: " + termFrequencyList;
+        return "DocIdList: " + docIdsDecompressedList + " TermFrequencyList: " + termFrequenciesDecompressedList;
     }
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        PostingListImpl that = (PostingListImpl) o;
-       // this.loadPosting();
-       // that.loadPosting();
-        return Objects.equals(docIdList, that.docIdList) && Objects.equals(termFrequencyList, that.termFrequencyList);
-    }
+
 
     @Override
     public int hashCode() {
-        return Objects.hash(docIdList, termFrequencyList);
+        return Objects.hash(docIdsDecompressedList, termFrequenciesDecompressedList);
     }
 }

@@ -67,13 +67,11 @@ public class DumperCompressed implements Dumper {
         double upperBound = vocabularyEntry.getUpperBound();
 
         PostingList pList = vocabularyEntry.getPostingList();
-        if (!(pList instanceof PostingListImpl))
-            throw new RuntimeException("Cannot dump a compressed posting list, it must be full in memory");
 
-        PostingListImpl postingList = (PostingListImpl) pList;
+        PostingListCompressed postingList = (PostingListCompressed) pList;
         double idf = postingList.getIdf();
-        List<Integer> docIdList = postingList.getDocIds();
-        List<Integer> tfList = postingList.getTermFrequencies();
+        List<Integer> docIdList = postingList.getDocIdsDecompressedList();
+        List<Integer> tfList = postingList.getTermFrequenciesDecompressedList();
 
         int docIdsLength = 0, termFreqLength = 0;
         if (!opened)
@@ -166,16 +164,12 @@ public class DumperCompressed implements Dumper {
     @Override
     public void dumpVocabulary(Vocabulary vocabulary) {
         try {
-            // Keep space at the beginning of file to store the number of entries
-            vocabularyWriter.writeInt(0);
-            int numEntries = 0;
+
             for (Map.Entry<String, VocabularyEntry> entry : vocabulary.getEntries()) {
                 dumpVocabularyEntry(entry);
-                numEntries++;
+
             }
-            // Set position to start and write the number of entries
-            vocabularyStream.getChannel().position(0);
-            vocabularyWriter.writeInt(numEntries);
+
 
         } catch (IOException e) {
             e.printStackTrace();

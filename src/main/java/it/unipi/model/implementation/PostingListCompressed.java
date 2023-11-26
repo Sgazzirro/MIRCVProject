@@ -2,14 +2,10 @@ package it.unipi.model.implementation;
 
 import it.unipi.model.Encoder;
 import it.unipi.model.PostingList;
-import it.unipi.utils.ByteUtils;
-import it.unipi.utils.EliasFanoStruct;
 import it.unipi.utils.FetcherCompressed;
 
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.List;
 
 public class PostingListCompressed extends PostingList {
 
@@ -35,8 +31,8 @@ public class PostingListCompressed extends PostingList {
     private byte[] compressedDocIds;
     private byte[] compressedTermFrequencies;
 
-    private List<Integer> docIdsBlockList;           // ELIAS FANO    - DOC IDS
-    private List<Integer> termFrequenciesBlockList;  // SIMPLE9/UNARY - TERM FREQUENCIES
+   // private List<Integer> docIdsBlockList;           // ELIAS FANO    - DOC IDS
+    //private List<Integer> termFrequenciesBlockList;  // SIMPLE9/UNARY - TERM FREQUENCIES
     private int blockPointer;
     private long docIdsBlockPointer;                    // This represents the offset of the next docIdsBlock
     private long termFrequenciesBlockPointer;           // This represents the index of the actual block of term frequencies
@@ -47,8 +43,8 @@ public class PostingListCompressed extends PostingList {
 
     public PostingListCompressed(long docIdsOffset, long termFreqOffset, int docIdsLength, int termFreqLength, double idf) {
         super(docIdsOffset, termFreqOffset, docIdsLength, termFreqLength, idf);
-        docIdsBlockList = new ArrayList<>();
-        termFrequenciesBlockList = new ArrayList<>();
+        docIdsDecompressedList = new ArrayList<>();
+        termFrequenciesDecompressedList = new ArrayList<>();
         
         // Load the blocks corresponding to these offset provided to the constructor
         String path = "data/";
@@ -57,13 +53,13 @@ public class PostingListCompressed extends PostingList {
     }
 
     public PostingListCompressed() {
-        docIdsBlockList = new ArrayList<>();
-        termFrequenciesBlockList = new ArrayList<>();
+        docIdsDecompressedList = new ArrayList<>();
+        termFrequenciesDecompressedList = new ArrayList<>();
     }
 
     @Override
     public int docId() {
-        return docIdsBlockList.get(blockPointer);
+        return docIdsDecompressedList.get(blockPointer);
     }
 
     @Override
@@ -75,12 +71,12 @@ public class PostingListCompressed extends PostingList {
     @Override
     public boolean hasNext() {
         long docIdsEndOffset = getDocIdsOffset() + getDocIdsLength();
-        return (blockPointer + 1 < docIdsBlockList.size()) || (docIdsBlockPointer < docIdsEndOffset);
+        return (blockPointer + 1 < docIdsDecompressedList.size()) || (docIdsBlockPointer < docIdsEndOffset);
     }
 
     @Override
     public void next() {
-        if (blockPointer + 1 < docIdsBlockList.size())
+        if (blockPointer + 1 < docIdsDecompressedList.size())
             blockPointer++;
         else
             loadNextBlock();
@@ -90,9 +86,9 @@ public class PostingListCompressed extends PostingList {
     public void nextGEQ(int docId) {
         while (true) {
             // If we are in the correct block advance the pointer to the right place
-            if (docIdsBlockList.get(docIdsBlockList.size() - 1) > docId) {
-                for (int i = blockPointer; i < docIdsBlockList.size(); i++) {
-                    if (docIdsBlockList.get(i) >= docId) {
+            if (docIdsDecompressedList.get(docIdsDecompressedList.size() - 1) > docId) {
+                for (int i = blockPointer; i < docIdsDecompressedList.size(); i++) {
+                    if (docIdsDecompressedList.get(i) >= docId) {
                         blockPointer = i;
                         return;
                     }
@@ -106,14 +102,14 @@ public class PostingListCompressed extends PostingList {
 
     @Override
     public boolean addPosting(int docId, int termFreq) {
-        if (docIdsBlockList.isEmpty() || docIdsBlockList.get(docIdsBlockList.size()-1)!=docId){
-            docIdsBlockList.add(docId);
-            termFrequenciesBlockList.add(termFreq);
+        if (docIdsDecompressedList.isEmpty() || docIdsDecompressedList.get(docIdsDecompressedList.size()-1)!=docId){
+            docIdsDecompressedList.add(docId);
+            termFrequenciesDecompressedList.add(termFreq);
             return true;
         }
 
         // se il docId è già presente come ultima entry, aumenta solo la term freq
-        termFrequenciesBlockList.set(termFrequenciesBlockList.size() - 1, termFrequenciesBlockList.get(termFrequenciesBlockList.size() - 1) + termFreq);
+        termFrequenciesDecompressedList.set(termFrequenciesDecompressedList.size() - 1, termFrequenciesDecompressedList.get(termFrequenciesDecompressedList.size() - 1) + termFreq);
         return false;
     }
 
@@ -136,11 +132,11 @@ public class PostingListCompressed extends PostingList {
     private void loadNextBlock() {
         ByteBlock docIdsBlock = fetcher.fetchDocIdsBlock(compressedDocIds, 0, docIdsBlockPointer);  // Read the first block
         docIdsBlockPointer = docIdsBlock.getOffset();
-        docIdsBlockList = docIdsEncoder.decode(docIdsBlock.getBytes());
+        docIdsDecompressedList = docIdsEncoder.decode(docIdsBlock.getBytes());
 
         ByteBlock termFrequenciesBlock = fetcher.fetchNextTermFrequenciesBlock(compressedTermFrequencies, termFrequenciesBlockPointer);
         termFrequenciesBlockPointer = termFrequenciesBlock.getOffset();
-        termFrequenciesBlockList = termFrequenciesEncoder.decode(termFrequenciesBlock.getBytes());
+        termFrequenciesDecompressedList = termFrequenciesEncoder.decode(termFrequenciesBlock.getBytes());
 
         blockPointer = 0;
     }

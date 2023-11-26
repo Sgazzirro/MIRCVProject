@@ -1,11 +1,12 @@
 package it.unipi.model;
 
+import it.unipi.model.implementation.PostingListCompressed;
 import it.unipi.model.implementation.PostingListImpl;
 import it.unipi.utils.Constants;
+import opennlp.tools.parser.Cons;
 
-import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 public abstract class PostingList {
 
@@ -15,6 +16,8 @@ public abstract class PostingList {
     private int termFreqLength;
     private double idf;
 
+    protected List<Integer> docIdsDecompressedList;           // ELIAS FANO    - DOC IDS
+    protected List<Integer> termFrequenciesDecompressedList;  // SIMPLE9/UNARY - TERM FREQUENCIES
     public PostingList() {
     }
 
@@ -113,6 +116,30 @@ public abstract class PostingList {
 
     public void setTermFreqLength(int termFreqLength) {
         this.termFreqLength = termFreqLength;
+    }
+
+    public List<Integer> getTermFrequenciesDecompressedList() {
+        return termFrequenciesDecompressedList;
+    }
+
+    public List<Integer> getDocIdsDecompressedList() {
+        return docIdsDecompressedList;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        PostingList that;
+        if(!Constants.getCompression())
+            that = (PostingListImpl) o;
+        else
+            that = (PostingListCompressed) o;
+        // this.loadPosting();
+        // that.loadPosting();
+        System.out.println("FIRST DOC ID OF THE CORRECT RESULT : " + docIdsDecompressedList.get(0));
+        System.out.println("FIRST DOC ID OF THE DECOMPRESSED RESULT : " + that.docIdsDecompressedList.get(0));
+        return Objects.equals(docIdsDecompressedList, that.docIdsDecompressedList) && Objects.equals(termFrequenciesDecompressedList, that.termFrequenciesDecompressedList);
     }
 
 }

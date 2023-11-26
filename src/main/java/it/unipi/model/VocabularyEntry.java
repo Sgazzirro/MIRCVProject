@@ -1,7 +1,9 @@
 package it.unipi.model;
 
 
+import it.unipi.model.implementation.PostingListCompressed;
 import it.unipi.model.implementation.PostingListImpl;
+import it.unipi.utils.Constants;
 
 import java.util.List;
 import java.util.Objects;
@@ -79,8 +81,11 @@ public class VocabularyEntry {
 
         int documentFrequency = Integer.parseInt(params[1]);
         double upperBound = Double.parseDouble(params[2]);
-
-        PostingList postingList = new PostingListImpl();
+        PostingList postingList;
+        if(!Constants.getCompression())
+            postingList = new PostingListImpl();
+        else
+            postingList = new PostingListCompressed();
         postingList.setIdf(Double.parseDouble(params[3]));
         postingList.setDocIdsOffset(Long.parseLong(params[4]));
         postingList.setTermFreqOffset(Long.parseLong(params[5]));

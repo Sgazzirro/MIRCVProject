@@ -1,6 +1,7 @@
 package it.unipi.model.implementation;
 import it.unipi.model.Vocabulary;
 import it.unipi.model.VocabularyEntry;
+import it.unipi.utils.Constants;
 
 import java.io.Serializable;
 import java.util.*;
@@ -25,7 +26,10 @@ public class VocabularyImpl implements Vocabulary, Serializable {
         if (!isPresent(token)) {
             ve = new VocabularyEntry();
             ve.setDocumentFrequency(0);
-            ve.setPostingList(new PostingListImpl());
+            if(!Constants.getCompression())
+                ve.setPostingList(new PostingListImpl());
+            else
+                ve.setPostingList(new PostingListCompressed());
             ve.setUpperBound((double) 0);
             table.put(token,ve);
         }

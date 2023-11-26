@@ -7,6 +7,9 @@ import it.unipi.model.implementation.PostingListCompressed;
 
 import java.io.*;
 import java.nio.ByteBuffer;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Map;
 
 public class FetcherCompressed implements Fetcher {
@@ -26,9 +29,8 @@ public class FetcherCompressed implements Fetcher {
             docIdsReader = new FileInputStream(path + Constants.DOC_IDS_POSTING_FILENAME);
             termFreqReader = new FileInputStream(path + Constants.TF_POSTING_FILENAME);
             documentIndexReader = new FileInputStream(path + Constants.DOCUMENT_INDEX_FILENAME);
-
-            // Read number of entries of the vocabulary
-            vocabularySize = ByteUtils.bytesToInt(vocabularyReader.readNBytes(Integer.BYTES));
+            Path vocpath = Paths.get(path + Constants.VOCABULARY_FILENAME);
+            vocabularySize =(int) Files.size(vocpath)/Constants.VOCABULARY_ENTRY_BYTES_SIZE;
             opened = true;
 
         } catch (IOException ie) {
@@ -178,7 +180,7 @@ public class FetcherCompressed implements Fetcher {
         try {
             while (start < end) {
                 middle = (end + start) / 2;
-                vocabularyReader.getChannel().position(Integer.BYTES + (long) middle * Constants.VOCABULARY_ENTRY_BYTES_SIZE);
+                vocabularyReader.getChannel().position((long) middle * Constants.VOCABULARY_ENTRY_BYTES_SIZE);
                 vocabularyReader.read(vocabularyEntryBytes, 0, Constants.VOCABULARY_ENTRY_BYTES_SIZE);
 
                 int comparison = truncatedTerm.compareTo(ByteUtils.bytesToString(vocabularyEntryBytes, 0, Constants.BYTES_STORED_STRING));
@@ -209,13 +211,31 @@ public class FetcherCompressed implements Fetcher {
         VocabularyEntry entry = new VocabularyEntry();
         entry.setDocumentFrequency(documentFrequency);
         entry.setUpperBound(upperBound);
-        PostingList postingList = new PostingListCompressed();
+        PostingList postingList = new PostingListCompressed(docIdsOffset, termFreqOffset, docIdsLength, termFreqLength, idf);
+        entry.setPostingList(postingList);
         return entry;
     }
 
     @Override
     public Map.Entry<String, VocabularyEntry> loadVocEntry() {
-        return null;
+        VocabularyEntry vocabularyEntry = null;
+        String term = null;
+        try{
+            if(!opened){
+                throw new IOException();
+            }
+           /* byte [] termByte = new byte[Constants.BYTES_STORED_STRING];
+            if(vocabularyReader.read(termByte)!=Constants.BYTES_STORED_STRING) throw new IOException();
+            term = ByteUtils.bytesToString(termByte, 0, Constants.BYTES_STORED_STRING);
+            */
+            byte[] vocabularyEntryBytes = new byte[Constants.VOCABULARY_ENTRY_BYTES_SIZE];
+            if(vocabularyReader.read(vocabularyEntryBytes)!=Constants.VOCABULARY_ENTRY_BYTES_SIZE) return null;
+            vocabularyEntry = bytesToVocabularyEntry(vocabularyEntryBytes);
+            term = ByteUtils.bytesToString(vocabularyEntryBytes, 0, Constants.BYTES_STORED_STRING);
+        } catch (IOException ie){
+            ie.printStackTrace();
+        }
+        return Map.entry(term, vocabularyEntry);
     }
 
     @Override
