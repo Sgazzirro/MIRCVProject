@@ -29,6 +29,8 @@ public class DumperTXT implements Dumper {
             if (opened)
                 throw new IOException();
 
+            IOUtils.createDirectory(path);
+
             writerVOC  = new BufferedWriter(new FileWriter(path + Constants.VOCABULARY_FILENAME));
             writerDIX  = new BufferedWriter(new FileWriter(path + Constants.DOCUMENT_INDEX_FILENAME));
             writerDIDS = new BufferedWriter(new FileWriter(path + Constants.DOC_IDS_POSTING_FILENAME));

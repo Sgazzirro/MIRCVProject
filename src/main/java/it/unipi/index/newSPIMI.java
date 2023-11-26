@@ -46,10 +46,7 @@ public class newSPIMI {
     }
 
     public void buildIndexSPIMI(String mode) {
-        // Create working directory if not exists
-        try {
-            Files.createDirectories(Paths.get("./data/blocks"));
-        } catch (IOException ignored) { }
+        IOUtils.createDirectory("./data/blocks");
 
         this.mode = mode;
         // Preliminary flush of files

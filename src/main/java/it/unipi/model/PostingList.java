@@ -18,6 +18,7 @@ public abstract class PostingList {
 
     protected List<Integer> docIdsDecompressedList;           // ELIAS FANO    - DOC IDS
     protected List<Integer> termFrequenciesDecompressedList;  // SIMPLE9/UNARY - TERM FREQUENCIES
+
     public PostingList() {
     }
 
@@ -135,11 +136,20 @@ public abstract class PostingList {
             that = (PostingListImpl) o;
         else
             that = (PostingListCompressed) o;
-        // this.loadPosting();
-        // that.loadPosting();
+
         System.out.println("FIRST DOC ID OF THE CORRECT RESULT : " + docIdsDecompressedList.get(0));
         System.out.println("FIRST DOC ID OF THE DECOMPRESSED RESULT : " + that.docIdsDecompressedList.get(0));
         return Objects.equals(docIdsDecompressedList, that.docIdsDecompressedList) && Objects.equals(termFrequenciesDecompressedList, that.termFrequenciesDecompressedList);
     }
 
+    @Override
+    public String toString() {
+        return "PostingList{" +
+                "docIdsOffset=" + docIdsOffset +
+                ", termFreqOffset=" + termFreqOffset +
+                ", docIdsLength=" + docIdsLength +
+                ", termFreqLength=" + termFreqLength +
+                ", nextDocId=" + docId() +
+                '}';
+    }
 }
