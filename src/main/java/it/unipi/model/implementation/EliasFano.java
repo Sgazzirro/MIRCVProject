@@ -20,7 +20,6 @@ public class EliasFano implements Encoder {
         // number of bits
         int lowHalfLength = (int) Math.ceil(Math.log((float) U / n) / Math.log(2));
         int highHalfLength = (int) Math.ceil(Math.log(U) / Math.log(2)) - lowHalfLength;
-        int totBits = lowHalfLength+highHalfLength;
 
         // structures to maintain encoded numbers
         BitSet highBitset = new BitSet((int) (n+Math.pow(2,highHalfLength)));
@@ -37,13 +36,13 @@ public class EliasFano implements Encoder {
             index += lowHalfLength;
 
             // cluster composition of high part
-            int highHalfInt = (number >> (totBits - highHalfLength) & (1 << highHalfLength)-1); // computes the integer corresponding to the higher bits
+            int highHalfInt = number >> (lowHalfLength); // computes the integer corresponding to the higher bits
             clusterComp.compute(highHalfInt, (key, value) -> (value == null) ? 1 : value + 1);  // keeps track of the number of integers in the clusters
         }
 
         // high part
         index = 0;
-        for (int i=0; i<Math.pow(2,highHalfLength); i++){
+        for (int i=0; i<=Math.pow(2,highHalfLength); i++){
             int value = clusterComp.get(i) == null ? 0 : clusterComp.get(i);
             append(highBitset, integerToUnary(value), integerToUnary(value).length()+1, index);
             index+=integerToUnary(value).length()+1;
