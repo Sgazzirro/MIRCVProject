@@ -32,7 +32,7 @@ public abstract class PostingList {
      */
     public abstract int docId();
 
-
+    public abstract int termFrequency();
     /**
      * Function that computes the score (according to the class settings) of that term in that document
      * @return the score of the current posting

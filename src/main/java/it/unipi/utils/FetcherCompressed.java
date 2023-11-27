@@ -212,7 +212,9 @@ public class FetcherCompressed implements Fetcher {
             if (vocabularyReader.read(vocabularyEntryBytes) != Constants.VOCABULARY_ENTRY_BYTES_SIZE)
                 return null;
             vocabularyEntry = ByteUtils.bytesToVocabularyEntry(vocabularyEntryBytes);
+            System.out.println(vocabularyEntryBytes.length);
             term = ByteUtils.bytesToString(vocabularyEntryBytes, 0, Constants.BYTES_STORED_STRING);
+            System.out.println("TERMINE DI TEST : " + term);
 
         } catch (IOException ie) {
             ie.printStackTrace();

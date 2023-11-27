@@ -35,7 +35,7 @@ public class PostingListCompressed extends PostingList {
 
     private List<Integer> docIdsDecompressedList;           // ELIAS FANO    - DOC IDS
     private List<Integer> termFrequenciesDecompressedList;  // SIMPLE9/UNARY - TERM FREQUENCIES
-    private int blockPointer;
+    private int blockPointer = -1;
     private long docIdsBlockPointer;                    // This represents the offset of the next docIdsBlock
     private long termFrequenciesBlockPointer;           // This represents the index of the actual block of term frequencies
 
@@ -64,11 +64,17 @@ public class PostingListCompressed extends PostingList {
     public PostingListCompressed() {
         docIdsDecompressedList = new ArrayList<>();
         termFrequenciesDecompressedList = new ArrayList<>();
+        blockPointer = -1;
     }
 
     @Override
     public int docId() {
         return docIdsDecompressedList.get(blockPointer);
+    }
+
+    @Override
+    public int termFrequency() {
+        return termFrequenciesDecompressedList.get(blockPointer);
     }
 
     @Override
@@ -85,8 +91,12 @@ public class PostingListCompressed extends PostingList {
 
     @Override
     public void next() {
-        if (blockPointer + 1 < docIdsDecompressedList.size())
+        System.out.println("SIZELIST: " + docIdsDecompressedList.size());
+        System.out.println(docIdsDecompressedList);
+        if (blockPointer + 1 < docIdsDecompressedList.size()) {
+            System.out.println("HO INCREMENTATO UN PUNTATORE. SE VEDI SOLO UNA DI QUESTE STAMPE, HO INCREMENTATO LA PRIMA DELLE DUE LISTE");
             blockPointer++;
+        }
         else
             loadNextBlock();
     }
@@ -154,9 +164,19 @@ public class PostingListCompressed extends PostingList {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         PostingListCompressed that = (PostingListCompressed) o;
-        return Objects.equals(compressedDocIds, that.getCompressedDocIds()) && Objects.equals(termFrequenciesDecompressedList, that.getCompressedTermFrequencies());
+        System.out.println(this);
+        System.out.println(that);
+        while(hasNext()) {
+            next();
+            that.next();
+            System.out.println(blockPointer + " " + that.blockPointer);
+            System.out.println(docId() + " " + that.docId());
+            System.out.println(termFrequency() + " " + that.termFrequency());
+            if (docId() != that.docId() || termFrequency() != that.termFrequency())
+                return false;
+        }
+        return true;
     }
-
     private void loadNextBlock() {
         ByteBlock docIdsBlock = fetcher.fetchDocIdsBlock(compressedDocIds, 0, docIdsBlockPointer);  // Read the first block
         docIdsBlockPointer = docIdsBlock.getOffset();
@@ -166,7 +186,7 @@ public class PostingListCompressed extends PostingList {
         termFrequenciesBlockPointer = termFrequenciesBlock.getOffset();
         termFrequenciesDecompressedList = termFrequenciesEncoder.decode(termFrequenciesBlock.getBytes());
 
-        blockPointer = 0;
+        blockPointer = -1;
     }
 
     public byte[] getCompressedDocIds() {

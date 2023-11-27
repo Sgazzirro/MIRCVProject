@@ -114,9 +114,12 @@ public class PostingListImpl extends PostingList {
 
     @Override
     public int docId() {
-        loadPosting();
-
         return docIdsDecompressedList.get(pointer);
+    }
+
+    @Override
+    public int termFrequency() {
+        return termFrequenciesDecompressedList.get(pointer);
     }
 
     @Override

@@ -6,6 +6,8 @@ import it.unipi.model.implementation.PostingListCompressed;
 
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.List;
 
 public class ByteUtils {
 
@@ -27,12 +29,13 @@ public class ByteUtils {
     }
 
     public static String bytesToString(byte[] bytes, int offset, int len) {
-        // Remove bytes belonging to truncated encoding
+        System.out.println("LUNGHEZZA DEBUG: " + bytes.length);
         int continuationBytes = 0;      // They start with 10xxxxxx
 
         for (int i=offset+len-1; i >= offset; i--) {
-            if ( (bytes[i] >>> 7 & 0b1) == 0)
+            if ( (bytes[i] >>> 7 & 0b1) == 0) {
                 break;
+            }
 
             // Count the continuation bytes
             if ( ( (bytes[i] >> 6) & 0b11 ) == 0b10)
@@ -43,15 +46,19 @@ public class ByteUtils {
                 // 2 continuation bytes -> first byte is 1110xxxx
                 if ( ((bytes[i] & 0xFF) >>> (6 - continuationBytes)) != ((1 << (continuationBytes+2)) - 2) ) {
                     // There is not a correct number of continuation bytes, set to 0 all trailing bytes
-                    for (int j = i; j < bytes.length; j++)
+                    for (int j = i; j < bytes.length; j++) {
                         bytes[j] = '\0';
+                    }
                 }
 
                 // Everything is okay
                 break;
             }
         }
-        return new String(bytes, StandardCharsets.UTF_8).trim();
+
+        byte[] marcoIdea = new byte[32];
+        System.arraycopy(bytes, 0, marcoIdea, 0, 32);
+        return new String(marcoIdea, StandardCharsets.UTF_8).trim();
     }
 
     public static VocabularyEntry bytesToVocabularyEntry(byte[] byteList) {

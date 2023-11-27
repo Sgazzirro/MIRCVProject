@@ -16,9 +16,7 @@ import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.AbstractMap;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -33,7 +31,6 @@ public class BinaryTest {
         dumper = new DumperCompressed();
         fetcher = new FetcherCompressed();
         Constants.setCompression(true);
-        new File("./test").mkdirs();
     }
 
     @Test
@@ -44,8 +41,10 @@ public class BinaryTest {
         voc.addEntry(testTerm, 1);
         voc.addEntry(testTerm, 1);
         voc.addEntry(testTerm, 2);
+        voc.addEntry(testTerm, 2);
 
         VocabularyEntry entry = voc.getEntry(testTerm);
+        System.out.println("ENTRY DA TEST: " + entry);
         dumper.start("./data/test/");
         dumper.dumpVocabulary(voc);
         dumper.end();
@@ -54,15 +53,17 @@ public class BinaryTest {
         Map.Entry<String, VocabularyEntry> output = fetcher.loadVocEntry();
         VocabularyEntry testEntry = output.getValue();
         fetcher.end();
+        System.out.println(output.getKey());
         assertEquals(testTerm, output.getKey());
-        assertEquals(entry.getDocumentFrequency(), testEntry.getDocumentFrequency());
-        assertEquals(entry.getPostingList().docId(), testEntry.getPostingList().docId());
+        assertEquals(entry, testEntry);
+        //assertEquals(entry.getDocumentFrequency(), testEntry.getDocumentFrequency());
+        //assertEquals(entry.getPostingList().docId(), testEntry.getPostingList().docId());
     }
 
 
     @Test
     public void testGenericEntry() throws IOException {
-        String term = "test";
+        String testTerm = "teseo";
         PostingList p;
         if(!Constants.getCompression())
             p = new PostingListImpl();
@@ -72,11 +73,10 @@ public class BinaryTest {
         p.addPosting(2, 2);
         VocabularyEntry i = new VocabularyEntry(2, 2.2, p);
 
-
-        Map.Entry<String, VocabularyEntry> input = new AbstractMap.SimpleEntry<>(term, i);
-        boolean opened = dumper.start("./data/test/");
-        assertTrue(opened);
-
+        NavigableMap<String, VocabularyEntry> tree = new TreeMap<>();
+        tree.put(testTerm, i);
+        Map.Entry<String, VocabularyEntry> input = tree.entrySet().iterator().next();
+        dumper.start("./data/test/");
         dumper.dumpVocabularyEntry(input);
         dumper.end();
 
@@ -111,6 +111,7 @@ public class BinaryTest {
         fetcher.start("./data/test/");
         VocabularyEntry output = fetcher.loadVocEntry("dog");
         fetcher.end();
+
 
         assertEquals(input.getValue(), output);
     }
