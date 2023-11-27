@@ -47,7 +47,8 @@ public class PostingListCompressed extends PostingList {
         termFrequenciesDecompressedList = new ArrayList<>();
         
         // Load the blocks corresponding to these offset provided to the constructor
-        String path = "data/";
+        //String path = "data/";
+        String path = "./data/test/";
         fetcher.start(path);
         loadPosting();
     }

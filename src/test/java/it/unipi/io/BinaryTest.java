@@ -13,6 +13,10 @@ import org.junit.Test;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.DirectoryStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.AbstractMap;
 import java.util.Map;
 import java.util.Objects;
@@ -110,5 +114,25 @@ public class BinaryTest {
         for (File file : Objects.requireNonNull(new File("./data/test").listFiles()))
             if (!file.isDirectory())
                 file.delete();
+    }
+
+    public static void listDirectoryContent(String directoryPath) {
+        try {
+            // Create a Path object representing the directory
+            Path dirPath = Paths.get(directoryPath);
+
+            // Get a stream of all entries (files and sub-directories) in the directory
+            DirectoryStream<Path> directoryStream = Files.newDirectoryStream(dirPath);
+
+            // Iterate over the entries and print their names
+            for (Path entry : directoryStream) {
+                System.out.println(entry.getFileName());
+            }
+
+            // Close the directory stream
+            directoryStream.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 }

@@ -96,8 +96,6 @@ public class DumperCompressed implements Dumper {
         for (int i = 0; i < docIdList.size(); i += blockSize) {
             List<Integer> blockDocIdList = docIdList.subList(i, Math.min(docIdList.size(), i + blockSize));
             byte[] byteList = docIdsEncoder.encode(blockDocIdList);
-            System.out.println(blockDocIdList);
-            System.out.println(ByteUtils.byteArrayToBinaryString(byteList));
 
             docIdsWriter.write(byteList);
             docIdsLength += byteList.length;
