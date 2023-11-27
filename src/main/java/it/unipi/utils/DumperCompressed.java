@@ -80,9 +80,8 @@ public class DumperCompressed implements Dumper {
         int documentFrequency = vocabularyEntry.getDocumentFrequency();
         double upperBound = vocabularyEntry.getUpperBound();
 
-        PostingList pList = vocabularyEntry.getPostingList();
+        PostingList postingList = vocabularyEntry.getPostingList();
 
-        PostingListCompressed postingList = (PostingListCompressed) pList;
         double idf = postingList.getIdf();
         List<Integer> docIdList = postingList.getDocIdsDecompressedList();
         List<Integer> tfList = postingList.getTermFrequenciesDecompressedList();

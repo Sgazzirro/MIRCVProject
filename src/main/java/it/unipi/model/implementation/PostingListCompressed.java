@@ -6,6 +6,8 @@ import it.unipi.utils.FetcherCompressed;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
 
 public class PostingListCompressed extends PostingList {
 
@@ -31,8 +33,8 @@ public class PostingListCompressed extends PostingList {
     private byte[] compressedDocIds;
     private byte[] compressedTermFrequencies;
 
-   // private List<Integer> docIdsBlockList;           // ELIAS FANO    - DOC IDS
-    //private List<Integer> termFrequenciesBlockList;  // SIMPLE9/UNARY - TERM FREQUENCIES
+    private List<Integer> docIdsDecompressedList;           // ELIAS FANO    - DOC IDS
+    private List<Integer> termFrequenciesDecompressedList;  // SIMPLE9/UNARY - TERM FREQUENCIES
     private int blockPointer;
     private long docIdsBlockPointer;                    // This represents the offset of the next docIdsBlock
     private long termFrequenciesBlockPointer;           // This represents the index of the actual block of term frequencies
@@ -136,6 +138,25 @@ public class PostingListCompressed extends PostingList {
         return false;
     }
 
+    @Override
+    public List<Integer> getTermFrequenciesDecompressedList() {
+        return termFrequenciesDecompressedList;
+    }
+
+    @Override
+    public List<Integer> getDocIdsDecompressedList() {
+        return docIdsDecompressedList;
+    }
+
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        PostingListCompressed that = (PostingListCompressed) o;
+        return Objects.equals(compressedDocIds, that.getCompressedDocIds()) && Objects.equals(termFrequenciesDecompressedList, that.getCompressedTermFrequencies());
+    }
+
     private void loadNextBlock() {
         ByteBlock docIdsBlock = fetcher.fetchDocIdsBlock(compressedDocIds, 0, docIdsBlockPointer);  // Read the first block
         docIdsBlockPointer = docIdsBlock.getOffset();
@@ -146,6 +167,14 @@ public class PostingListCompressed extends PostingList {
         termFrequenciesDecompressedList = termFrequenciesEncoder.decode(termFrequenciesBlock.getBytes());
 
         blockPointer = 0;
+    }
+
+    public byte[] getCompressedDocIds() {
+        return compressedDocIds;
+    }
+
+    public byte[] getCompressedTermFrequencies() {
+        return compressedTermFrequencies;
     }
 
     /*      Abbiamo detto che verranno mergiate solo postingLists non compresse
@@ -172,5 +201,8 @@ public class PostingListCompressed extends PostingList {
         return 0;
     }
      */
+    public String toString() {
+        return "DocIdList: " + docIdsDecompressedList + " TermFrequencyList: " + termFrequenciesDecompressedList;
+    }
 
 }

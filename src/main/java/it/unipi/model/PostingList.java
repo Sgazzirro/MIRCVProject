@@ -16,9 +16,6 @@ public abstract class PostingList {
     private int termFreqLength;
     private double idf;
 
-    protected List<Integer> docIdsDecompressedList;           // ELIAS FANO    - DOC IDS
-    protected List<Integer> termFrequenciesDecompressedList;  // SIMPLE9/UNARY - TERM FREQUENCIES
-
     public PostingList() {
     }
 
@@ -119,28 +116,11 @@ public abstract class PostingList {
         this.termFreqLength = termFreqLength;
     }
 
-    public List<Integer> getTermFrequenciesDecompressedList() {
-        return termFrequenciesDecompressedList;
-    }
+    public abstract List<Integer> getTermFrequenciesDecompressedList();
 
-    public List<Integer> getDocIdsDecompressedList() {
-        return docIdsDecompressedList;
-    }
-
+    public abstract List<Integer> getDocIdsDecompressedList();
     @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        PostingList that;
-        if(!Constants.getCompression())
-            that = (PostingListImpl) o;
-        else
-            that = (PostingListCompressed) o;
-
-        System.out.println("FIRST DOC ID OF THE CORRECT RESULT : " + docIdsDecompressedList.get(0));
-        System.out.println("FIRST DOC ID OF THE DECOMPRESSED RESULT : " + that.docIdsDecompressedList.get(0));
-        return Objects.equals(docIdsDecompressedList, that.docIdsDecompressedList) && Objects.equals(termFrequenciesDecompressedList, that.termFrequenciesDecompressedList);
-    }
+    public abstract boolean equals(Object o);
 
     @Override
     public String toString() {

@@ -84,7 +84,8 @@ public class BinaryTest {
         Map.Entry<String, VocabularyEntry> output = fetcher.loadVocEntry();
         fetcher.end();
 
-        assertEquals(input, output);
+        assertEquals(input.getKey(), output.getKey());
+        assertEquals(input.getValue(), output.getValue());
     }
 
 

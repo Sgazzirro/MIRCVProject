@@ -15,7 +15,8 @@ import java.util.*;
  * Demanded to the load/write of postings from/into the secondary memory.
  */
 public class PostingListImpl extends PostingList {
-
+    private List<Integer> docIdsDecompressedList;
+    private List<Integer> termFrequenciesDecompressedList;
     private int pointer;
 
     // Used when building the index
@@ -88,6 +89,27 @@ public class PostingListImpl extends PostingList {
             }
         }
         return true;
+    }
+
+
+    public List<Integer> getTermFrequenciesDecompressedList() {
+        return termFrequenciesDecompressedList;
+    }
+
+
+    public List<Integer> getDocIdsDecompressedList() {
+        return docIdsDecompressedList;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        PostingListImpl that = (PostingListImpl) o;
+
+        System.out.println("FIRST DOC ID OF THE CORRECT RESULT : " + docIdsDecompressedList.get(0));
+        System.out.println("FIRST DOC ID OF THE DECOMPRESSED RESULT : " + that.getDocIdsDecompressedList().get(0));
+        return Objects.equals(docIdsDecompressedList, that.getDocIdsDecompressedList()) && Objects.equals(termFrequenciesDecompressedList, that.getTermFrequenciesDecompressedList());
     }
 
     @Override
