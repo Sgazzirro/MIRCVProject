@@ -62,11 +62,10 @@ public class FetcherCompressed implements Fetcher {
          */
     }
 
-    private byte[] fetchBytes(InputStream stream, long startOffset, long endOffset) throws IOException {
+    private byte[] fetchBytes(FileInputStream stream, long startOffset, long endOffset) throws IOException {
         byte[] bytes = new byte[(int) (endOffset - startOffset)];
         if (opened) {
-            if (stream.skip(startOffset) != startOffset)
-                throw new IOException();
+            stream.getChannel().position(startOffset);
 
             if (stream.read(bytes) != endOffset - startOffset)
                 throw new IOException();
