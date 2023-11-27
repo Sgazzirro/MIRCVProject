@@ -179,6 +179,7 @@ public class DumperCompressed implements Dumper {
     public boolean end() {
         try {
             if (opened) {
+                System.out.println("OPENED");
                 vocabularyStream.close();
                 vocabularyWriter.close();
                 docIdsStream.close();

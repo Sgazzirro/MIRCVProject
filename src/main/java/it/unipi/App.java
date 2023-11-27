@@ -7,7 +7,9 @@ import it.unipi.model.implementation.DocumentIndexImpl;
 import it.unipi.model.implementation.DocumentStreamImpl;
 import it.unipi.model.implementation.VocabularyImpl;
 import it.unipi.utils.*;
+import org.apache.commons.io.FileUtils;
 
+import java.io.File;
 import java.io.IOException;
 
 public class App 
@@ -48,6 +50,7 @@ public class App
         /**
          * NEW TESTS OF 14/11/2023
          */
+        /*
         DocumentStream ds = new DocumentStreamImpl(Constants.COLLECTION_FILE);
         DocumentIndex di = new DocumentIndexImpl();
         Vocabulary v = new VocabularyImpl();
@@ -58,6 +61,9 @@ public class App
 
         newSPIMI spimi = new newSPIMI(ds, memoryIndexing);
         spimi.buildIndexSPIMI("COMPRESSED");
+
+         */
+        FileUtils.cleanDirectory(new File("./data/test/"));
     }
 
 }

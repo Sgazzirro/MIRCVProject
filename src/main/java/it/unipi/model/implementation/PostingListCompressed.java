@@ -48,9 +48,15 @@ public class PostingListCompressed extends PostingList {
         
         // Load the blocks corresponding to these offset provided to the constructor
         //String path = "data/";
+
+        //  WHEN TEST PURPOSE
+        // --------------
         String path = "./data/test/";
+        // ---------------
         fetcher.start(path);
         loadPosting();
+        fetcher.end();
+
     }
 
     public PostingListCompressed() {

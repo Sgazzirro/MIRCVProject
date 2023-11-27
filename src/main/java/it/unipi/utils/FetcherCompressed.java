@@ -249,16 +249,15 @@ public class FetcherCompressed implements Fetcher {
     }
 
     public int[] getInformations() {
-        int N;
-        int l;
+        byte[] N = new byte[Integer.BYTES];
+        byte[] l = new byte[Integer.BYTES];
         try {
-            DataInputStream disDocIndex = new DataInputStream(documentIndexReader);
-            l = disDocIndex.readInt();
-            N = disDocIndex.readInt();
+            documentIndexReader.read(N);
+            documentIndexReader.read(l);
         }
         catch (IOException e) {
             throw new RuntimeException(e);
         }
-        return new int[]{N, l};
+        return new int[]{ByteUtils.bytesToInt(N), ByteUtils.bytesToInt(l)};
     }
 }

@@ -1,5 +1,6 @@
 package it.unipi.io;
-
+import junit.framework.TestCase;
+import org.apache.commons.io.FileUtils;
 import it.unipi.model.PostingList;
 import it.unipi.model.Vocabulary;
 import it.unipi.model.VocabularyEntry;
@@ -7,9 +8,7 @@ import it.unipi.model.implementation.PostingListCompressed;
 import it.unipi.model.implementation.PostingListImpl;
 import it.unipi.model.implementation.VocabularyImpl;
 import it.unipi.utils.*;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.*;
 
 import java.io.File;
 import java.io.IOException;
@@ -34,10 +33,11 @@ public class BinaryTest {
         dumper = new DumperCompressed();
         fetcher = new FetcherCompressed();
         Constants.setCompression(true);
+        new File("./test").mkdirs();
     }
 
     @Test
-    public void testFirstEntry() {
+    public void testFirstEntry() throws IOException {
         Vocabulary voc = new VocabularyImpl();
         String testTerm = "test";
 
@@ -53,11 +53,12 @@ public class BinaryTest {
         fetcher.start("./data/test/");
         Map.Entry<String, VocabularyEntry> output = fetcher.loadVocEntry();
         VocabularyEntry testEntry = output.getValue();
-
+        fetcher.end();
         assertEquals(testTerm, output.getKey());
         assertEquals(entry.getDocumentFrequency(), testEntry.getDocumentFrequency());
         assertEquals(entry.getPostingList().docId(), testEntry.getPostingList().docId());
     }
+
 
     @Test
     public void testGenericEntry() throws IOException {
@@ -69,7 +70,8 @@ public class BinaryTest {
             p = new PostingListCompressed();
         p.addPosting(1, 1);
         p.addPosting(2, 2);
-        VocabularyEntry i = new VocabularyEntry(2, 0.0, p);
+        VocabularyEntry i = new VocabularyEntry(2, 2.2, p);
+
 
         Map.Entry<String, VocabularyEntry> input = new AbstractMap.SimpleEntry<>(term, i);
         boolean opened = dumper.start("./data/test/");
@@ -84,6 +86,9 @@ public class BinaryTest {
 
         assertEquals(input, output);
     }
+
+
+
 
     @Test
     public void testSpecificEntry() {
@@ -109,12 +114,19 @@ public class BinaryTest {
         assertEquals(input.getValue(), output);
     }
 
+
+
     @After
-    public void flush(){
-        for (File file : Objects.requireNonNull(new File("./data/test").listFiles()))
-            if (!file.isDirectory())
-                file.delete();
+    public void flush() {
+        try{
+            FileUtils.deleteDirectory(new File("./data/test/"));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
     }
+
+
 
     public static void listDirectoryContent(String directoryPath) {
         try {
