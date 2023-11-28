@@ -17,6 +17,8 @@ public class EliasFano implements Encoder {
         // TODO - Check that in this way we don't break anything
         int n = array.size();
 
+        System.out.println("ENCODE: U="+originalU+" N="+n);
+
         // number of bits
         int lowHalfLength = (int) Math.ceil(Math.log((float) U / n) / Math.log(2));
         int highHalfLength = (int) Math.ceil(Math.log(U) / Math.log(2)) - lowHalfLength;

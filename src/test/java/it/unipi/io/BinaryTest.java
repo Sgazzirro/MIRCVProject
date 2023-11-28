@@ -44,7 +44,6 @@ public class BinaryTest {
         voc.addEntry(testTerm, 2);
 
         VocabularyEntry entry = voc.getEntry(testTerm);
-        System.out.println("ENTRY DA TEST: " + entry);
         dumper.start("./data/test/");
         dumper.dumpVocabulary(voc);
         dumper.end();
@@ -53,7 +52,6 @@ public class BinaryTest {
         Map.Entry<String, VocabularyEntry> output = fetcher.loadVocEntry();
         VocabularyEntry testEntry = output.getValue();
         fetcher.end();
-        System.out.println(output.getKey());
         assertEquals(testTerm, output.getKey());
         assertEquals(entry, testEntry);
         //assertEquals(entry.getDocumentFrequency(), testEntry.getDocumentFrequency());
@@ -115,6 +113,33 @@ public class BinaryTest {
 
         assertEquals(input.getValue(), output);
     }
+    @Test
+    public void testNext2dot5Blocks(){
+        Constants.BLOCK_SIZE=2;
+        Vocabulary voc = new VocabularyImpl();
+        String test = "test";
+        voc.addEntry(test, 1);
+        voc.addEntry(test, 1);
+        voc.addEntry(test,2);
+        voc.addEntry(test,3);
+        voc.addEntry(test,4);
+        voc.addEntry(test,5);
+
+        VocabularyEntry entry = voc.getEntry(test);
+        Map.Entry<String, VocabularyEntry> input = new AbstractMap.SimpleEntry<>(test, entry);
+
+        dumper.start("./data/test/");
+        dumper.dumpVocabulary(voc);
+        dumper.end();
+
+        fetcher.start("./data/test/");
+        Map.Entry<String, VocabularyEntry> output = fetcher.loadVocEntry();
+        fetcher.end();
+
+        assertEquals(input.getKey(), output.getKey());
+        assertEquals(input.getValue(), output.getValue());
+    }
+
 
 
 
@@ -129,24 +154,4 @@ public class BinaryTest {
     }
 
 
-
-    public static void listDirectoryContent(String directoryPath) {
-        try {
-            // Create a Path object representing the directory
-            Path dirPath = Paths.get(directoryPath);
-
-            // Get a stream of all entries (files and sub-directories) in the directory
-            DirectoryStream<Path> directoryStream = Files.newDirectoryStream(dirPath);
-
-            // Iterate over the entries and print their names
-            for (Path entry : directoryStream) {
-                System.out.println(entry.getFileName());
-            }
-
-            // Close the directory stream
-            directoryStream.close();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
 }

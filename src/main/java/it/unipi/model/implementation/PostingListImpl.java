@@ -106,9 +106,6 @@ public class PostingListImpl extends PostingList {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         PostingListImpl that = (PostingListImpl) o;
-
-        System.out.println("FIRST DOC ID OF THE CORRECT RESULT : " + docIdsDecompressedList.get(0));
-        System.out.println("FIRST DOC ID OF THE DECOMPRESSED RESULT : " + that.getDocIdsDecompressedList().get(0));
         return Objects.equals(docIdsDecompressedList, that.getDocIdsDecompressedList()) && Objects.equals(termFrequenciesDecompressedList, that.getTermFrequenciesDecompressedList());
     }
 

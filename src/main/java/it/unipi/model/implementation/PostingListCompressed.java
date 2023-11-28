@@ -91,14 +91,12 @@ public class PostingListCompressed extends PostingList {
 
     @Override
     public void next() {
-        System.out.println("SIZELIST: " + docIdsDecompressedList.size());
-        System.out.println(docIdsDecompressedList);
         if (blockPointer + 1 < docIdsDecompressedList.size()) {
-            System.out.println("HO INCREMENTATO UN PUNTATORE. SE VEDI SOLO UNA DI QUESTE STAMPE, HO INCREMENTATO LA PRIMA DELLE DUE LISTE");
             blockPointer++;
         }
-        else
+        else {
             loadNextBlock();
+        }
     }
 
     @Override
@@ -140,6 +138,7 @@ public class PostingListCompressed extends PostingList {
 
             docIdsBlockPointer = termFrequenciesBlockPointer = 0;
             loadNextBlock();
+            blockPointer=-1;
 
             return true;
         } catch (IOException e) {
@@ -164,21 +163,22 @@ public class PostingListCompressed extends PostingList {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         PostingListCompressed that = (PostingListCompressed) o;
-        System.out.println(this);
-        System.out.println(that);
         while(hasNext()) {
             next();
             that.next();
-            System.out.println(blockPointer + " " + that.blockPointer);
-            System.out.println(docId() + " " + that.docId());
-            System.out.println(termFrequency() + " " + that.termFrequency());
+            System.out.println("THIS: "+this.blockPointer);
+            System.out.println("THIS DOCID: "+this.docId());
+            System.out.println("THAT: "+that.blockPointer);
+            System.out.println("THAT DOCID: "+that.docId());
+            System.out.println("THIS FREQUENCY: "+this.getTermFrequenciesDecompressedList());
+            System.out.println("THAT FREQUENCY: "+that.getTermFrequenciesDecompressedList());
             if (docId() != that.docId() || termFrequency() != that.termFrequency())
                 return false;
         }
         return true;
     }
     private void loadNextBlock() {
-        ByteBlock docIdsBlock = fetcher.fetchDocIdsBlock(compressedDocIds, 0, docIdsBlockPointer);  // Read the first block
+        ByteBlock docIdsBlock = fetcher.fetchDocIdsBlock(compressedDocIds, 0, docIdsBlockPointer);
         docIdsBlockPointer = docIdsBlock.getOffset();
         docIdsDecompressedList = docIdsEncoder.decode(docIdsBlock.getBytes());
 
@@ -186,7 +186,7 @@ public class PostingListCompressed extends PostingList {
         termFrequenciesBlockPointer = termFrequenciesBlock.getOffset();
         termFrequenciesDecompressedList = termFrequenciesEncoder.decode(termFrequenciesBlock.getBytes());
 
-        blockPointer = -1;
+        blockPointer = 0;
     }
 
     public byte[] getCompressedDocIds() {

@@ -47,7 +47,7 @@ public class EliasFanoTest extends TestCase {
     }
 
     public void testEncodeDecode() {
-        List<Integer> list = List.of(1, 2);
+        List<Integer> list = List.of(1,2);
         byte[] bytes = eliasFano.encode(list);
         assertEquals(list, eliasFano.decode(bytes));
     }

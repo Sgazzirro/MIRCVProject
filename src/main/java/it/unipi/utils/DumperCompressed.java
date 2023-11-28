@@ -75,7 +75,6 @@ public class DumperCompressed implements Dumper {
 
     @Override
     public void dumpVocabularyEntry(Map.Entry<String, VocabularyEntry> entry) throws IOException {
-        System.out.println("INGRESSO ALLA DUMP ENTRY: " + entry.getKey());
         String term = entry.getKey();
         VocabularyEntry vocabularyEntry = entry.getValue();
 
@@ -100,6 +99,9 @@ public class DumperCompressed implements Dumper {
 
             docIdsWriter.write(byteList);
             docIdsLength += byteList.length;
+            if(i==0){
+                System.out.println("PER CERCARE IL SECONDO BLOCCO DEVO SALTARE DI: "+docIdsLength);
+            }
         }
 
         // Dump term frequencies
@@ -109,6 +111,9 @@ public class DumperCompressed implements Dumper {
 
             termFreqWriter.write(byteList);
             termFreqLength += byteList.length;
+            if(i==0){
+                System.out.println("PER CERCARE IL SECONDO BLOCCO DI SIMPLE9 DEVO SALTARE DI "+termFreqLength);
+            }
         }
 
         // Dump vocabulary entry
@@ -117,7 +122,6 @@ public class DumperCompressed implements Dumper {
         System.arraycopy(stringBytes, 0, stringTruncatedBytes, 0, Math.min(stringBytes.length, Constants.BYTES_STORED_STRING));
         for (int i = Math.min(stringBytes.length, Constants.BYTES_STORED_STRING); i < Constants.BYTES_STORED_STRING; i++)
             stringTruncatedBytes[i] = '\0';
-        System.out.println(ByteUtils.bytesToString(stringTruncatedBytes, 0, Constants.BYTES_STORED_STRING));
         vocabularyWriter.write(stringTruncatedBytes);
         vocabularyWriter.writeInt(documentFrequency);
         vocabularyWriter.writeDouble(upperBound);
@@ -181,7 +185,6 @@ public class DumperCompressed implements Dumper {
     public boolean end() {
         try {
             if (opened) {
-                System.out.println("OPENED");
                 //vocabularyStream.close();
                 vocabularyWriter.close();
                // docIdsStream.close();

@@ -86,6 +86,7 @@ public class FetcherCompressed implements Fetcher {
 
     public PostingListCompressed.ByteBlock fetchDocIdsBlock(byte[] compressedDocIds, int docId, long docIdsBlockOffset) {
         // skips unnecessary lists
+        System.out.println("DOCIDSBLOCKOFFSET: "+docIdsBlockOffset);
         try (
                 ByteArrayInputStream bais = new ByteArrayInputStream(compressedDocIds);
                 DataInputStream dis = new DataInputStream(bais);
@@ -96,7 +97,7 @@ public class FetcherCompressed implements Fetcher {
                 // Read integers from the byte array
                 int U = dis.readInt();
                 int n = dis.readInt();
-
+                docIdsBlockOffset+=(2*Integer.BYTES);
                 // computing number of bytes to skip
                 int lowHalfLength = (int) Math.ceil(Math.log((float) U / n) / Math.log(2));
                 int highHalfLength = (int) Math.ceil(Math.log(U) / Math.log(2)) - lowHalfLength;
@@ -149,6 +150,8 @@ public class FetcherCompressed implements Fetcher {
                 ByteUtils.intToBytes(length, byteArray, 0);
                 termFrequenciesBlockOffset += dis.read(byteArray, 4, length);
                 termFrequenciesBlockOffset += 4;            // Consider also the first 4 bytes describing the block length
+                System.out.println("SIMPLE9 OFFSET LETTO "+(length+4));
+                System.out.println("SIMPLE9 OFFSET LETTO RITORNATO "+termFrequenciesBlockOffset);
                 dis.close();
 
                 return new PostingListCompressed.ByteBlock(byteArray, termFrequenciesBlockOffset);
@@ -212,9 +215,7 @@ public class FetcherCompressed implements Fetcher {
             if (vocabularyReader.read(vocabularyEntryBytes) != Constants.VOCABULARY_ENTRY_BYTES_SIZE)
                 return null;
             vocabularyEntry = ByteUtils.bytesToVocabularyEntry(vocabularyEntryBytes);
-            System.out.println(vocabularyEntryBytes.length);
             term = ByteUtils.bytesToString(vocabularyEntryBytes, 0, Constants.BYTES_STORED_STRING);
-            System.out.println("TERMINE DI TEST : " + term);
 
         } catch (IOException ie) {
             ie.printStackTrace();
