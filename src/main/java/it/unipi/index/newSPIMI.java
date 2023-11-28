@@ -15,7 +15,7 @@ public class newSPIMI {
     private long block_size = 10000;
     private int next_block = 0;
     private boolean finish = false;
-    private String mode = "DEBUG";
+    private String path;
 
     private InMemoryIndexing blockIndexer;
 
@@ -45,12 +45,12 @@ public class newSPIMI {
         return (usedMemory - startMemory) <= block_size;
     }
 
-    public void buildIndexSPIMI(String mode) {
-        IOUtils.createDirectory("./data/blocks");
+    public void buildIndexSPIMI(String mode, String path) {
+        this.path = path;
+        IOUtils.createDirectory(path + "blocks/");
 
-        this.mode = mode;
         // Preliminary flush of files
-        for (File file : Objects.requireNonNull(new File("./data/blocks").listFiles()))
+        for (File file : Objects.requireNonNull(new File(path + "blocks").listFiles()))
             if (!file.isDirectory())
                 file.delete();
 
@@ -58,7 +58,7 @@ public class newSPIMI {
         // < Create and Invert the block, write it to a file >
         // < Merge all blocks >
         while (!finished())
-            invertBlock("data/blocks/_" + next_block);
+            invertBlock(path + "blocks/_" + next_block);
 
         // Intermediate blocks are generated in debug mode
         List<Fetcher> readVocBuffers = new ArrayList<>();
@@ -70,7 +70,7 @@ public class newSPIMI {
             if(mode.equals("COMPRESSED"))
                 readVocBuffers.add(new FetcherCompressed());
              */
-            readVocBuffers.get(i).start("data/blocks/_" + i);
+            readVocBuffers.get(i).start(path + "blocks/_" + i);
         }
         mergeAllBlocks(readVocBuffers);
         concatenateDocIndexes(readVocBuffers);
@@ -120,7 +120,7 @@ public class newSPIMI {
         //List<Fetcher> readVocBuffers = new ArrayList<>();
         List<Boolean> processed = new ArrayList<>();
         int next_block = getNext_block();
-        indexer.setup("data/");
+        indexer.setup(path);
 
         for (int i = 0; i < next_block; i++) {
             processed.add(true);

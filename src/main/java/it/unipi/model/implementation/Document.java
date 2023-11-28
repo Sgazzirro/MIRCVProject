@@ -4,6 +4,14 @@ public class Document {
     private int docid;
     private String text;
 
+    public Document(){
+
+    }
+    public Document(String text){
+        String[] params = text.split("\t");
+        setId(Integer.parseInt(params[0]));
+        setText(params[1]);
+    }
     public int getId() {
         return docid;
     }
