@@ -86,7 +86,6 @@ public class FetcherCompressed implements Fetcher {
 
     public PostingListCompressed.ByteBlock fetchDocIdsBlock(byte[] compressedDocIds, int docId, long docIdsBlockOffset) {
         // skips unnecessary lists
-        System.out.println("DOCIDSBLOCKOFFSET: "+docIdsBlockOffset);
         try (
                 ByteArrayInputStream bais = new ByteArrayInputStream(compressedDocIds);
                 DataInputStream dis = new DataInputStream(bais);
@@ -150,8 +149,6 @@ public class FetcherCompressed implements Fetcher {
                 ByteUtils.intToBytes(length, byteArray, 0);
                 termFrequenciesBlockOffset += dis.read(byteArray, 4, length);
                 termFrequenciesBlockOffset += 4;            // Consider also the first 4 bytes describing the block length
-                System.out.println("SIMPLE9 OFFSET LETTO "+(length+4));
-                System.out.println("SIMPLE9 OFFSET LETTO RITORNATO "+termFrequenciesBlockOffset);
                 dis.close();
 
                 return new PostingListCompressed.ByteBlock(byteArray, termFrequenciesBlockOffset);

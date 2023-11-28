@@ -128,11 +128,11 @@ public class PostingListImpl extends PostingList {
     }
 
     @Override
-    public void next() {
+    public void next() throws EOFException{
         loadPosting();
 
         if (!hasNext())
-            throw new NoSuchElementException();
+            throw new EOFException();
 
         pointer++;
     }
@@ -142,7 +142,7 @@ public class PostingListImpl extends PostingList {
     }
 
     @Override
-    public void nextGEQ(int docId) {
+    public void nextGEQ(int docId) throws EOFException{
         loadPosting();
 
         while (this.docId() < docId)

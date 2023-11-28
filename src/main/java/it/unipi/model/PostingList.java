@@ -5,6 +5,7 @@ import it.unipi.model.implementation.PostingListImpl;
 import it.unipi.utils.Constants;
 import opennlp.tools.parser.Cons;
 
+import java.io.EOFException;
 import java.util.List;
 import java.util.Objects;
 
@@ -47,14 +48,14 @@ public abstract class PostingList {
     /**
      * Moves sequentially the posting list to the next posting
      */
-    public abstract void next();
+    public abstract void next() throws EOFException;
 
     /**
      * Moves the iterator toward the next posting
      * with a document ID which is greater or equal than the specified one
      * @param docId the ID of the document we would like to reach
      */
-    public abstract void nextGEQ(int docId);
+    public abstract void nextGEQ(int docId) throws EOFException;
 
     /**
      * Add a posting to the current list. If the posting already exists, increment the frequency

@@ -99,9 +99,6 @@ public class DumperCompressed implements Dumper {
 
             docIdsWriter.write(byteList);
             docIdsLength += byteList.length;
-            if(i==0){
-                System.out.println("PER CERCARE IL SECONDO BLOCCO DEVO SALTARE DI: "+docIdsLength);
-            }
         }
 
         // Dump term frequencies
@@ -111,9 +108,6 @@ public class DumperCompressed implements Dumper {
 
             termFreqWriter.write(byteList);
             termFreqLength += byteList.length;
-            if(i==0){
-                System.out.println("PER CERCARE IL SECONDO BLOCCO DI SIMPLE9 DEVO SALTARE DI "+termFreqLength);
-            }
         }
 
         // Dump vocabulary entry

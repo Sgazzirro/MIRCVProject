@@ -4,6 +4,7 @@ import it.unipi.model.Encoder;
 import it.unipi.model.PostingList;
 import it.unipi.utils.FetcherCompressed;
 
+import java.io.EOFException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -90,7 +91,9 @@ public class PostingListCompressed extends PostingList {
     }
 
     @Override
-    public void next() {
+    public void next() throws EOFException{
+        long docIdsEndOffset = getDocIdsOffset() + getDocIdsLength();
+        if(docIdsBlockPointer==docIdsEndOffset && blockPointer==docIdsDecompressedList.size()) throw new EOFException();
         if (blockPointer + 1 < docIdsDecompressedList.size()) {
             blockPointer++;
         }
@@ -100,17 +103,20 @@ public class PostingListCompressed extends PostingList {
     }
 
     @Override
-    public void nextGEQ(int docId) {
+    public void nextGEQ(int docId) throws EOFException {
         while (true) {
             // If we are in the correct block advance the pointer to the right place
             if (docIdsDecompressedList.get(docIdsDecompressedList.size() - 1) > docId) {
-                for (int i = blockPointer; i < docIdsDecompressedList.size(); i++) {
+                for (int i = blockPointer!=-1?blockPointer:0; i < docIdsDecompressedList.size(); i++) {
                     if (docIdsDecompressedList.get(i) >= docId) {
                         blockPointer = i;
                         return;
                     }
                 }
             }
+            // if we're in the last block and it doesn't contain the docId
+            long docIdsEndOffset = getDocIdsOffset() + getDocIdsLength();
+            if(docIdsBlockPointer==docIdsEndOffset && docIdsDecompressedList.get(docIdsDecompressedList.size()-1)<docId) throw new EOFException();
 
             // Else get the next block
             loadNextBlock();
@@ -163,17 +169,15 @@ public class PostingListCompressed extends PostingList {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         PostingListCompressed that = (PostingListCompressed) o;
-        while(hasNext()) {
-            next();
-            that.next();
-            System.out.println("THIS: "+this.blockPointer);
-            System.out.println("THIS DOCID: "+this.docId());
-            System.out.println("THAT: "+that.blockPointer);
-            System.out.println("THAT DOCID: "+that.docId());
-            System.out.println("THIS FREQUENCY: "+this.getTermFrequenciesDecompressedList());
-            System.out.println("THAT FREQUENCY: "+that.getTermFrequenciesDecompressedList());
-            if (docId() != that.docId() || termFrequency() != that.termFrequency())
-                return false;
+        try {
+            while (hasNext()) {
+                next();
+                that.next();
+                if (docId() != that.docId() || termFrequency() != that.termFrequency())
+                    return false;
+            }
+        } catch (EOFException eofException){
+            eofException.printStackTrace();
         }
         return true;
     }

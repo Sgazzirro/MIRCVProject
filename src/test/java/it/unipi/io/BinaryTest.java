@@ -10,6 +10,7 @@ import it.unipi.model.implementation.VocabularyImpl;
 import it.unipi.utils.*;
 import org.junit.*;
 
+import java.io.EOFException;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.DirectoryStream;
@@ -139,9 +140,171 @@ public class BinaryTest {
         assertEquals(input.getKey(), output.getKey());
         assertEquals(input.getValue(), output.getValue());
     }
+    @Test
+    public void testNextGEQSameBlock(){
+        Constants.BLOCK_SIZE=3;
+        Vocabulary voc = new VocabularyImpl();
+        String test = "test";
+        voc.addEntry(test, 1);
+        voc.addEntry(test, 1);
+        voc.addEntry(test,2);
+        voc.addEntry(test,3);
+        voc.addEntry(test,4);
+        voc.addEntry(test,5);
+        voc.addEntry(test,6);
+        voc.addEntry(test,7);
+        voc.addEntry(test,8);
+        voc.addEntry(test,9);
+        voc.addEntry(test, 540);
 
+        VocabularyEntry entry = voc.getEntry(test);
+        Map.Entry<String, VocabularyEntry> input = new AbstractMap.SimpleEntry<>(test, entry);
 
+        dumper.start("./data/test/");
+        dumper.dumpVocabulary(voc);
+        dumper.end();
 
+        fetcher.start("./data/test/");
+        Map.Entry<String, VocabularyEntry> output = fetcher.loadVocEntry();
+        fetcher.end();
+
+        assertEquals(input.getKey(), output.getKey());
+
+        PostingList plInput = entry.getPostingList();
+        PostingList plOutput = output.getValue().getPostingList();
+
+        try {
+            plInput.nextGEQ(2);
+            plOutput.nextGEQ(2);
+        } catch (EOFException eofException){
+            eofException.printStackTrace();
+        }
+        assertEquals(2,plOutput.docId());
+    }
+
+    @Test
+    public void testNextGEQDiffBlock(){
+        Constants.BLOCK_SIZE=3;
+        Vocabulary voc = new VocabularyImpl();
+        String test = "test";
+        voc.addEntry(test, 1);
+        voc.addEntry(test, 1);
+        voc.addEntry(test,2);
+        voc.addEntry(test,3);
+        voc.addEntry(test,4);
+        voc.addEntry(test,5);
+        voc.addEntry(test,6);
+        voc.addEntry(test,7);
+        voc.addEntry(test,8);
+        voc.addEntry(test,9);
+        voc.addEntry(test, 540);
+
+        VocabularyEntry entry = voc.getEntry(test);
+        Map.Entry<String, VocabularyEntry> input = new AbstractMap.SimpleEntry<>(test, entry);
+
+        dumper.start("./data/test/");
+        dumper.dumpVocabulary(voc);
+        dumper.end();
+
+        fetcher.start("./data/test/");
+        Map.Entry<String, VocabularyEntry> output = fetcher.loadVocEntry();
+        fetcher.end();
+
+        assertEquals(input.getKey(), output.getKey());
+
+        PostingList plInput = entry.getPostingList();
+        PostingList plOutput = output.getValue().getPostingList();
+
+        try{
+        plInput.nextGEQ(8);
+        plOutput.nextGEQ(8);
+        } catch (EOFException eofException){
+            eofException.printStackTrace();
+        }
+        assertEquals(8,plOutput.docId());
+
+    }
+    @Test
+    public void testNextGEQLast(){
+        Constants.BLOCK_SIZE=3;
+        Vocabulary voc = new VocabularyImpl();
+        String test = "test";
+        voc.addEntry(test, 1);
+        voc.addEntry(test, 1);
+        voc.addEntry(test,2);
+        voc.addEntry(test,3);
+        voc.addEntry(test,4);
+        voc.addEntry(test,5);
+        voc.addEntry(test,6);
+        voc.addEntry(test,7);
+        voc.addEntry(test,8);
+        voc.addEntry(test,9);
+        voc.addEntry(test, 540);
+
+        VocabularyEntry entry = voc.getEntry(test);
+        Map.Entry<String, VocabularyEntry> input = new AbstractMap.SimpleEntry<>(test, entry);
+
+        dumper.start("./data/test/");
+        dumper.dumpVocabulary(voc);
+        dumper.end();
+
+        fetcher.start("./data/test/");
+        Map.Entry<String, VocabularyEntry> output = fetcher.loadVocEntry();
+        fetcher.end();
+
+        assertEquals(input.getKey(), output.getKey());
+
+        PostingList plInput = entry.getPostingList();
+        PostingList plOutput = output.getValue().getPostingList();
+
+        try{
+        plInput.nextGEQ(18);
+        plOutput.nextGEQ(18);
+        } catch (EOFException eofException){
+            eofException.printStackTrace();
+        }
+        assertEquals( 540, plOutput.docId());
+    }
+
+    @Test
+    public void testNextGEQNotPresent(){
+        Constants.BLOCK_SIZE=3;
+        Vocabulary voc = new VocabularyImpl();
+        String test = "test";
+        voc.addEntry(test, 1);
+        voc.addEntry(test, 1);
+        voc.addEntry(test,2);
+        voc.addEntry(test,3);
+        voc.addEntry(test,4);
+        voc.addEntry(test,5);
+        voc.addEntry(test,6);
+        voc.addEntry(test,7);
+        voc.addEntry(test,8);
+        voc.addEntry(test,9);
+        voc.addEntry(test, 540);
+
+        VocabularyEntry entry = voc.getEntry(test);
+        Map.Entry<String, VocabularyEntry> input = new AbstractMap.SimpleEntry<>(test, entry);
+
+        dumper.start("./data/test/");
+        dumper.dumpVocabulary(voc);
+        dumper.end();
+
+        fetcher.start("./data/test/");
+        Map.Entry<String, VocabularyEntry> output = fetcher.loadVocEntry();
+        fetcher.end();
+
+        assertEquals(input.getKey(), output.getKey());
+
+        PostingList plInput = entry.getPostingList();
+        PostingList plOutput = output.getValue().getPostingList();
+        Assert.assertThrows(EOFException.class, () -> {
+            plInput.nextGEQ(600);
+        });
+        Assert.assertThrows(EOFException.class, () -> {
+            plOutput.nextGEQ(600);
+        });
+    }
 
     @After
     public void flush() {

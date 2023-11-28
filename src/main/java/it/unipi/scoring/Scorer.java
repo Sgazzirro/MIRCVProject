@@ -4,6 +4,7 @@ import it.unipi.model.PostingList;
 import it.unipi.model.VocabularyEntry;
 import it.unipi.model.implementation.*;
 
+import java.io.EOFException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.PriorityQueue;
@@ -87,7 +88,11 @@ public class Scorer {
                 if (postingList.get(i).docId() == docId) {
                     // Advance the posting list
                     if (postingList.get(i).hasNext())
-                        postingList.get(i).next();
+                        try {
+                            postingList.get(i).next();
+                        } catch (EOFException eofException) {
+                            eofException.printStackTrace();
+                        }
                     // If we are at the end of the posting list, remove it
                     else {
                         postingList.remove(i--);
