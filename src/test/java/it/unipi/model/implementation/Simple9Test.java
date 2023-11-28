@@ -24,7 +24,7 @@ public class Simple9Test extends TestCase {
         byte[] bytes = simple9Skipping.encode(list);
         int bytesToSkip = ByteUtils.bytesToInt(bytes);
 
-        assertEquals(bytesToSkip, 2*4);
+        assertEquals(bytesToSkip, 4 + 2*4);
     }
 
     public void testEncodeAll1() {

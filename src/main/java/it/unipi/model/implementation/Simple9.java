@@ -70,7 +70,7 @@ public class Simple9 implements Encoder {
             // Add a skipping pointer at the beginning with structure
             //     number of bytes to skip
             int byteToSkip;
-            byteToSkip = 4 * blockList.size();
+            byteToSkip = 4 + 4 * blockList.size();
 
             // Encode byteToSkip as the first block
             blockList.add(0, byteToSkip);

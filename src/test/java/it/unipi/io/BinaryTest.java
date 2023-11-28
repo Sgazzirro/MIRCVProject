@@ -114,7 +114,7 @@ public class BinaryTest {
         assertEquals(input.getValue(), output);
     }
     @Test
-    public void testNext2dot5Blocks(){
+    public void testNext2dot5Blocks() {
         Constants.BLOCK_SIZE=2;
         Vocabulary voc = new VocabularyImpl();
         String test = "test";
