@@ -84,7 +84,7 @@ public class newSPIMI {
         long usedMemory = startMemory;
 
         // Setup block index
-        blockIndexer.setup(filename);
+        indexer.setup(filename);
 
         while (availableMemory(usedMemory, startMemory)) {
             // Get the next document
@@ -94,16 +94,16 @@ public class newSPIMI {
                 finish = true;
                 break;
             }
-            blockIndexer.processDocument(doc.get());
+            indexer.processDocument(doc.get());
             usedMemory = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
         }
 
         // Dump when out of memory
-        blockIndexer.dumpVocabulary();
-        blockIndexer.dumpDocumentIndex();
+        indexer.dumpVocabulary();
+        indexer.dumpDocumentIndex();
 
         // Reset dump
-        blockIndexer.close();
+        indexer.close();
         next_block++;
     }
 
@@ -116,7 +116,6 @@ public class newSPIMI {
         // using a priority queue or a similar data structure.
         // All postings lists for this termID are read and merged, and the merged list is written back to disk.
         // Each read buffer is refilled from its file when necessary.
-
         //List<Fetcher> readVocBuffers = new ArrayList<>();
         List<Boolean> processed = new ArrayList<>();
         int next_block = getNext_block();

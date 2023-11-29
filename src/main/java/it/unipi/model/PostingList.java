@@ -71,11 +71,11 @@ public abstract class PostingList {
 
 
     public boolean loadPosting() {
-        return loadPosting(Constants.DOC_IDS_POSTING_FILENAME, Constants.TF_POSTING_FILENAME);
+        return loadPosting("./data/");
     }
 
 
-    public abstract boolean loadPosting(String docIdsFilename, String termFreqFilename);
+    public abstract boolean loadPosting(String path);
 
     public long getDocIdsOffset() {
         return docIdsOffset;

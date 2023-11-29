@@ -56,9 +56,9 @@ public class PostingListCompressed extends PostingList {
         // --------------
         String path = "./data/test/";
         // ---------------
-        fetcher.start(path);
+        /*fetcher.start(path);
         loadPosting();
-        fetcher.end();
+        fetcher.end();*/
 
     }
 
@@ -137,11 +137,12 @@ public class PostingListCompressed extends PostingList {
     }
 
     @Override
-    public boolean loadPosting(String docIdsFilename, String termFreqFilename) {
+    public boolean loadPosting(String path) {
         try {
+            fetcher.start(path);
             compressedDocIds = fetcher.fetchCompressedDocIds(getDocIdsOffset(), getDocIdsOffset() + getDocIdsLength());
             compressedTermFrequencies = fetcher.fetchCompressedTermFrequencies(getTermFreqOffset(), getTermFreqOffset() + getTermFreqLength());
-
+            fetcher.end();
             docIdsBlockPointer = termFrequenciesBlockPointer = 0;
             loadNextBlock();
             blockPointer=-1;
@@ -166,6 +167,7 @@ public class PostingListCompressed extends PostingList {
 
     @Override
     public boolean equals(Object o) {
+        System.out.println("DENTRO QUESTO EQUALS");
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         PostingListCompressed that = (PostingListCompressed) o;
@@ -229,4 +231,7 @@ public class PostingListCompressed extends PostingList {
         return "DocIdList: " + docIdsDecompressedList + " TermFrequencyList: " + termFrequenciesDecompressedList;
     }
 
+    public void setFetcher(FetcherCompressed fetcher) {
+        this.fetcher = fetcher;
+    }
 }

@@ -42,24 +42,7 @@ public class FetcherCompressed implements Fetcher {
 
     @Override
     public void loadPosting(PostingList list) {
-        int docId = 0;
-        long byteOffsetStart = 0;
-        long byteOffsetEnd = 0;
-        String filename="";
 
-        start(filename);
-        /*
-        byte [] docIdArrayCompressed = fetchDocIdListCompressed(byteOffsetStart, byteOffsetEnd);
-        // TO PUT IN CACHE!!!!
-        EliasFanoStruct efs = fetchDocIdSubList(docIdArrayCompressed, docId);
-        ArrayList<Integer> docIdsDecodedList = EliasFano.decode(efs);
-        for (int i=0; i<docIdsDecodedList.size(); i++){
-            list.addPosting(docIdsDecodedList.get(i), 0);
-        }
-
-        end();
-
-         */
     }
 
     private byte[] fetchBytes(FileInputStream stream, long startOffset, long endOffset) throws IOException {
@@ -187,8 +170,11 @@ public class FetcherCompressed implements Fetcher {
                     start = middle;
                 else if (comparison < 0)    // This means term < entry
                     end = middle;
-                else                        // This means term = entry
-                    return ByteUtils.bytesToVocabularyEntry(vocabularyEntryBytes);
+                else {                        // This means term = entry
+                    VocabularyEntry result = ByteUtils.bytesToVocabularyEntry(vocabularyEntryBytes);
+                    result.getPostingList().loadPosting("./test/");
+                    return result;
+                }
             }
         } catch (IOException e) {
             e.printStackTrace();
@@ -212,6 +198,7 @@ public class FetcherCompressed implements Fetcher {
             if (vocabularyReader.read(vocabularyEntryBytes) != Constants.VOCABULARY_ENTRY_BYTES_SIZE)
                 return null;
             vocabularyEntry = ByteUtils.bytesToVocabularyEntry(vocabularyEntryBytes);
+            vocabularyEntry.getPostingList().loadPosting("./test/");
             term = ByteUtils.bytesToString(vocabularyEntryBytes, 0, Constants.BYTES_STORED_STRING);
 
         } catch (IOException ie) {

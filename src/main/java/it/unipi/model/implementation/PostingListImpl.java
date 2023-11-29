@@ -49,8 +49,11 @@ public class PostingListImpl extends PostingList {
         return docIdsDecompressedList.size();
     }
 
+
     @Override
-    public boolean loadPosting(String docIdsFilename, String termFreqFilename) {
+    public boolean loadPosting(String path) {
+        return true;
+        /*
         // Method that loads the posting list in memory if not present
         if (docIdsDecompressedList == null) {
             docIdsDecompressedList = new ArrayList<>();
@@ -89,7 +92,9 @@ public class PostingListImpl extends PostingList {
             }
         }
         return true;
+         */
     }
+
 
 
     public List<Integer> getTermFrequenciesDecompressedList() {
