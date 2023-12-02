@@ -108,10 +108,21 @@ public class PostingListImpl extends PostingList {
 
     @Override
     public boolean equals(Object o) {
+        System.out.println("DENTRO LA EQUALS DELLA IMPL");
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         PostingListImpl that = (PostingListImpl) o;
-        return Objects.equals(docIdsDecompressedList, that.getDocIdsDecompressedList()) && Objects.equals(termFrequenciesDecompressedList, that.getTermFrequenciesDecompressedList());
+        try {
+            while (hasNext()) {
+                next();
+                that.next();
+                if (docId() != that.docId() || termFrequency() != that.termFrequency())
+                    return false;
+            }
+        } catch (EOFException eofException){
+            eofException.printStackTrace();
+        }
+        return true;
     }
 
     @Override

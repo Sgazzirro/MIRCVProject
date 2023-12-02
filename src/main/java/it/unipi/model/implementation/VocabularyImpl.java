@@ -26,10 +26,10 @@ public class VocabularyImpl implements Vocabulary, Serializable {
         if (!isPresent(token)) {
             ve = new VocabularyEntry();
             ve.setDocumentFrequency(0);
-            if(!Constants.getCompression())
+            //if(!Constants.getCompression())
                 ve.setPostingList(new PostingListImpl());
-            else
-                ve.setPostingList(new PostingListCompressed());
+            //else
+            //    ve.setPostingList(new PostingListCompressed());
             ve.setUpperBound((double) 0);
             table.put(token,ve);
         }

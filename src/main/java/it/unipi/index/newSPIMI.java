@@ -16,17 +16,19 @@ public class newSPIMI {
     private int next_block = 0;
     private boolean finish = false;
     private String path;
+    private String mode;
 
     private InMemoryIndexing blockIndexer;
 
-    public newSPIMI(DocumentStream s, InMemoryIndexing i) {
+    public newSPIMI(String mode,DocumentStream s, InMemoryIndexing i) {
+        this.mode = mode;
         stream = s;
         indexer = i;
 
         DocumentStream ds = new DocumentStreamImpl(Constants.COLLECTION_FILE);
         DocumentIndex di = new DocumentIndexImpl();
         Vocabulary v = new VocabularyImpl();
-        Dumper d =  new DumperTXT();
+        Dumper d = mode.equals("DEBUG") ? new DumperTXT() : new DumperBinary();
         blockIndexer = new InMemoryIndexing(ds, v, d, di);
     }
 
@@ -45,7 +47,7 @@ public class newSPIMI {
         return (usedMemory - startMemory) <= block_size;
     }
 
-    public void buildIndexSPIMI(String mode, String path) {
+    public void buildIndexSPIMI(String path) {
         this.path = path;
         IOUtils.createDirectory(path + "blocks/");
 
@@ -63,13 +65,12 @@ public class newSPIMI {
         // Intermediate blocks are generated in debug mode
         List<Fetcher> readVocBuffers = new ArrayList<>();
         for (int i = 0; i < next_block; i++) {
-            // if(mode.equals("DEBUG"))
+             if(mode.equals("DEBUG"))
                 readVocBuffers.add(new FetcherTXT());
-            /* if(mode.equals("NOT_COMPRESSED"))
+             else
                 readVocBuffers.add(new FetcherBinary());
-            if(mode.equals("COMPRESSED"))
-                readVocBuffers.add(new FetcherCompressed());
-             */
+
+
             readVocBuffers.get(i).start(path + "blocks/_" + i);
         }
         mergeAllBlocks(readVocBuffers);
@@ -84,7 +85,7 @@ public class newSPIMI {
         long usedMemory = startMemory;
 
         // Setup block index
-        indexer.setup(filename);
+        blockIndexer.setup(filename);
 
         while (availableMemory(usedMemory, startMemory)) {
             // Get the next document
@@ -94,16 +95,16 @@ public class newSPIMI {
                 finish = true;
                 break;
             }
-            indexer.processDocument(doc.get());
+            blockIndexer.processDocument(doc.get());
             usedMemory = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
         }
 
         // Dump when out of memory
-        indexer.dumpVocabulary();
-        indexer.dumpDocumentIndex();
+        blockIndexer.dumpVocabulary();
+        blockIndexer.dumpDocumentIndex();
 
         // Reset dump
-        indexer.close();
+        blockIndexer.close();
         next_block++;
     }
 
@@ -141,6 +142,7 @@ public class newSPIMI {
                     // Term | TermFrequency | UpperBound | #Posting | Offset
                     Map.Entry<String, VocabularyEntry> entry = readVocBuffers.get(k).loadVocEntry();
                     if (entry == null) {
+                        System.out.println("CLOSED BLOCKS: " + blocksClosed);
                         blocksClosed++;
                         closed[k] = true;
                         continue;
@@ -188,8 +190,6 @@ public class newSPIMI {
     }
 
     private void concatenateDocIndexes(List<Fetcher> readers) {
-
-        /* This is useless at the moment since merging happens only for TXT blocks
         if(!mode.equals("DEBUG")) {
             int N = 0;
             int L = 0;
@@ -199,19 +199,18 @@ public class newSPIMI {
                 L += info[1];
             }
             DocumentIndex di = new DocumentIndexImpl();
-            di.setNumDocuments(N);
-            di.setTotalLength(L);
+            indexer.getDocIndex().setNumDocuments(N);
+            indexer.getDocIndex().setTotalLength(L);
             indexer.dumpDocumentIndex();
         }
-         */
-
-        for(int i = 0; i < next_block; i++){
-            Map.Entry<Integer, DocumentIndexEntry> entry;
-            while((entry = readers.get(i).loadDocEntry()) != null){
-                indexer.dumpDocumentIndexLine(entry);
+            for (int i = 0; i < next_block; i++) {
+                Map.Entry<Integer, DocumentIndexEntry> entry;
+                while ((entry = readers.get(i).loadDocEntry()) != null) {
+                    indexer.dumpDocumentIndexLine(entry);
+                }
+                readers.get(i).end();
             }
-            readers.get(i).end();
-        }
+
         indexer.close();
     }
 

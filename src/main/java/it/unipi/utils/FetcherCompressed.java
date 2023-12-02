@@ -215,7 +215,28 @@ public class FetcherCompressed implements Fetcher {
 
     @Override
     public Map.Entry<Integer, DocumentIndexEntry> loadDocEntry() {
-        return null;
+        DocumentIndexEntry documentIndexEntry = null;
+        byte[] docId = new byte[Integer.BYTES];
+        try {
+            System.out.println("CIAONE PROPRIO");
+            if (!opened) {
+                throw new IOException();
+            }
+
+            int red = documentIndexReader.read(docId);
+            if(red < 0)
+                return null;
+
+            byte[] length = new byte[Integer.BYTES];
+            documentIndexReader.read(length);
+
+            documentIndexEntry= new DocumentIndexEntry();
+            documentIndexEntry.setDocumentLength(ByteUtils.bytesToInt(length));
+        } catch(IOException ie){
+            return null;
+        }
+        return Map.entry(ByteUtils.bytesToInt(docId), documentIndexEntry);
+
     }
 
     @Override
@@ -241,6 +262,7 @@ public class FetcherCompressed implements Fetcher {
         try {
             documentIndexReader.read(N);
             documentIndexReader.read(l);
+
         }
         catch (IOException e) {
             throw new RuntimeException(e);
