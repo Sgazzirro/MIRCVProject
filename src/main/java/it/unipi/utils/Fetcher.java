@@ -3,7 +3,7 @@ package it.unipi.utils;
 
 import it.unipi.model.PostingList;
 import it.unipi.model.implementation.DocumentIndexEntry;
-import it.unipi.model.VocabularyEntry;
+import it.unipi.model.implementation.VocabularyEntry;
 
 import java.util.Map;
 

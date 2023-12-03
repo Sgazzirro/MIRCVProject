@@ -3,13 +3,11 @@ package it.unipi.utils;
 import it.unipi.model.DocumentIndex;
 import it.unipi.model.PostingList;
 import it.unipi.model.Vocabulary;
-import it.unipi.model.VocabularyEntry;
+import it.unipi.model.implementation.VocabularyEntry;
 import it.unipi.model.implementation.DocumentIndexEntry;
 import it.unipi.model.implementation.PostingListImpl;
 
-import javax.xml.crypto.Data;
 import java.io.DataOutputStream;
-import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;

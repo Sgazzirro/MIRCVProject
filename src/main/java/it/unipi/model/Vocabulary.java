@@ -1,5 +1,7 @@
 package it.unipi.model;
 
+import it.unipi.model.implementation.VocabularyEntry;
+
 import java.util.Map;
 
 public interface Vocabulary {

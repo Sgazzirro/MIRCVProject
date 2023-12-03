@@ -1,13 +1,11 @@
 package it.unipi.utils;
 
 import it.unipi.model.PostingList;
-import it.unipi.model.VocabularyEntry;
+import it.unipi.model.implementation.VocabularyEntry;
 import it.unipi.model.implementation.PostingListCompressed;
 
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.List;
 
 public class ByteUtils {
 

@@ -5,8 +5,7 @@ import it.unipi.model.Encoder;
 import it.unipi.model.PostingList;
 import it.unipi.model.Vocabulary;
 import it.unipi.model.implementation.*;
-import it.unipi.model.VocabularyEntry;
-import opennlp.tools.parser.Cons;
+import it.unipi.model.implementation.VocabularyEntry;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;

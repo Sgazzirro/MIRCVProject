@@ -9,7 +9,7 @@ import java.io.EOFException;
 import java.util.List;
 import java.util.Objects;
 
-public abstract class PostingList {
+public abstract class PostingList{
 
     private long docIdsOffset;
     private long termFreqOffset;

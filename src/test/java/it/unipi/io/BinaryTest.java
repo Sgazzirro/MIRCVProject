@@ -1,9 +1,8 @@
 package it.unipi.io;
-import junit.framework.TestCase;
 import org.apache.commons.io.FileUtils;
 import it.unipi.model.PostingList;
 import it.unipi.model.Vocabulary;
-import it.unipi.model.VocabularyEntry;
+import it.unipi.model.implementation.VocabularyEntry;
 import it.unipi.model.implementation.PostingListCompressed;
 import it.unipi.model.implementation.PostingListImpl;
 import it.unipi.model.implementation.VocabularyImpl;
@@ -13,10 +12,6 @@ import org.junit.*;
 import java.io.EOFException;
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.DirectoryStream;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.*;
 
 import static org.junit.Assert.assertEquals;
@@ -313,7 +308,6 @@ public class BinaryTest {
         } catch (IOException e) {
             e.printStackTrace();
         }
-
     }
 
 

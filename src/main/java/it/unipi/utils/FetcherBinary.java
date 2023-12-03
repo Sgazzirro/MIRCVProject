@@ -1,14 +1,11 @@
 package it.unipi.utils;
 
 import it.unipi.model.PostingList;
-import it.unipi.model.VocabularyEntry;
+import it.unipi.model.implementation.VocabularyEntry;
 import it.unipi.model.implementation.DocumentIndexEntry;
-import it.unipi.model.implementation.PostingListCompressed;
 import it.unipi.model.implementation.PostingListImpl;
 
-import javax.xml.crypto.Data;
 import java.io.DataInputStream;
-import java.io.EOFException;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;

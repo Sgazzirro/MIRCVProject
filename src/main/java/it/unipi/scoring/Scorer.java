@@ -1,7 +1,7 @@
 package it.unipi.scoring;
 
 import it.unipi.model.PostingList;
-import it.unipi.model.VocabularyEntry;
+import it.unipi.model.implementation.VocabularyEntry;
 import it.unipi.model.implementation.*;
 
 import java.io.EOFException;

@@ -1,11 +1,9 @@
-package it.unipi.model;
+package it.unipi.model.implementation;
 
 
-import it.unipi.model.implementation.PostingListCompressed;
-import it.unipi.model.implementation.PostingListImpl;
+import it.unipi.model.PostingList;
 import it.unipi.utils.Constants;
 
-import java.util.List;
 import java.util.Objects;
 
 public class VocabularyEntry {
