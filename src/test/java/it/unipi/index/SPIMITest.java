@@ -2,7 +2,6 @@ package it.unipi.index;
 
 import it.unipi.model.DocumentStream;
 import it.unipi.model.PostingList;
-import it.unipi.model.implementation.VocabularyEntry;
 import it.unipi.model.implementation.*;
 import it.unipi.utils.Fetcher;
 import org.junit.Test;
@@ -23,7 +22,7 @@ import static org.mockito.Mockito.*;
 public class SPIMITest {
 
     @InjectMocks
-    newSPIMI spimi;
+    SPIMIIndex spimi;
 
     @Mock
     List<VocabularyEntry> entry;
@@ -38,7 +37,7 @@ public class SPIMITest {
     @Mock
     Fetcher mockFetcher2;
     @Mock
-    newSPIMI mockSpimi;
+    SPIMIIndex mockSpimi;
 
     @Test
     public void testAvailableMemory_WHEN_full(){
@@ -82,7 +81,7 @@ public class SPIMITest {
 
     @Test
     public void testLowestTerm() throws IOException {
-        newSPIMI mockSpimi = spy(spimi);
+        SPIMIIndex mockSpimi = spy(spimi);
         List<Fetcher> mockReadVocBuffers = new ArrayList<>();
         mockReadVocBuffers.add(mockFetcher1);
         mockReadVocBuffers.add(mockFetcher2);

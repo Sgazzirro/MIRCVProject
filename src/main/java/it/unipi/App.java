@@ -1,12 +1,16 @@
 package it.unipi;
 
 import it.unipi.index.InMemoryIndexing;
-import it.unipi.index.newSPIMI;
-import it.unipi.model.*;
+import it.unipi.index.SPIMIIndex;
+import it.unipi.model.DocumentIndex;
+import it.unipi.model.DocumentStream;
+import it.unipi.model.Vocabulary;
 import it.unipi.model.implementation.DocumentIndexImpl;
 import it.unipi.model.implementation.DocumentStreamImpl;
 import it.unipi.model.implementation.VocabularyImpl;
-import it.unipi.utils.*;
+import it.unipi.utils.Constants;
+import it.unipi.utils.Dumper;
+import it.unipi.utils.DumperCompressed;
 import org.apache.commons.io.FileUtils;
 
 import java.io.File;
@@ -47,10 +51,9 @@ public class App
         }
 
 */
-        /**
-         * NEW TESTS OF 14/11/2023
-         */
-        /*
+
+
+
         DocumentStream ds = new DocumentStreamImpl(Constants.COLLECTION_FILE);
         DocumentIndex di = new DocumentIndexImpl();
         Vocabulary v = new VocabularyImpl();
@@ -59,11 +62,11 @@ public class App
         InMemoryIndexing memoryIndexing = new InMemoryIndexing(ds, v, d, di);
         // memoryIndexing.buildIndex("data/");
 
-        newSPIMI spimi = new newSPIMI(ds, memoryIndexing);
-        spimi.buildIndexSPIMI("COMPRESSED");
+        SPIMIIndex spimi = new SPIMIIndex("COMPRESSED",ds, memoryIndexing);
+        spimi.buildIndexSPIMI("./data/");
 
-         */
-        FileUtils.cleanDirectory(new File("./data/test/"));
+
+        //FileUtils.cleanDirectory(new File("./data/"));
     }
 
 }

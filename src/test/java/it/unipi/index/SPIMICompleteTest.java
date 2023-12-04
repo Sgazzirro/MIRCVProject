@@ -129,7 +129,7 @@ public class SPIMICompleteTest {
 
         // Dumping
         indexerSingleBlock = new InMemoryIndexing(ds, new VocabularyImpl(), new DumperTXT(), new DocumentIndexImpl());
-        new newSPIMI("DEBUG", ds, indexerSingleBlock).buildIndexSPIMI("./test/");
+        new SPIMIIndex("DEBUG", ds, indexerSingleBlock).buildIndexSPIMI("./test/");
 
 
         // Fetching
@@ -157,7 +157,7 @@ public class SPIMICompleteTest {
 
         // Dumping
         indexerSingleBlock = new InMemoryIndexing(ds, new VocabularyImpl(), new DumperTXT(), new DocumentIndexImpl());
-        newSPIMI spimi = new newSPIMI("DEBUG", ds, indexerSingleBlock);
+        SPIMIIndex spimi = new SPIMIIndex("DEBUG", ds, indexerSingleBlock);
         spimi.setLimit(1);
         spimi.buildIndexSPIMI("./test/");
 
@@ -185,7 +185,7 @@ public class SPIMICompleteTest {
 
         // Dumping
         indexerSingleBlock = new InMemoryIndexing(ds, new VocabularyImpl(), new DumperBinary(), new DocumentIndexImpl());
-        new newSPIMI("NOT_COMPRESSED", ds, indexerSingleBlock).buildIndexSPIMI("./test/");
+        new SPIMIIndex("NOT_COMPRESSED", ds, indexerSingleBlock).buildIndexSPIMI("./test/");
 
 
         // Fetching
@@ -211,7 +211,7 @@ public class SPIMICompleteTest {
 
         // Dumping
         indexerSingleBlock = new InMemoryIndexing(ds, new VocabularyImpl(), new DumperBinary(), new DocumentIndexImpl());
-        newSPIMI spimi = new newSPIMI("NOT_COMPRESSED", ds, indexerSingleBlock);
+        SPIMIIndex spimi = new SPIMIIndex("NOT_COMPRESSED", ds, indexerSingleBlock);
         spimi.setLimit(1);
         spimi.buildIndexSPIMI("./test/");
 
@@ -242,7 +242,7 @@ public class SPIMICompleteTest {
         String mode = "DEBUG";
         // Dumping
         indexerSingleBlock = new InMemoryIndexing(ds, new VocabularyImpl(), new DumperCompressed(), new DocumentIndexImpl());
-        new newSPIMI("COMPRESSED", ds, indexerSingleBlock).buildIndexSPIMI("./test/");
+        new SPIMIIndex("COMPRESSED", ds, indexerSingleBlock).buildIndexSPIMI("./test/");
 
 
         // Fetching
@@ -274,7 +274,7 @@ public class SPIMICompleteTest {
         Constants.setCompression(true);
         // Dumping
         indexerSingleBlock = new InMemoryIndexing(ds, new VocabularyImpl(), new DumperCompressed(), new DocumentIndexImpl());
-        newSPIMI spimi = new newSPIMI("COMPRESSED", ds, indexerSingleBlock);
+        SPIMIIndex spimi = new SPIMIIndex("COMPRESSED", ds, indexerSingleBlock);
         spimi.setLimit(1);
         spimi.buildIndexSPIMI("./test/");
 

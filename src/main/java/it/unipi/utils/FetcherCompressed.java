@@ -18,11 +18,13 @@ public class FetcherCompressed implements Fetcher {
     FileInputStream termFreqReader;
     FileInputStream documentIndexReader;
     boolean opened = false;
+    private String path;
 
     private int vocabularySize;
 
     @Override
     public boolean start(String path) {
+        this.path = path;
         try {
             vocabularyReader = new FileInputStream(path + Constants.VOCABULARY_FILENAME);
             docIdsReader = new FileInputStream(path + Constants.DOC_IDS_POSTING_FILENAME);
@@ -171,7 +173,7 @@ public class FetcherCompressed implements Fetcher {
                     end = middle;
                 else {                        // This means term = entry
                     VocabularyEntry result = ByteUtils.bytesToVocabularyEntry(vocabularyEntryBytes);
-                    result.getPostingList().loadPosting("./test/");
+                    result.getPostingList().loadPosting(path);
                     return result;
                 }
             }
@@ -197,7 +199,7 @@ public class FetcherCompressed implements Fetcher {
             if (vocabularyReader.read(vocabularyEntryBytes) != Constants.VOCABULARY_ENTRY_BYTES_SIZE)
                 return null;
             vocabularyEntry = ByteUtils.bytesToVocabularyEntry(vocabularyEntryBytes);
-            vocabularyEntry.getPostingList().loadPosting("./test/");
+            vocabularyEntry.getPostingList().loadPosting(path);
             term = ByteUtils.bytesToString(vocabularyEntryBytes, 0, Constants.BYTES_STORED_STRING);
 
         } catch (IOException ie) {

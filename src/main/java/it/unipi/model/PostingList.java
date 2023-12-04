@@ -17,9 +17,12 @@ public abstract class PostingList{
     private int termFreqLength;
     private double idf;
 
+
+    // A default constructor used when building the list
     public PostingList() {
     }
 
+    // A constructor used when we fetch information from vocabulary entry
     public PostingList(long docIdsOffset, long termFreqOffset, int docIdsLength, int termFreqLength, double idf) {
         this.docIdsOffset = docIdsOffset;
         this.termFreqOffset = termFreqOffset;
