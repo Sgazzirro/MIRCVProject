@@ -8,7 +8,7 @@ import java.util.*;
 
 public class MaxScore{
     private final VocabularyImpl vocabularyImpl;
-    private final DocumentIndexImpl documentIndexImpl;
+    //private final DocumentIndexImpl documentIndexImpl;
     private final TokenizerImpl tokenizerImpl;
 
     static class DocumentScore implements Comparable<Scorer.DocumentScore> {
@@ -34,9 +34,9 @@ public class MaxScore{
         }
     }
 
-    public MaxScore(VocabularyImpl vocabularyImpl, DocumentIndexImpl documentIndexImpl, TokenizerImpl tokenizerImpl) {
+    public MaxScore(VocabularyImpl vocabularyImpl, TokenizerImpl tokenizerImpl) {
         this.vocabularyImpl = vocabularyImpl;
-        this.documentIndexImpl = documentIndexImpl;
+        //this.documentIndexImpl = documentIndexImpl;
         this.tokenizerImpl = tokenizerImpl;
     }
 

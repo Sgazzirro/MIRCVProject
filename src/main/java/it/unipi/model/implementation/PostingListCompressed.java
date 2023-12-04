@@ -80,8 +80,7 @@ public class PostingListCompressed extends PostingList {
 
     @Override
     public double score() {
-        // TODO - To implement
-        return 0;
+        return (1+Math.log10(termFrequenciesDecompressedList.get(blockPointer))*getIdf());
     }
 
     @Override
