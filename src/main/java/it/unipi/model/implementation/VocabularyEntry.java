@@ -87,9 +87,10 @@ public class VocabularyEntry {
         if (o == null || getClass() != o.getClass()) return false;
         VocabularyEntry that = (VocabularyEntry) o;
         return Objects.equals(documentFrequency, that.documentFrequency) && Objects.equals(upperBound, that.upperBound) &&
-                Objects.equals(postingList.getDocIdsDecompressedList(), that.postingList.getDocIdsDecompressedList()) &&
-                Objects.equals(postingList.getTermFrequenciesDecompressedList().subList(0, postingList.getDocIdsDecompressedList().size()),
-                        that.postingList.getTermFrequenciesDecompressedList().subList(0, that.postingList.getDocIdsDecompressedList().size()));
+                Objects.equals(postingList, that.postingList);
+                //Objects.equals(postingList.getDocIdsDecompressedList(), that.postingList.getDocIdsDecompressedList()) &&
+                //Objects.equals(postingList.getTermFrequenciesDecompressedList().subList(0, postingList.getDocIdsDecompressedList().size()),
+                //        that.postingList.getTermFrequenciesDecompressedList().subList(0, that.postingList.getDocIdsDecompressedList().size()));
     }
 
     @Override

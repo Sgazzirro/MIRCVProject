@@ -17,7 +17,7 @@ import java.util.*;
 public class PostingListImpl extends PostingList {
     private List<Integer> docIdsDecompressedList;
     private List<Integer> termFrequenciesDecompressedList;
-    private int pointer;
+    private int pointer = -1;
 
     // Used when building the index
     public PostingListImpl() {
@@ -105,7 +105,7 @@ public class PostingListImpl extends PostingList {
     public List<Integer> getDocIdsDecompressedList() {
         return docIdsDecompressedList;
     }
-
+/*
     @Override
     public boolean equals(Object o) {
         System.out.println("DENTRO LA EQUALS DELLA IMPL");
@@ -124,7 +124,7 @@ public class PostingListImpl extends PostingList {
         }
         return true;
     }
-
+*/
     @Override
     public int docId() {
         return docIdsDecompressedList.get(pointer);
@@ -160,9 +160,10 @@ public class PostingListImpl extends PostingList {
     @Override
     public void nextGEQ(int docId) throws EOFException{
         loadPosting();
-
-        while (this.docId() < docId)
+        do{
             next();
+        } while (this.docId() < docId);
+
     }
 
     @Override

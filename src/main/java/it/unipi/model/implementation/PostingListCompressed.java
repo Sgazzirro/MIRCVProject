@@ -164,7 +164,7 @@ public class PostingListCompressed extends PostingList {
         return docIdsDecompressedList;
     }
 
-
+/*
     @Override
     public boolean equals(Object o) {
         System.out.println("DENTRO QUESTO EQUALS");
@@ -183,6 +183,8 @@ public class PostingListCompressed extends PostingList {
         }
         return true;
     }
+
+ */
     private void loadNextBlock() {
         ByteBlock docIdsBlock = fetcher.fetchDocIdsBlock(compressedDocIds, 0, docIdsBlockPointer);
         docIdsBlockPointer = docIdsBlock.getOffset();

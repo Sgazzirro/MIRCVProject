@@ -124,7 +124,26 @@ public abstract class PostingList{
 
     public abstract List<Integer> getDocIdsDecompressedList();
     @Override
-    public abstract boolean equals(Object o);
+    public boolean equals(Object o){
+        System.out.println("DENTRO LA EQUALS GENERICA");
+        if (this == o) return true;
+        if (o == null) return false;
+        PostingList that = (PostingList) o;
+        try {
+            while (hasNext()) {
+                next();
+                that.next();
+                if (docId() != that.docId() || termFrequency() != that.termFrequency()) {
+                    System.out.println("THIS DOCID : " + docId() + " AND THAT DOCID : "+ that.docId());
+                    System.out.println("THIS FREQUENCY : " + termFrequency() + " AND THAT FREQUENCY : "+ that.termFrequency());
+                    return false;
+                }
+            }
+        } catch (EOFException eofException){
+            eofException.printStackTrace();
+        }
+        return true;
+    };
 
     @Override
     public String toString() {

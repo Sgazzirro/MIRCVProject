@@ -59,10 +59,13 @@ public class BinaryTest {
     public void testGenericEntry() throws IOException {
         String testTerm = "teseo";
         PostingList p;
+        p = new PostingListImpl();
+
         if(!Constants.getCompression())
             p = new PostingListImpl();
         else
             p = new PostingListCompressed();
+
         p.addPosting(1, 1);
         p.addPosting(2, 2);
         VocabularyEntry i = new VocabularyEntry(2, 2.2, p);
