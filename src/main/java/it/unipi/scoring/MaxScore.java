@@ -1,10 +1,7 @@
 package it.unipi.scoring;
 
 import it.unipi.model.PostingList;
-import it.unipi.model.implementation.VocabularyEntry;
-import it.unipi.model.implementation.DocumentIndexImpl;
-import it.unipi.model.implementation.TokenizerImpl;
-import it.unipi.model.implementation.VocabularyImpl;
+import it.unipi.model.implementation.*;
 
 import java.io.EOFException;
 import java.util.*;
@@ -44,72 +41,63 @@ public class MaxScore{
     }
 
     public PriorityQueue<DocumentScore> score(String query, int numResults){
-        PriorityQueue<DocumentScore> scores = new PriorityQueue<>();
-        // term upper bounds
-        List<Double> sigma = new ArrayList<>();
         List<String> queryTokens = tokenizerImpl.tokenizeBySpace(query);
 
-        // get the posting lists of all the terms in the query
-        List<PostingList> postingLists = new ArrayList<>();
+        TreeMap<Double, PostingList> treeMap = new TreeMap<>();
+
         for(String token: queryTokens){
             VocabularyEntry entry = vocabularyImpl.getEntry(token);
             if(entry==null){
                 queryTokens.remove(token);
             } else {
-                postingLists.add(entry.getPostingList());
-                sigma.add(entry.getUpperBound());
+                treeMap.put(entry.getUpperBound(), entry.getPostingList());
             }
         }
-        // order posting lists by increasing term upper bound
-        // DA VEDERE!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-        //postingLists.sort((l1,l2)-> l1.getTermUpperBound().compareTo(l2.getTermUpperBound));
+        return maxScore(new ArrayList<>(treeMap.values()), new ArrayList<>(treeMap.keySet()), numResults);
+    }
 
-        // la threshold varrà 0 fino a che non ci sono almeno
-        // numResults documenti analizzati dentro scores, altrimenti varrà
-        // quanto lo score dell'ultimo elemento della queue
-        Collections.sort(sigma);
-        Collections.reverse(sigma);
-
-        // DA QUA INIZIA LO PSEUDOCODICE DELL'ALGORITMO
-        List<Double> ub = new ArrayList<>(queryTokens.size());
-        ub.set(0, sigma.get(0));
-        for(int i=1; i< queryTokens.size(); i++){
-            ub.set(i, (ub.get(i-1)+sigma.get(i))); // non capisco perchè qua da sto warning
+    private PriorityQueue<DocumentScore> maxScore(List<PostingList> p, List<Double> sigma, int K){
+        PriorityQueue<DocumentScore> scores = new PriorityQueue<>(K);
+        List<Double> ub = new ArrayList<>(p.size());
+        ub.add(0, sigma.get(0));
+        for(int i=1; i< p.size(); i++){
+            ub.add(i, (ub.get(i-1)+sigma.get(i)));
         }
         double theta = 0;
         int pivot = 0;
-        int current = minimumDocId(postingLists);
-        int n = queryTokens.size();
-        while(!areEmpty(postingLists)){
+        int current = minimumDocId(p);
+        int n = p.size();
+        while(pivot < n && !areEmpty(p)){
             double score =0;
             int next = Integer.MAX_VALUE;
             for(int i=pivot; i<n; i++){
-                if (postingLists.get(i).docId() == current){
-                    score += postingLists.get(i).score();
+                if (p.get(i).docId() == current){
+                    score += p.get(i).score();
                     try {
-                        postingLists.get(i).next();
+                        p.get(i).next();
                     } catch (EOFException e){
                         continue;
                     }
                 }
-                if(postingLists.get(i).docId()<next){
-                    next = postingLists.get(i).docId();
+                if(p.get(i).docId()<next){
+                    next = p.get(i).docId();
                 }
             }
             for(int i=pivot-1; i>0; i--){
                 if(score + ub.get(i)<=theta) break;
                 try {
-                    postingLists.get(i).nextGEQ(current);
+                    p.get(i).nextGEQ(current);
                 } catch(EOFException e){
                     continue;
                 }
-                if(postingLists.get(i).docId()==current){
-                    score+=postingLists.get(i).score();
+                if(p.get(i).docId()==current){
+                    score+=p.get(i).score();
                 }
             }
-            DocumentScore de = new DocumentScore(current, score);
-            if (scores.isEmpty() || scores.peek().score<score){
-                scores.add(de);
+            DocumentScore ds = new DocumentScore(current, score);
+            if (scores.isEmpty() || scores.size()<K || scores.peek().score<score){
+                scores.add(ds);
+                if(!(scores.size()<K)) scores.poll();
                 theta = scores.peek().score;
                 while (pivot<n && ub.get(pivot)<=theta){
                     pivot++;
