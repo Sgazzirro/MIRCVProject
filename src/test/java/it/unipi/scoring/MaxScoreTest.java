@@ -36,7 +36,7 @@ public class MaxScoreTest {
         vocDumped.addEntry("a", 1);
         vocDumped.addEntry("b",1);
         vocDumped.addEntry("a", 2);
-        vocDumped.addEntry("c",2);
+        vocDumped.addEntry("c",(int)Math.pow(2,30));
 
         dumper.start("./data/test/");
         dumper.dumpVocabulary(vocDumped);
@@ -102,20 +102,13 @@ public class MaxScoreTest {
 
     @Test
     public void testMaxScore3(){
-        BitSet bitset = new BitSet();
-        System.out.println(bitset);
-        bitset.set(0, false);
-        System.out.println(bitset.toByteArray().length);
-        bitset.set(1, true);
-        System.out.println(bitset.toByteArray().length);
-
         int numResults = 10;
         PriorityQueue<MaxScore.DocumentScore> results = maxScore.score("c", numResults);
 
         assertEquals(1, results.size());
 
         assert results.peek() != null;
-        assertEquals(2, results.peek().docId);
+        assertEquals((int)Math.pow(2,30), results.peek().docId);
         assertEquals(Math.log10(2), Objects.requireNonNull(results.poll()).score, 0.1);
     }
 

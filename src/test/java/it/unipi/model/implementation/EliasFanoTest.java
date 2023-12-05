@@ -3,9 +3,7 @@ package it.unipi.model.implementation;
 import it.unipi.model.Encoder;
 import junit.framework.TestCase;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 
 import static it.unipi.utils.ByteUtils.binaryStringToByteArray;
 import static it.unipi.utils.ByteUtils.byteArrayToBinaryString;
@@ -73,5 +71,24 @@ public class EliasFanoTest extends TestCase {
         List<Integer> list = List.of((int)Math.pow(2,30));
         byte[] bytes = eliasFano.encode(list);
         assertEquals(list, eliasFano.decode(bytes));
+    }
+
+    public void test_finale(){
+        Random random = new Random();
+        int numTimes = 10000;
+        List<Integer> list = new ArrayList<>();
+        int lowerBound = 1;
+        int upperBound = 8800000;
+        for(int i=0; i<numTimes; i++){
+            System.out.println(i);
+            int numDocIds = random.nextInt(1000) + 1;
+            for(int j=0; j<numDocIds; j++){
+                int randomValue = lowerBound + random.nextInt(upperBound);
+                list.add(randomValue);
+            }
+            byte[] bytes = eliasFano.encode(list);
+            assertEquals(list, eliasFano.decode(bytes));
+            list.clear();
+        }
     }
 }
