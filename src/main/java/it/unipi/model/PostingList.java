@@ -125,7 +125,6 @@ public abstract class PostingList{
     public abstract List<Integer> getDocIdsDecompressedList();
     @Override
     public boolean equals(Object o){
-        System.out.println("DENTRO LA EQUALS GENERICA");
         if (this == o) return true;
         if (o == null) return false;
         PostingList that = (PostingList) o;

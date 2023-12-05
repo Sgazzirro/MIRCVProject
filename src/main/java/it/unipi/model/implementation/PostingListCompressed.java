@@ -80,7 +80,9 @@ public class PostingListCompressed extends PostingList {
 
     @Override
     public double score() {
-        return (1+Math.log10(termFrequenciesDecompressedList.get(blockPointer))*getIdf());
+        double tf = 1+Math.log10(termFrequenciesDecompressedList.get(blockPointer));
+        double idf = getIdf();
+        return tf*idf;
     }
 
     @Override
@@ -91,8 +93,8 @@ public class PostingListCompressed extends PostingList {
 
     @Override
     public void next() throws EOFException{
-        long docIdsEndOffset = getDocIdsOffset() + getDocIdsLength();
-        if(docIdsBlockPointer==docIdsEndOffset && blockPointer==docIdsDecompressedList.size()) throw new EOFException();
+        long docIdsEndOffset = getDocIdsLength();
+        if(docIdsBlockPointer==docIdsEndOffset && blockPointer==docIdsDecompressedList.size()-1) throw new EOFException();
         if (blockPointer + 1 < docIdsDecompressedList.size()) {
             blockPointer++;
         }

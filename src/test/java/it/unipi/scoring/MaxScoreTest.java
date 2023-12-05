@@ -51,6 +51,22 @@ public class MaxScoreTest {
 
         TokenizerImpl tokenizer = new TokenizerImpl();
         maxScore = new MaxScore(vocFetched, tokenizer);
+
+        // setting idfs by hand
+        vocFetched.getEntry("a").getPostingList().setIdf(Math.log10(2/2));
+        vocFetched.getEntry("b").getPostingList().setIdf(Math.log10(2/1));
+        vocFetched.getEntry("c").getPostingList().setIdf(Math.log10(2/1));
+        vocDumped.getEntry("a").getPostingList().setIdf(Math.log10(2/2));
+        vocDumped.getEntry("b").getPostingList().setIdf(Math.log10(2/1));
+        vocDumped.getEntry("c").getPostingList().setIdf(Math.log10(2/1));
+
+        // setting upper bounds by hand
+        vocFetched.getEntry("a").setUpperBound(0.0);
+        vocFetched.getEntry("b").setUpperBound(Math.log10(2));
+        vocFetched.getEntry("c").setUpperBound(Math.log10(2));
+        vocDumped.getEntry("a").setUpperBound(0.0);
+        vocDumped.getEntry("b").setUpperBound(Math.log10(2));
+        vocDumped.getEntry("c").setUpperBound(Math.log10(2));
     }
 
     @Test
@@ -63,12 +79,24 @@ public class MaxScoreTest {
         int numResults = 10;
         PriorityQueue<MaxScore.DocumentScore> results = maxScore.score("a", numResults);
 
-        assert results.peek() != null;
-        assertEquals(1, results.peek().docId);
-        assertEquals(Math.log10(2), Objects.requireNonNull(results.poll()).score, 0.1);
+        // del secondo documento nemmeno faccio lo score, perchè so già che non potrà raggiungere la threshold
+        assertEquals(1, results.size());
 
         assert results.peek() != null;
-        assertEquals(2, results.peek().docId);
+        assertEquals(1, results.peek().docId);
+        assertEquals(0, Objects.requireNonNull(results.poll()).score, 0.1);
+    }
+
+    @Test
+    public void testMaxScore2(){
+        int numResults = 10;
+        PriorityQueue<MaxScore.DocumentScore> results = maxScore.score("b", numResults);
+
+        // del secondo documento nemmeno faccio lo score, perchè so già che non potrà raggiungere la threshold
+        assertEquals(1, results.size());
+
+        assert results.peek() != null;
+        assertEquals(1, results.peek().docId);
         assertEquals(Math.log10(2), Objects.requireNonNull(results.poll()).score, 0.1);
     }
 

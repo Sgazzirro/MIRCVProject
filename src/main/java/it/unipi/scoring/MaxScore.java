@@ -56,18 +56,23 @@ public class MaxScore{
         return maxScore(new ArrayList<>(treeMap.values()), new ArrayList<>(treeMap.keySet()), numResults);
     }
 
-    private PriorityQueue<DocumentScore> maxScore(List<PostingList> p, List<Double> sigma, int K){
-        PriorityQueue<DocumentScore> scores = new PriorityQueue<>(K);
+    private List<Double> computeUB (List<PostingList> p, List<Double> sigma){
         List<Double> ub = new ArrayList<>(p.size());
         ub.add(0, sigma.get(0));
         for(int i=1; i< p.size(); i++){
             ub.add(i, (ub.get(i-1)+sigma.get(i)));
         }
+        return ub;
+    }
+
+    private PriorityQueue<DocumentScore> maxScore(List<PostingList> p, List<Double> sigma, int K){
+        PriorityQueue<DocumentScore> scores = new PriorityQueue<>(K);
+        List<Double> ub = computeUB(p, sigma);
         double theta = 0;
         int pivot = 0;
         int current = minimumDocId(p);
         int n = p.size();
-        while(pivot < n && !areEmpty(p)){
+        while(pivot < n){
             double score =0;
             int next = Integer.MAX_VALUE;
             for(int i=pivot; i<n; i++){
@@ -76,6 +81,9 @@ public class MaxScore{
                     try {
                         p.get(i).next();
                     } catch (EOFException e){
+                        p.remove(i);
+                        sigma.remove(i);
+                        if(p.size()>1) ub = computeUB(p, sigma);
                         continue;
                     }
                 }
@@ -88,6 +96,9 @@ public class MaxScore{
                 try {
                     p.get(i).nextGEQ(current);
                 } catch(EOFException e){
+                    p.remove(i);
+                    sigma.remove(i);
+                    if(p.size()>1) ub = computeUB(p, sigma);
                     continue;
                 }
                 if(p.get(i).docId()==current){

@@ -87,7 +87,6 @@ public class FetcherCompressed implements Fetcher {
                 int nTotLowBits = lowHalfLength * n;
                 int nTotHighBits = (int) (n + Math.pow(2, highHalfLength));
                 int bytesToSkip = (int) Math.ceil((float) nTotLowBits / 8) + (int) Math.ceil((float) nTotHighBits / 8);
-
                 if (U < docId) {
                     // I have to read the next block
                     docIdsBlockOffset += bytesToSkip;
@@ -97,12 +96,11 @@ public class FetcherCompressed implements Fetcher {
                 } else {
                     int numLowBytes = (int) Math.ceil((float) nTotLowBits/8);
                     int numHighBytes = (int) Math.ceil((float) nTotHighBits/8);
-
                     byte[] byteArray = new byte[4 + 4 + numLowBytes + numHighBytes];
                     ByteUtils.intToBytes(U, byteArray, 0);
                     ByteUtils.intToBytes(n, byteArray, 4);
                     docIdsBlockOffset += dis.read(byteArray, 8, numHighBytes);
-                    docIdsBlockOffset += dis.read(byteArray, 8+numHighBytes, numLowBytes);
+                    if (numLowBytes!=0) docIdsBlockOffset += dis.read(byteArray, 8+numHighBytes, numLowBytes);
                     dis.close();
 
                     return new PostingListCompressed.ByteBlock(byteArray, docIdsBlockOffset);
@@ -219,7 +217,6 @@ public class FetcherCompressed implements Fetcher {
         DocumentIndexEntry documentIndexEntry = null;
         byte[] docId = new byte[Integer.BYTES];
         try {
-            System.out.println("CIAONE PROPRIO");
             if (!opened) {
                 throw new IOException();
             }

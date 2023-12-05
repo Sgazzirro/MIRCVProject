@@ -85,9 +85,6 @@ public class BinaryTest {
         assertEquals(input.getValue(), output.getValue());
     }
 
-
-
-
     @Test
     public void testSpecificEntry() {
         Vocabulary voc = new VocabularyImpl();
@@ -138,6 +135,82 @@ public class BinaryTest {
         assertEquals(input.getKey(), output.getKey());
         assertEquals(input.getValue(), output.getValue());
     }
+
+    @Test
+    public void testNextNotPresent() {
+        Constants.BLOCK_SIZE=3;
+        Vocabulary voc = new VocabularyImpl();
+        String test = "test";
+        voc.addEntry(test, 1);
+        voc.addEntry(test, 1);
+        voc.addEntry(test,2);
+
+        VocabularyEntry entry = voc.getEntry(test);
+        Map.Entry<String, VocabularyEntry> input = new AbstractMap.SimpleEntry<>(test, entry);
+
+        dumper.start("./data/test/");
+        dumper.dumpVocabulary(voc);
+        dumper.end();
+
+        fetcher.start("./data/test/");
+        Map.Entry<String, VocabularyEntry> output = fetcher.loadVocEntry();
+        fetcher.end();
+
+        assertEquals(input.getKey(), output.getKey());
+
+        PostingList plInput = entry.getPostingList();
+        PostingList plOutput = output.getValue().getPostingList();
+        try {
+            plInput.next();
+            plInput.next();
+            plOutput.next();
+            plOutput.next();
+        } catch (EOFException e){
+            e.printStackTrace();
+        }
+
+        Assert.assertThrows(EOFException.class, plInput::next);
+        Assert.assertThrows(EOFException.class, plOutput::next);
+    }
+
+    @Test
+    public void testNextNotPresentOffsets() {
+        Constants.BLOCK_SIZE=3;
+        Vocabulary voc = new VocabularyImpl();
+        String test = "test";
+        String test2= "test2";
+        voc.addEntry(test2, 1);
+        voc.addEntry(test, 1);
+        voc.addEntry(test, 1);
+        voc.addEntry(test,2);
+
+        VocabularyEntry entry = voc.getEntry(test2);
+        Map.Entry<String, VocabularyEntry> input = new AbstractMap.SimpleEntry<>(test2, entry);
+
+        dumper.start("./data/test/");
+        dumper.dumpVocabulary(voc);
+        dumper.end();
+
+        fetcher.start("./data/test/");
+        Map.Entry<String, VocabularyEntry> output = fetcher.loadVocEntry(); // carica test2
+        output = fetcher.loadVocEntry();                                    // carica test
+        fetcher.end();
+
+        assertEquals(input.getKey(), output.getKey());
+
+        PostingList plInput = entry.getPostingList();
+        PostingList plOutput = output.getValue().getPostingList();
+        try {
+            plInput.next();
+            plOutput.next();
+        } catch (EOFException e){
+            e.printStackTrace();
+        }
+
+        Assert.assertThrows(EOFException.class, plInput::next);
+        Assert.assertThrows(EOFException.class, plOutput::next);
+    }
+
     @Test
     public void testNextGEQSameBlock(){
         Constants.BLOCK_SIZE=3;
