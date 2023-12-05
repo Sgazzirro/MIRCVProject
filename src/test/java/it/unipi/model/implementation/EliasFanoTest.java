@@ -18,20 +18,6 @@ public class EliasFanoTest extends TestCase {
     public void setUp() throws Exception {
         super.setUp();
     }
-
-    public void testEncodeOnly0() {
-        List<Integer> list = List.of(0);
-        byte[] compressedBytes = eliasFano.encode(list);
-        assertEquals("000000000000000000000000000000000000000000000000000000000000000100000001", byteArrayToBinaryString(compressedBytes));
-    }
-
-    public void testDecodeOnly0() {
-        String binaryString = "000000000000000000000000000000000000000000000000000000000000000100000001";
-        byte[] byteArray = binaryStringToByteArray(binaryString);
-        List<Integer> list = eliasFano.decode(byteArray);
-        assertEquals(List.of(0), list);
-    }
-
     public void testEncode1(){
         Integer[] array = {3,4,7,13,14,15,21,25,36,38,54,62};
         ArrayList<Integer> list = new ArrayList<>(Arrays.asList(array));
@@ -48,6 +34,43 @@ public class EliasFanoTest extends TestCase {
 
     public void testEncodeDecode() {
         List<Integer> list = List.of(1,2);
+        byte[] bytes = eliasFano.encode(list);
+        assertEquals(list, eliasFano.decode(bytes));
+    }
+
+    public void testEncodeDecode0(){
+        List<Integer> list = List.of(0);
+        byte[] bytes = eliasFano.encode(list);
+        assertEquals(list, eliasFano.decode(bytes));
+    }
+    public void testEncodeDecode1(){
+        List<Integer> list = List.of(1);
+        byte[] bytes = eliasFano.encode(list);
+        assertEquals(list, eliasFano.decode(bytes));
+    }
+    public void testEncodeDecode2(){
+        List<Integer> list = List.of(2);
+        byte[] bytes = eliasFano.encode(list);
+        assertEquals(list, eliasFano.decode(bytes));
+    }
+    public void testEncodeDecode3(){
+        List<Integer> list = List.of(3);
+        byte[] bytes = eliasFano.encode(list);
+        assertEquals(list, eliasFano.decode(bytes));
+    }
+    public void testEncodeDecode4(){
+        List<Integer> list = List.of(4);
+        byte[] bytes = eliasFano.encode(list);
+        assertEquals(list, eliasFano.decode(bytes));
+    }
+    public void testEncodeDecode5(){
+        List<Integer> list = List.of(5);
+        byte[] bytes = eliasFano.encode(list);
+        assertEquals(list, eliasFano.decode(bytes));
+    }
+
+    public void testEncodeDecode2_to_30(){
+        List<Integer> list = List.of((int)Math.pow(2,30));
         byte[] bytes = eliasFano.encode(list);
         assertEquals(list, eliasFano.decode(bytes));
     }

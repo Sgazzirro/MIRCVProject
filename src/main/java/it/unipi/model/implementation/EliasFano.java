@@ -20,7 +20,6 @@ public class EliasFano implements Encoder {
         // number of bits
         int lowHalfLength = (int) Math.ceil(Math.log((float) U / n) / Math.log(2));
         int highHalfLength = (int) Math.ceil(Math.log(U) / Math.log(2)) - lowHalfLength;
-
         // structures to maintain encoded numbers
         BitSet highBitset = new BitSet((int) (n+Math.pow(2,highHalfLength)));
         BitSet lowBitset = new BitSet(lowHalfLength*n);
@@ -50,13 +49,13 @@ public class EliasFano implements Encoder {
 
         // Convert everything as byte array
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-
         try {
             DataOutputStream dos = new DataOutputStream(outputStream);
             dos.writeInt(originalU);
             dos.writeInt(n);
             outputStream.write(highBitset.toByteArray());
             outputStream.write(lowBitset.toByteArray());
+            if(array.size()==1 && array.get(0)!=1 && (array.get(0) & (array.get(0)-1) )==0) outputStream.write(0);
         } catch (IOException e) {
             // This exception can never be thrown
             System.err.println("Unknown error: Elias Fano");

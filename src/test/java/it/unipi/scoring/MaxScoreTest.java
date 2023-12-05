@@ -13,6 +13,7 @@ import org.junit.Test;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.BitSet;
 import java.util.Map;
 import java.util.Objects;
 import java.util.PriorityQueue;
@@ -92,11 +93,29 @@ public class MaxScoreTest {
         int numResults = 10;
         PriorityQueue<MaxScore.DocumentScore> results = maxScore.score("b", numResults);
 
-        // del secondo documento nemmeno faccio lo score, perchè so già che non potrà raggiungere la threshold
         assertEquals(1, results.size());
 
         assert results.peek() != null;
         assertEquals(1, results.peek().docId);
+        assertEquals(Math.log10(2), Objects.requireNonNull(results.poll()).score, 0.1);
+    }
+
+    @Test
+    public void testMaxScore3(){
+        BitSet bitset = new BitSet();
+        System.out.println(bitset);
+        bitset.set(0, false);
+        System.out.println(bitset.toByteArray().length);
+        bitset.set(1, true);
+        System.out.println(bitset.toByteArray().length);
+
+        int numResults = 10;
+        PriorityQueue<MaxScore.DocumentScore> results = maxScore.score("c", numResults);
+
+        assertEquals(1, results.size());
+
+        assert results.peek() != null;
+        assertEquals(2, results.peek().docId);
         assertEquals(Math.log10(2), Objects.requireNonNull(results.poll()).score, 0.1);
     }
 

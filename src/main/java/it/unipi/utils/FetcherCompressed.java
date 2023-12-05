@@ -99,7 +99,7 @@ public class FetcherCompressed implements Fetcher {
                     byte[] byteArray = new byte[4 + 4 + numLowBytes + numHighBytes];
                     ByteUtils.intToBytes(U, byteArray, 0);
                     ByteUtils.intToBytes(n, byteArray, 4);
-                    docIdsBlockOffset += dis.read(byteArray, 8, numHighBytes);
+                    if (numHighBytes!=0) docIdsBlockOffset += dis.read(byteArray, 8, numHighBytes);
                     if (numLowBytes!=0) docIdsBlockOffset += dis.read(byteArray, 8+numHighBytes, numLowBytes);
                     dis.close();
 
