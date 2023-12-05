@@ -97,6 +97,13 @@ public class DumperTXT implements Dumper {
 
     @Override
     public void dumpDocumentIndex(DocumentIndex docIndex) {
+        try{
+            writerDIX.write(Integer.toString(docIndex.getTotalLength()) + "\n");
+            writerDIX.write(Integer.toString(docIndex.getNumDocuments()) + "\n");
+        } catch (IOException ie){
+            ie.printStackTrace();
+        }
+
         StringBuilder result = new StringBuilder();
         for (Map.Entry<Integer, DocumentIndexEntry> entry : docIndex.getEntries()) {
             int docId = entry.getKey();
