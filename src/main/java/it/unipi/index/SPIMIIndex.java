@@ -8,43 +8,107 @@ import java.io.*;
 import java.util.*;
 
 public class SPIMIIndex {
-    private DocumentStream stream;
-    private InMemoryIndexing indexer;
-    private long block_size = 10000;
-    private int next_block = 0;
-    private boolean finish = false;
-    private String path;
-    private String mode;
 
+    /**
+     * The stream that generates one Document at a time
+     */
+    private DocumentStream stream;
+    /**
+     * The globalIndexer is demanded to dump the merged version of the index
+     */
+    private InMemoryIndexing globalIndexer;
+    /**
+     * The block_size is number of bytes allowed to be used before creating a new block
+     * Notice that, even in case of going ahead this threshold, the current document is however processed
+     */
+    private long block_size = 10000000;
+
+    /**
+     * The next number of block to write. Since the index of the blocks starts at 0, this is
+     * by fact the number of blocks written at the moment
+     */
+    private int next_block = 0;
+
+    /**
+     * Set to true when the DocumentStream no more generates documents
+     */
+    private boolean finish = false;
+
+    /**
+     * Set to the directory in which we want to save all files
+     */
+    private String path;
+
+    /**
+     * The indexer demand to invert the current block. Compression is not
+     * predicted at this stage
+     */
     private InMemoryIndexing blockIndexer;
 
+    /**
+     * Describes the mode in which we are operating
+     * DEBUG: Both globalIndexer and blockIndexer operates in ASCII mode
+     * NOT_COMPRESSED: Both globalIndexer and blockIndexer write binary objects
+     * COMPRESSED: blockIndexer writes binary objects, the globalIndexer writes a compressed
+     *              representation of doc_ids and term_frequencies lists
+     */
+    private String mode;
+
+
+
     public SPIMIIndex(String mode, DocumentStream s, InMemoryIndexing i) {
+        // Parameter Allocation
+        // -------------------
         this.mode = mode;
         stream = s;
-        indexer = i;
+        globalIndexer = i;
+        // -------------------
 
-        DocumentStream ds = new DocumentStreamImpl(Constants.COLLECTION_FILE);
+        // Creation of the block indexer
+        // -------------------
         DocumentIndex di = new DocumentIndexImpl();
         Vocabulary v = new VocabularyImpl();
         Dumper d = mode.equals("DEBUG") ? new DumperTXT() : new DumperBinary();
-        blockIndexer = new InMemoryIndexing(ds, v, d, di);
+        blockIndexer = new InMemoryIndexing(v, d, di);
+        // -------------------
     }
 
-    public void setLimit(int size) {
-        block_size = size;
+    /**
+     * Sets the estimation of bytes allowed for the current block
+     * @param limit the limit of bytes allowed for the block
+     */
+    public void setLimit(int limit) {
+        block_size = limit;
     }
 
+    /**
+     * Checked for control purposes
+     * @return whether the stream has still some documents
+     */
     boolean finished() {
         return finish;
     }
 
+    /**
+     * Returns the current number of blocks
+     * @return the next block number to generate
+     */
     int getNext_block(){return next_block;}
 
-    boolean availableMemory(long usedMemory, long startMemory) {
+    /**
+     * Memory check for the current block
+     * @param usedMemory the used memory for the block
+     * @return whether we have enough memory to proceed with the current block
+     */
+    boolean availableMemory(long usedMemory) {
         // Returns if (usedMemory - starting memory) is less than a treshold
-        return (usedMemory - startMemory) <= block_size;
+        return usedMemory <= block_size;
     }
 
+    /**
+     * Builds the inverted index
+     * @param path the directory in which we want to store all needed file
+     */
     public void buildIndexSPIMI(String path) {
         this.path = path;
         IOUtils.createDirectory(path + "blocks/");
@@ -54,13 +118,21 @@ public class SPIMIIndex {
             if (!file.isDirectory())
                 file.delete();
 
-        // < Until documents are not finished >
-        // < Create and Invert the block, write it to a file >
-        // < Merge all blocks >
-        while (!finished())
-            invertBlock(path + "blocks/_" + next_block);
+        // 1) create and invert a block. The block is then dumped in secondary memory
+        // ---------------------
+        while (!finished()) {
+            /* DEBUG
+            if(next_block == 1){
+                break;
+            }
 
-        // Intermediate blocks are generated in debug mode
+             */
+            invertBlock(path + "blocks/_" + next_block);
+        }
+        // ---------------------
+
+        // 2) Initialize one reader for each block
+        // ---------------------
         List<Fetcher> readVocBuffers = new ArrayList<>();
         for (int i = 0; i < next_block; i++) {
              if(mode.equals("DEBUG"))
@@ -71,22 +143,40 @@ public class SPIMIIndex {
 
             readVocBuffers.get(i).start(path + "blocks/_" + i);
         }
+        // ---------------------
+
+
+        // 4) Merge all vocabularies (with relative posting lists)
+        // ---------------------
         mergeAllBlocks(readVocBuffers);
+        // ---------------------
+
+
+        // 3) Merge all document indexes
+        // ---------------------
         concatenateDocIndexes(readVocBuffers);
+        // ---------------------
+
     }
 
 
-
-    public void invertBlock(String filename) {
+    /**
+     * Creates, Inverts and Dumps a block
+     * @param prefix the path prefix for the current block
+     */
+    public void invertBlock(String prefix) {
         // Get memory state
+        Runtime.getRuntime().gc();
         long startMemory = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
         long usedMemory = startMemory;
 
-        // Setup block index
-        blockIndexer.setup(filename);
+        // Set up the indexer for this block
+        blockIndexer.setup(prefix);
 
 
-        while (availableMemory(usedMemory, startMemory)) {
+        // 1) Process documents until memory limit reached
+        // ---------------------
+        while (availableMemory(usedMemory - startMemory)) {
             // Get the next document
             Optional<Document> doc = Optional.ofNullable(stream.nextDoc());
             if (doc.isEmpty()) {
@@ -95,19 +185,57 @@ public class SPIMIIndex {
                 break;
             }
             blockIndexer.processDocument(doc.get());
+            Runtime.getRuntime().gc();
             usedMemory = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
-            System.out.println("ALLOWED: " + block_size);
+            System.out.println("USED MEMORY : " + (usedMemory - startMemory));
         }
-
-        // Dump when out of memory
+        // ---------------------
+        System.out.println("BLOCK CREATED");
+        // 2) Dump the block
+        // ---------------------
         blockIndexer.dumpVocabulary();
         blockIndexer.dumpDocumentIndex();
+        // ---------------------
 
-        // Reset dump
+        // Reset the block indexer
         blockIndexer.close();
         next_block++;
     }
 
+    private void concatenateDocIndexes(List<Fetcher> readers) {
+        // 1) We accumulate length and total number of documents from blocks
+        //      This information is the first thing to dump
+        // ------------------------------------
+        int N = 0;
+        int L = 0;
+        for (int i = 0; i < next_block; i++) {
+            int[] info = readers.get(i).getInformations();
+            N += info[0];
+            L += info[1];
+        }
+        globalIndexer.getDocIndex().setNumDocuments(N);
+        globalIndexer.getDocIndex().setTotalLength(L);
+        globalIndexer.dumpDocumentIndex();
+        // ------------------------------------
+
+        // 2) We fetch one entry at a time from block by block and we dump it on the final file
+        // ------------------------------------
+        for (int i = 0; i < next_block; i++) {
+            Map.Entry<Integer, DocumentIndexEntry> entry;
+            while ((entry = readers.get(i).loadDocEntry()) != null) {
+                globalIndexer.dumpDocumentIndexLine(entry);
+            }
+            readers.get(i).end();
+        }
+        // ------------------------------------
+
+        globalIndexer.close();
+    }
+
+    /**
+     * Read
+     * @param readVocBuffers the list of blocks readers
+     */
     void mergeAllBlocks(List<Fetcher> readVocBuffers) {
         // Key idea to merge all blocks together
         // To do the merging, we open all block files simultaneously
@@ -120,7 +248,7 @@ public class SPIMIIndex {
         //List<Fetcher> readVocBuffers = new ArrayList<>();
         List<Boolean> processed = new ArrayList<>();
         int next_block = getNext_block();
-        indexer.setup(path);
+        globalIndexer.setup(path);
 
         for (int i = 0; i < next_block; i++) {
             processed.add(true);
@@ -182,45 +310,28 @@ public class SPIMIIndex {
             // Write the merge onto the output file
             try {
                 VocabularyEntry entry = mergeEntries(toMerge);
-                indexer.dumpVocabularyLine(new AbstractMap.SimpleEntry<>(lowestTerm, entry));
+                globalIndexer.dumpVocabularyLine(new AbstractMap.SimpleEntry<>(lowestTerm, entry));
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
         }
     }
 
-    private void concatenateDocIndexes(List<Fetcher> readers) {
-        if(!mode.equals("DEBUG")) {
-            int N = 0;
-            int L = 0;
-            for (int i = 0; i < next_block; i++) {
-                int[] info = readers.get(i).getInformations();
-                N += info[0];
-                L += info[1];
-            }
-            DocumentIndex di = new DocumentIndexImpl();
-            indexer.getDocIndex().setNumDocuments(N);
-            indexer.getDocIndex().setTotalLength(L);
-            indexer.dumpDocumentIndex();
-        }
-            for (int i = 0; i < next_block; i++) {
-                Map.Entry<Integer, DocumentIndexEntry> entry;
-                while ((entry = readers.get(i).loadDocEntry()) != null) {
-                    indexer.dumpDocumentIndexLine(entry);
-                }
-                readers.get(i).end();
-            }
 
-        indexer.close();
-    }
+    /**
+     * Merge the entries related to the same term in different blocks
+     * @param toMerge the list of vocabulary entries to merge
+     * @return a merged entry
+     */
+    VocabularyEntry mergeEntries(List<VocabularyEntry> toMerge){
 
-    VocabularyEntry mergeEntries(List<VocabularyEntry> toMerge) throws IOException {
-
-        // Make each entry to fetch relative postings
         PostingListImpl mergedList = new PostingListImpl();
         Integer frequency = 0;
         Double upperBound = 0.0;
+
         for (int k = 0; k < toMerge.size(); k++) {
+
+            // Merge the (decompressed) posting lists of the entries
             int L = mergedList.mergePosting(toMerge.get(k).getPostingList());
 
             // Update term frequency and upper bound

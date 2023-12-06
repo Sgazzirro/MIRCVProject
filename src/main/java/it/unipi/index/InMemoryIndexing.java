@@ -202,14 +202,12 @@ public class InMemoryIndexing {
 
      */
     private Vocabulary vocabulary;
-    private DocumentStream tokenStream;
     private Dumper dumper;
     private Tokenizer tokenizer;
     private DocumentIndex docIndex;
 
-    public InMemoryIndexing(DocumentStream stream, Vocabulary voc, Dumper d, DocumentIndex di){
+    public InMemoryIndexing(Vocabulary voc, Dumper d, DocumentIndex di){
         vocabulary = voc;
-        tokenStream = stream;
         dumper = d;
         tokenizer = new TokenizerImpl();
         docIndex = di;
@@ -224,7 +222,7 @@ public class InMemoryIndexing {
     }
 
     // FIXME: This function is only used when you write the fully index in memory
-    public void buildIndex(String filename){
+    public void buildIndex(DocumentStream tokenStream, String filename){
         Optional<Document> document;
 
         if(!setup(filename)) {

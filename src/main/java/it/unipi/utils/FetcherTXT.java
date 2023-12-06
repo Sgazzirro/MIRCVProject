@@ -166,6 +166,15 @@ public class FetcherTXT implements Fetcher {
 
     @Override
     public int[] getInformations() {
-        return null;
+        int N;
+        int l;
+        try {
+            l = Integer.parseInt(globalReaderDOC.readLine());
+            N = Integer.parseInt(globalReaderDOC.readLine());
+        }
+        catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        return new int[]{N, l};
     }
 }

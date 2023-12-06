@@ -24,11 +24,10 @@ public class DumperTXT implements Dumper {
 
     @Override
     public boolean start(String path) {
+        // ./data/blocks/_
         try {
             if (opened)
                 throw new IOException();
-
-            IOUtils.createDirectory(path);
 
             writerVOC  = new BufferedWriter(new FileWriter(path + Constants.VOCABULARY_FILENAME));
             writerDIX  = new BufferedWriter(new FileWriter(path + Constants.DOCUMENT_INDEX_FILENAME));
@@ -97,6 +96,15 @@ public class DumperTXT implements Dumper {
 
     @Override
     public void dumpDocumentIndex(DocumentIndex docIndex) {
+        try{
+            System.out.println("DOC INDEX L : " + docIndex.getTotalLength());
+            System.out.println("DOC INDEX N : " + docIndex.getNumDocuments());
+            writerDIX.write(Integer.toString(docIndex.getTotalLength()) + "\n");
+            writerDIX.write(Integer.toString(docIndex.getNumDocuments()) + "\n");
+        } catch (IOException ie){
+            ie.printStackTrace();
+        }
+
         StringBuilder result = new StringBuilder();
         for (Map.Entry<Integer, DocumentIndexEntry> entry : docIndex.getEntries()) {
             int docId = entry.getKey();

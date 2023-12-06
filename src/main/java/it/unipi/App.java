@@ -11,9 +11,7 @@ import it.unipi.model.implementation.VocabularyImpl;
 import it.unipi.utils.Constants;
 import it.unipi.utils.Dumper;
 import it.unipi.utils.DumperCompressed;
-import org.apache.commons.io.FileUtils;
 
-import java.io.File;
 import java.io.IOException;
 
 public class App 
@@ -59,10 +57,10 @@ public class App
         Vocabulary v = new VocabularyImpl();
         Dumper d =  new DumperCompressed();
 
-        InMemoryIndexing memoryIndexing = new InMemoryIndexing(ds, v, d, di);
+        InMemoryIndexing memoryIndexing = new InMemoryIndexing(v, d, di);
         // memoryIndexing.buildIndex("data/");
-
-        SPIMIIndex spimi = new SPIMIIndex("COMPRESSED",ds, memoryIndexing);
+        Constants.setCompression(true);
+        SPIMIIndex spimi = new SPIMIIndex("COMPRESSION",ds, memoryIndexing);
         spimi.buildIndexSPIMI("./data/");
 
 

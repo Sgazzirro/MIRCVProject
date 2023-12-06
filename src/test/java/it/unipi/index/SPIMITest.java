@@ -44,7 +44,7 @@ public class SPIMITest {
         long usedMemory = Runtime.getRuntime().totalMemory();
         long startmemory = Runtime.getRuntime().totalMemory() - 1000;
         spimi.setLimit(100);
-        assertFalse(spimi.availableMemory(usedMemory, startmemory));
+        assertFalse(spimi.availableMemory(usedMemory - startmemory));
     }
 
     @Test
@@ -52,7 +52,7 @@ public class SPIMITest {
         long usedMemory = Runtime.getRuntime().totalMemory();
         long startmemory = Runtime.getRuntime().totalMemory() - 100;
         spimi.setLimit(1000);
-        assertTrue(spimi.availableMemory(usedMemory, startmemory));
+        assertTrue(spimi.availableMemory(usedMemory - startmemory));
     }
 
     @Test

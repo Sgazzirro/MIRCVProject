@@ -3,7 +3,7 @@ package it.unipi.utils;
 public class Constants {
     private static boolean COMPRESSION = false;
 
-    public static final String COLLECTION_FILE = "data/reduced_collection.tar.gz";
+    public static final String COLLECTION_FILE = "data/collection.tar.gz";
     public static final String TEST_COLLECTION_FILE = "data/test_collection.tsv";
 
     public static final String VOCABULARY_FILENAME = "vocabulary.bin";
