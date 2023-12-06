@@ -10,28 +10,30 @@ import it.unipi.model.implementation.PostingListImpl;
 import java.io.DataOutputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.nio.ByteBuffer;
+import java.nio.channels.FileChannel;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
 import java.util.List;
 import java.util.Map;
 
-public class DumperBinary implements Dumper{
-    Boolean opened = false;
+public class DumperBinary implements Dumper {
 
     // vocabulary writer
-    private FileOutputStream vocabularyStream;
-    private DataOutputStream vocabularyWriter;
+    private FileChannel  vocabularyWriter;
     // Doc Ids writer
-    private FileOutputStream docIdsStream;
-    private DataOutputStream docIdsWriter;
+    private FileChannel docIdsWriter;
     // Term frequencies writer
-    private FileOutputStream termFreqStream;
-    private DataOutputStream termFreqWriter;
-
+    private FileChannel termFreqWriter;
     // documentIndexWriter
-    private FileOutputStream documentIndexStream;
-    private DataOutputStream documentIndexWriter;
+    private FileChannel documentIndexWriter;
+
     private long docIdsOffset;
     private long termFreqOffset;
+    private boolean opened;
+
     @Override
     public boolean start(String path) {
         try {
@@ -40,18 +42,15 @@ public class DumperBinary implements Dumper{
 
             IOUtils.createDirectory(path);
 
-            vocabularyStream = new FileOutputStream(path + Constants.VOCABULARY_FILENAME, true);
-            vocabularyWriter = new DataOutputStream(vocabularyStream);
-            docIdsStream = new FileOutputStream(path + Constants.DOC_IDS_POSTING_FILENAME, true);
-            docIdsWriter = new DataOutputStream(docIdsStream);
-            termFreqStream = new FileOutputStream(path + Constants.TF_POSTING_FILENAME, true);
-            termFreqWriter = new DataOutputStream(termFreqStream);
-            documentIndexStream = new FileOutputStream(path + Constants.DOCUMENT_INDEX_FILENAME, true);
-            documentIndexWriter = new DataOutputStream(documentIndexStream);
+            vocabularyWriter    = FileChannel.open(Paths.get(path, Constants.VOCABULARY_FILENAME),      StandardOpenOption.CREATE, StandardOpenOption.APPEND);
+            documentIndexWriter = FileChannel.open(Paths.get(path, Constants.DOCUMENT_INDEX_FILENAME),  StandardOpenOption.CREATE, StandardOpenOption.APPEND);
+            docIdsWriter        = FileChannel.open(Paths.get(path, Constants.DOC_IDS_POSTING_FILENAME), StandardOpenOption.CREATE, StandardOpenOption.APPEND);
+            termFreqWriter      = FileChannel.open(Paths.get(path, Constants.TF_POSTING_FILENAME),      StandardOpenOption.CREATE, StandardOpenOption.APPEND);
             opened = true;
             docIdsOffset = termFreqOffset = 0;
 
         } catch(IOException ie) {
+            ie.printStackTrace();
             System.out.println("Error in opening the file");
             opened = false;
         }
@@ -62,6 +61,7 @@ public class DumperBinary implements Dumper{
     public void dumpVocabularyEntry(Map.Entry<String, VocabularyEntry> entry) throws IOException {
         String term = entry.getKey();
         VocabularyEntry vocabularyEntry = entry.getValue();
+
         int documentFrequency = vocabularyEntry.getDocumentFrequency();
         Double upperBound = vocabularyEntry.getUpperBound();
         PostingList pList = vocabularyEntry.getPostingList();
@@ -74,16 +74,18 @@ public class DumperBinary implements Dumper{
         List<Integer> termFrequencyList = postingList.getTermFrequencies();
 
         // dump docIds
-        for(Integer docId: docIdList){
-            docIdsWriter.writeInt(docId);
-        }
-        int docIdsLength = docIdList.size()*Integer.BYTES;
+        int docIdsLength = docIdList.size() * Integer.BYTES;
+        ByteBuffer docIdsBuffer = ByteBuffer.allocate(docIdsLength);
+        for (Integer docId : docIdList)
+            docIdsBuffer.putInt(docId);
+        docIdsWriter.write(docIdsBuffer.flip());
 
         // dump term frequencies
-        for(Integer termFreq: termFrequencyList){
-            termFreqWriter.writeInt(termFreq);
-        }
-        int termFreqLength = termFrequencyList.size()*Integer.BYTES;
+        int termFreqLength = termFrequencyList.size() * Integer.BYTES;
+        ByteBuffer termFreqBuffer = ByteBuffer.allocate(termFreqLength);
+        for (Integer termFreq : termFrequencyList)
+            termFreqBuffer.putInt(termFreq);
+        termFreqWriter.write(termFreqBuffer.flip());
 
         // Dump vocabulary entry
         byte[] stringBytes = term.getBytes(StandardCharsets.UTF_8);
@@ -91,41 +93,65 @@ public class DumperBinary implements Dumper{
         System.arraycopy(stringBytes, 0, stringTruncatedBytes, 0, Math.min(stringBytes.length, Constants.BYTES_STORED_STRING));
         for (int i = Math.min(stringBytes.length, Constants.BYTES_STORED_STRING); i < Constants.BYTES_STORED_STRING; i++)
             stringTruncatedBytes[i] = '\0';
-        vocabularyWriter.write(stringTruncatedBytes);
-        vocabularyWriter.writeInt(documentFrequency);
-        vocabularyWriter.writeDouble(upperBound);
-        vocabularyWriter.writeDouble(idf);
-        vocabularyWriter.writeLong(docIdsOffset);
-        vocabularyWriter.writeInt(docIdsLength);
-        vocabularyWriter.writeLong(termFreqOffset);
-        vocabularyWriter.writeInt(termFreqLength);
+
+        // Write to buffer and then dump
+        ByteBuffer vocBuffer = ByteBuffer.allocate(Constants.VOCABULARY_ENTRY_BYTES_SIZE);
+        vocBuffer.put(stringTruncatedBytes);
+        vocBuffer.putInt(documentFrequency)
+                .putDouble(upperBound)
+                .putDouble(idf)
+                .putLong(docIdsOffset)
+                .putInt(docIdsLength)
+                .putLong(termFreqOffset)
+                .putInt(termFreqLength);
+        vocabularyWriter.write(vocBuffer.flip());
+
         docIdsOffset += docIdsLength;
         termFreqOffset += termFreqLength;
     }
 
     @Override
     public void dumpDocumentIndex(DocumentIndex docIndex) {
-        try{
-            documentIndexWriter.writeInt(docIndex.getTotalLength());
-            documentIndexWriter.writeInt(docIndex.getNumDocuments());
-        } catch (IOException ie){
+        int numEntries;
+        // Write document index info (length and number of documents
+        try {
+            ByteBuffer buffer = ByteBuffer.allocate(2 * Integer.BYTES);
+            buffer.putInt(docIndex.getTotalLength());
+            numEntries = docIndex.getNumDocuments();
+            buffer.putInt(numEntries);
+            documentIndexWriter.write(buffer);
+        } catch (IOException ie) {
+            ie.printStackTrace();
+            return;
+        }
+
+        // Dump all entries
+        try {
+            ByteBuffer docIndexBuffer = ByteBuffer.allocate(numEntries * 2 * Integer.BYTES);    // For each entry we have 2 integers
+            for (Map.Entry<Integer, DocumentIndexEntry> entry : docIndex.getEntries())
+                dumpDocumentIndexEntry(entry, docIndexBuffer);
+            documentIndexWriter.write(docIndexBuffer.flip());
+        } catch (IOException ie) {
             ie.printStackTrace();
         }
-        for (Map.Entry<Integer, DocumentIndexEntry> entry : docIndex.getEntries()) {
+    }
 
-            dumpDocumentIndexEntry(entry);
-        }
+    private void dumpDocumentIndexEntry(Map.Entry<Integer, DocumentIndexEntry> entry, ByteBuffer buffer) {
+        int docId = entry.getKey();
+        DocumentIndexEntry documentIndexEntry = entry.getValue();
+
+        buffer.putInt(docId);
+        buffer.putInt(documentIndexEntry.getDocumentLength());
     }
 
     @Override
     public void dumpDocumentIndexEntry(Map.Entry<Integer, DocumentIndexEntry> entry) {
-        int docId = entry.getKey();
-        DocumentIndexEntry documentIndexEntry = entry.getValue();
-        try{
-            documentIndexWriter.writeInt(docId);
-            documentIndexWriter.writeInt(documentIndexEntry.getDocumentLength());
-        } catch (IOException ie){
-            ie.printStackTrace();
+        ByteBuffer buffer = ByteBuffer.allocate(2 * Integer.BYTES);
+        dumpDocumentIndexEntry(entry, buffer);
+        try {
+            documentIndexWriter.write(buffer.flip());
+        } catch (IOException e) {
+            e.printStackTrace();
         }
     }
 
@@ -146,13 +172,9 @@ public class DumperBinary implements Dumper{
     public boolean end() {
         try {
             if (opened) {
-                vocabularyStream.close();
                 vocabularyWriter.close();
-                docIdsStream.close();
                 docIdsWriter.close();
-                termFreqStream.close();
                 termFreqWriter.close();
-                documentIndexStream.close();
                 documentIndexWriter.close();
                 opened = false;
             } else

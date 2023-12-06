@@ -25,12 +25,12 @@ public class FetcherBinary implements Fetcher{
     @Override
     public boolean start(String path) {
         try {
-            Path vocpath = Paths.get(path + Constants.VOCABULARY_FILENAME);
-            vocabularySize =(int) Files.size(vocpath)/Constants.VOCABULARY_ENTRY_BYTES_SIZE;
-            vocabularyReader = new FileInputStream(path + Constants.VOCABULARY_FILENAME);
-            docIdsReader = new FileInputStream(path + Constants.DOC_IDS_POSTING_FILENAME);
-            termFreqReader = new FileInputStream(path + Constants.TF_POSTING_FILENAME);
-            documentIndexReader = new FileInputStream(path + Constants.DOCUMENT_INDEX_FILENAME);
+            Path vocpath = Paths.get(path, Constants.VOCABULARY_FILENAME);
+            vocabularySize = (int) Files.size(vocpath) / Constants.VOCABULARY_ENTRY_BYTES_SIZE;
+            vocabularyReader    = new FileInputStream(vocpath.toFile());
+            docIdsReader        = new FileInputStream(Paths.get(path, Constants.DOCUMENT_INDEX_FILENAME).toFile());
+            termFreqReader      = new FileInputStream(Paths.get(path, Constants.DOC_IDS_POSTING_FILENAME).toFile());
+            documentIndexReader = new FileInputStream(Paths.get(path, Constants.TF_POSTING_FILENAME).toFile());
             opened = true;
 
         } catch (IOException ie) {
