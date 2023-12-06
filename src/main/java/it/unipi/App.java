@@ -59,8 +59,8 @@ public class App
 
         InMemoryIndexing memoryIndexing = new InMemoryIndexing(v, d, di);
         // memoryIndexing.buildIndex("data/");
-
-        SPIMIIndex spimi = new SPIMIIndex("COMPRESSED",ds, memoryIndexing);
+        Constants.setCompression(true);
+        SPIMIIndex spimi = new SPIMIIndex("COMPRESSION",ds, memoryIndexing);
         spimi.buildIndexSPIMI("./data/");
 
 

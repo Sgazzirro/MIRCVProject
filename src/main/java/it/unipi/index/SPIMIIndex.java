@@ -21,7 +21,7 @@ public class SPIMIIndex {
      * The block_size is number of bytes allowed to be used before creating a new block
      * Notice that, even in case of going ahead this threshold, the current document is however processed
      */
-    private long block_size = 10000;
+    private long block_size = 10000000;
 
     /**
      * The next number of block to write. Since the index of the blocks starts at 0, this is
@@ -120,8 +120,15 @@ public class SPIMIIndex {
 
         // 1) create and invert a block. The block is then dumped in secondary memory
         // ---------------------
-        while (!finished())
+        while (!finished()) {
+            /* DEBUG
+            if(next_block == 1){
+                break;
+            }
+
+             */
             invertBlock(path + "blocks/_" + next_block);
+        }
         // ---------------------
 
         // 2) Initialize one reader for each block
@@ -138,16 +145,17 @@ public class SPIMIIndex {
         }
         // ---------------------
 
-        // 3) Merge all document indexes
-        // ---------------------
-        concatenateDocIndexes(readVocBuffers);
-        // ---------------------
 
         // 4) Merge all vocabularies (with relative posting lists)
         // ---------------------
         mergeAllBlocks(readVocBuffers);
         // ---------------------
 
+
+        // 3) Merge all document indexes
+        // ---------------------
+        concatenateDocIndexes(readVocBuffers);
+        // ---------------------
 
     }
 
@@ -158,6 +166,7 @@ public class SPIMIIndex {
      */
     public void invertBlock(String prefix) {
         // Get memory state
+        Runtime.getRuntime().gc();
         long startMemory = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
         long usedMemory = startMemory;
 
@@ -176,10 +185,12 @@ public class SPIMIIndex {
                 break;
             }
             blockIndexer.processDocument(doc.get());
+            Runtime.getRuntime().gc();
             usedMemory = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
+            System.out.println("USED MEMORY : " + (usedMemory - startMemory));
         }
         // ---------------------
-
+        System.out.println("BLOCK CREATED");
         // 2) Dump the block
         // ---------------------
         blockIndexer.dumpVocabulary();
