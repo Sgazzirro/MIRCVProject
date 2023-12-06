@@ -5,6 +5,7 @@ import it.unipi.utils.ByteUtils;
 import it.unipi.utils.Constants;
 
 import java.io.*;
+import java.nio.ByteBuffer;
 import java.util.*;
 
 public class EliasFano implements Encoder {
@@ -20,9 +21,15 @@ public class EliasFano implements Encoder {
         // number of bits
         int lowHalfLength = (int) Math.ceil(Math.log((float) U / n) / Math.log(2));
         int highHalfLength = (int) Math.ceil(Math.log(U) / Math.log(2)) - lowHalfLength;
+        int nTotHighBits = (int) (n + Math.pow(2, highHalfLength));
+        int nTotLowBits = lowHalfLength*n;
+        int nTotHighBytes =(int) Math.ceil((float)nTotHighBits/8);
+        int nTotLowBytes = (int) Math.ceil((float) nTotLowBits/8);
+
         // structures to maintain encoded numbers
         BitSet highBitset = new BitSet((int) (n+Math.pow(2,highHalfLength)));
         BitSet lowBitset = new BitSet(lowHalfLength*n);
+
 
         // utility
         int index = 0;
@@ -38,6 +45,10 @@ public class EliasFano implements Encoder {
             int highHalfInt = number >> (lowHalfLength); // computes the integer corresponding to the higher bits
             clusterComp.compute(highHalfInt, (key, value) -> (value == null) ? 1 : value + 1);  // keeps track of the number of integers in the clusters
         }
+        // last byte
+        BitSet mask = new BitSet(8);
+        mask.set(7);
+        append(lowBitset, mask, 8, index);
 
         // high part
         index = 0;
@@ -46,16 +57,15 @@ public class EliasFano implements Encoder {
             append(highBitset, integerToUnary(value), integerToUnary(value).length()+1, index);
             index+=integerToUnary(value).length()+1;
         }
-
+        append(highBitset, mask, 8, index);
         // Convert everything as byte array
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
         try {
             DataOutputStream dos = new DataOutputStream(outputStream);
             dos.writeInt(originalU);
             dos.writeInt(n);
-            outputStream.write(highBitset.toByteArray());
-            outputStream.write(lowBitset.toByteArray());
-            if(array.size()==1 && array.get(0)!=1 && (array.get(0) & (array.get(0)-1) )==0) outputStream.write(0);
+            outputStream.write(highBitset.toByteArray(),0, nTotHighBytes);
+            outputStream.write(lowBitset.toByteArray(),0, nTotLowBytes);
         } catch (IOException e) {
             // This exception can never be thrown
             System.err.println("Unknown error: Elias Fano");
@@ -135,7 +145,7 @@ public class EliasFano implements Encoder {
         return unaryBitset;
     }
 
-    private static void append(BitSet bitset1, BitSet bitset2, int nbits, int index) {
+    public static void append(BitSet bitset1, BitSet bitset2, int nbits, int index) {
         // appends bitset2 to bitset1, for nbits, starting from index.
         for (int i=0; i<nbits; i++)
             bitset1.set(index++, bitset2.get(i));

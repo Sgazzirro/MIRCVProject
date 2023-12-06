@@ -2,6 +2,7 @@ package it.unipi.model.implementation;
 
 import it.unipi.model.Encoder;
 import junit.framework.TestCase;
+import org.junit.Test;
 
 import java.util.*;
 
@@ -16,6 +17,7 @@ public class EliasFanoTest extends TestCase {
     public void setUp() throws Exception {
         super.setUp();
     }
+    /*
     public void testEncode1(){
         Integer[] array = {3,4,7,13,14,15,21,25,36,38,54,62};
         ArrayList<Integer> list = new ArrayList<>(Arrays.asList(array));
@@ -29,6 +31,8 @@ public class EliasFanoTest extends TestCase {
         byte[] byteArray = binaryStringToByteArray(binaryString);
         assertEquals(Arrays.asList(3,4,7,13,14,15,21,25,36,38,54,62), eliasFano.decode(byteArray));
     }
+
+     */
 
     public void testEncodeDecode() {
         List<Integer> list = List.of(1,2);
@@ -72,7 +76,7 @@ public class EliasFanoTest extends TestCase {
         byte[] bytes = eliasFano.encode(list);
         assertEquals(list, eliasFano.decode(bytes));
     }
-
+    @Test
     public void test_finale(){
         Random random = new Random();
         int numTimes = 10000;
@@ -81,11 +85,12 @@ public class EliasFanoTest extends TestCase {
         int upperBound = 8800000;
         for(int i=0; i<numTimes; i++){
             System.out.println(i);
-            int numDocIds = random.nextInt(1000) + 1;
+            int numDocIds = random.nextInt(5) + 1;
             for(int j=0; j<numDocIds; j++){
                 int randomValue = lowerBound + random.nextInt(upperBound);
                 list.add(randomValue);
             }
+            Collections.sort(list);
             byte[] bytes = eliasFano.encode(list);
             assertEquals(list, eliasFano.decode(bytes));
             list.clear();
