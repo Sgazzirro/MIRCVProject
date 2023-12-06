@@ -27,6 +27,8 @@ public class TokenizerImpl implements Tokenizer {
 
     @Override
     public List<String> tokenizeBySpace(String content) {
+        return List.of(content.split(" "));
+        /*
         // TODO - Handling char[] instead of String should be a lot faster
         // Remove HTML tags
         String cleanedHTML = content.replaceAll("<[^>]+>", "");
@@ -39,5 +41,7 @@ public class TokenizerImpl implements Tokenizer {
             stream = stream.map(s -> stemmer.stem(s));
 
         return stream.collect(Collectors.toList());
+
+         */
     }
 }
