@@ -19,8 +19,6 @@ public class Constants {
     public static final int VOCABULARY_ENTRY_BYTES_SIZE =
             BYTES_STORED_STRING + 3*Integer.BYTES + 2*Double.BYTES + 2*Long.BYTES;
 
-    public static final int MAX_ENTRIES_PER_SPIMI_BLOCK = 500_000;
-
     public static void setCompression(boolean c) {
         COMPRESSION = c;
     }

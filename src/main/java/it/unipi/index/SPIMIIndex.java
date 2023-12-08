@@ -102,11 +102,10 @@ public class SPIMIIndex {
      * @return whether we have enough memory to proceed with the current block
      */
     boolean availableMemory(long usedMemory) {
-        // Returns if usedMemory is less than a threshold
-        double threshold = ((double) block_size / 100) * Runtime.getRuntime().maxMemory();
-        // threshold = Math.min(threshold, 1e9);
-
-        return usedMemory <= threshold;
+        // Returns if (usedMemory - starting memory) is less than a treshold
+        float totMem80 = ((float)block_size/100)*Runtime.getRuntime().maxMemory();
+        double threshold = 1e9;
+        return usedMemory <= threshold && usedMemory <= totMem80;
     }
 
     /**
@@ -126,8 +125,9 @@ public class SPIMIIndex {
         // ---------------------
         while (!finished()) {
 
-            if (next_block == 2)
+            if(next_block == 2)
                 break;
+
 
 
             invertBlock(path + "blocks/_" + next_block);
@@ -171,38 +171,34 @@ public class SPIMIIndex {
     public void invertBlock(String prefix) {
         // Get memory state
         Runtime.getRuntime().gc();
-        long usedMemory = Runtime.getRuntime().totalMemory();
-        System.out.println("MEMORIA USATA DI PARTENZA : " + usedMemory);
+        long startMemory = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
+        System.out.println("MEMORIA USATA DI PARTENZA : " + startMemory);
+        long usedMemory = startMemory;
 
         // Set up the indexer for this block
         blockIndexer.setup(prefix);
 
-        int docProcessed = 0;
+        int i = 0;
         // 1) Process documents until memory limit reached
         // ---------------------
         while (availableMemory(usedMemory)) {
-            // Write the block if we reached a certain (high) number of entries
-            if (docProcessed == Constants.MAX_ENTRIES_PER_SPIMI_BLOCK) {
-                System.out.println("Max number of entries per block reached (" + Constants.MAX_ENTRIES_PER_SPIMI_BLOCK + ")");
+            // Get the next document
+            i += 1;
+            if(i % 1e6 == 0) {
+                System.out.println("Sono uscito perché sono scemo");
                 break;
             }
-
-            // Get the next document
             Optional<Document> doc = Optional.ofNullable(stream.nextDoc());
             if (doc.isEmpty()) {
                 // When I have finished, I set the flag
-                System.out.println("COLLECTION FINISHED");
+                System.out.println("HO FINITO");
                 finish = true;
                 break;
             }
             blockIndexer.processDocument(doc.get());
-            usedMemory = Runtime.getRuntime().totalMemory();
+            usedMemory = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
 
-            docProcessed += 1;
-            if (docProcessed % 50000 == 0)
-                System.out.println(docProcessed + " documents processed");
         }
-
         // ---------------------
         System.out.println("BLOCK CREATED");
         // 2) Dump the block
@@ -210,7 +206,6 @@ public class SPIMIIndex {
         blockIndexer.dumpVocabulary();
         blockIndexer.dumpDocumentIndex();
         // ---------------------
-        System.out.println("BLOCK DUMPED");
 
         // Reset the block indexer
         blockIndexer.close();
@@ -238,7 +233,6 @@ public class SPIMIIndex {
         for (int i = 0; i < next_block; i++) {
             Map.Entry<Integer, DocumentIndexEntry> entry;
             while ((entry = readers.get(i).loadDocEntry()) != null) {
-                // TODO - This is extremely slow
                 globalIndexer.dumpDocumentIndexLine(entry);
             }
             //readers.get(i).end();
@@ -265,8 +259,10 @@ public class SPIMIIndex {
         List<Boolean> processed = new ArrayList<>();
         int next_block = getNext_block();
 
-        for (int i = 0; i < next_block; i++)
+
+        for (int i = 0; i < next_block; i++) {
             processed.add(true);
+        }
 
         int blocksClosed = 0;
         boolean[] closed = new boolean[next_block];
@@ -343,17 +339,19 @@ public class SPIMIIndex {
         Integer frequency = 0;
         Double upperBound = 0.0;
 
-        for (VocabularyEntry entry : toMerge) {
+        for (int k = 0; k < toMerge.size(); k++) {
 
             // Merge the (decompressed) posting lists of the entries
-            int L = mergedList.mergePosting(entry.getPostingList());
+            int L = mergedList.mergePosting(toMerge.get(k).getPostingList());
 
             // Update term frequency and upper bound
-            frequency += entry.getDocumentFrequency();
-            if (entry.getUpperBound() > upperBound)
-                upperBound = entry.getUpperBound();
+            frequency += toMerge.get(k).getDocumentFrequency();
+            if (toMerge.get(k).getUpperBound() > upperBound)
+                upperBound = toMerge.get(k).getUpperBound();
         }
 
-        return new VocabularyEntry(frequency, upperBound, mergedList);
+        VocabularyEntry result = new VocabularyEntry(frequency, upperBound, mergedList);
+
+        return result;
     }
 }

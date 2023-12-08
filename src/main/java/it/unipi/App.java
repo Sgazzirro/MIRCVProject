@@ -48,6 +48,8 @@ public class App
 
 */
 
+
+/*
         DocumentStream ds = new DocumentStreamImpl(Constants.COLLECTION_FILE);
         DocumentIndex di = new DocumentIndexImpl();
         Vocabulary v = new VocabularyImpl();
@@ -59,6 +61,7 @@ public class App
         SPIMIIndex spimi = new SPIMIIndex("COMPRESSION",ds, memoryIndexing);
         spimi.buildIndexSPIMI("./data/");
 
+ */
 
         Fetcher f = new FetcherBinary();
         f.start("./data/");
