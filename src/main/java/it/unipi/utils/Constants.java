@@ -16,6 +16,8 @@ public class Constants {
 
     public static int BLOCK_SIZE = 100;
     public static final int BYTES_STORED_STRING = 32;
+
+    public static final int N = 8841823;
     public static final int VOCABULARY_ENTRY_BYTES_SIZE =
             BYTES_STORED_STRING + 3*Integer.BYTES + 2*Double.BYTES + 2*Long.BYTES;
 

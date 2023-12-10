@@ -284,4 +284,16 @@ public class InMemoryIndexing {
     public DocumentIndex getDocIndex() {
         return docIndex;
     }
+
+    public void computePartialTermUB(){
+        for(Map.Entry<String, VocabularyEntry> entry: vocabulary.getEntries()){
+            VocabularyEntry vocabularyEntry = entry.getValue();
+            List<Integer> termFreqList = vocabularyEntry.getPostingList().getTermFrequenciesDecompressedList();
+            int maxTermFreq = Collections.max(termFreqList);
+
+            // partial term upper bound = (1+log(tf))
+            double partialTermUB = 1+Math.log10(maxTermFreq);
+            vocabularyEntry.setUpperBound(partialTermUB);
+        }
+    }
 }

@@ -157,6 +157,8 @@ public class SPIMIIndex {
         concatenateDocIndexes(readVocBuffers);
         // ---------------------
 
+
+
     }
 
 
@@ -191,7 +193,11 @@ public class SPIMIIndex {
         }
         // ---------------------
         System.out.println("BLOCK CREATED");
-        // 2) Dump the block
+        // ---------------------
+        // 2.0) set the partial term upper bound
+        blockIndexer.computePartialTermUB();
+
+        // 2.1) Dump the block
         // ---------------------
         blockIndexer.dumpVocabulary();
         blockIndexer.dumpDocumentIndex();
@@ -324,7 +330,6 @@ public class SPIMIIndex {
      * @return a merged entry
      */
     VocabularyEntry mergeEntries(List<VocabularyEntry> toMerge){
-
         PostingListImpl mergedList = new PostingListImpl();
         Integer frequency = 0;
         Double upperBound = 0.0;
@@ -339,6 +344,9 @@ public class SPIMIIndex {
             if (toMerge.get(k).getUpperBound() > upperBound)
                 upperBound = toMerge.get(k).getUpperBound();
         }
+
+        // final term upper bound computation
+        upperBound *= Math.log10((double)(Constants.N/ mergedList.getDocIdsDecompressedList().size()));
 
         VocabularyEntry result = new VocabularyEntry(frequency, upperBound, mergedList);
 
