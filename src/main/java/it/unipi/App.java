@@ -8,7 +8,9 @@ import it.unipi.model.Vocabulary;
 import it.unipi.model.implementation.DocumentIndexImpl;
 import it.unipi.model.implementation.DocumentStreamImpl;
 import it.unipi.model.implementation.VocabularyImpl;
-import it.unipi.utils.*;
+import it.unipi.utils.Constants;
+import it.unipi.utils.Dumper;
+import it.unipi.utils.DumperCompressed;
 
 import java.io.IOException;
 
@@ -48,6 +50,8 @@ public class App
 
 */
 
+
+
         DocumentStream ds = new DocumentStreamImpl(Constants.COLLECTION_FILE);
         DocumentIndex di = new DocumentIndexImpl();
         Vocabulary v = new VocabularyImpl();
@@ -58,12 +62,6 @@ public class App
         Constants.setCompression(true);
         SPIMIIndex spimi = new SPIMIIndex("COMPRESSION",ds, memoryIndexing);
         spimi.buildIndexSPIMI("./data/");
-
-
-        Fetcher f = new FetcherBinary();
-        f.start("./data/");
-        System.out.println(f.getInformations()[0]);
-        f.end();
 
 
         //FileUtils.cleanDirectory(new File("./data/"));

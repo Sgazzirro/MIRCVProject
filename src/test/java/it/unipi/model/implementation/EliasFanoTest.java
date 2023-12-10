@@ -84,8 +84,7 @@ public class EliasFanoTest extends TestCase {
         int lowerBound = 1;
         int upperBound = 8800000;
         for(int i=0; i<numTimes; i++){
-            System.out.println(i);
-            int numDocIds = random.nextInt(5) + 1;
+            int numDocIds = random.nextInt(100) + 1;
             for(int j=0; j<numDocIds; j++){
                 int randomValue = lowerBound + random.nextInt(upperBound);
                 list.add(randomValue);

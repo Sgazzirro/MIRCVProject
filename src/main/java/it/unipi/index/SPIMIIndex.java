@@ -5,7 +5,6 @@ import it.unipi.model.implementation.*;
 import it.unipi.utils.*;
 
 import java.io.*;
-import java.sql.SQLOutput;
 import java.util.*;
 
 public class SPIMIIndex {
@@ -22,7 +21,7 @@ public class SPIMIIndex {
      * The block_size is number of bytes allowed to be used before creating a new block
      * Notice that, even in case of going ahead this threshold, the current document is however processed
      */
-    private long block_size = 80;
+    private long block_size = 10000000;
 
     /**
      * The next number of block to write. Since the index of the blocks starts at 0, this is
@@ -102,11 +101,8 @@ public class SPIMIIndex {
      * @return whether we have enough memory to proceed with the current block
      */
     boolean availableMemory(long usedMemory) {
-        // Returns if usedMemory is less than a threshold
-        double threshold = ((double) block_size / 100) * Runtime.getRuntime().maxMemory();
-        // threshold = Math.min(threshold, 1e9);
-
-        return usedMemory <= threshold;
+        // Returns if (usedMemory - starting memory) is less than a treshold
+        return usedMemory <= block_size;
     }
 
     /**
@@ -125,11 +121,12 @@ public class SPIMIIndex {
         // 1) create and invert a block. The block is then dumped in secondary memory
         // ---------------------
         while (!finished()) {
-
-            if (next_block == 2)
+            /* DEBUG
+            if(next_block == 1){
                 break;
+            }
 
-
+             */
             invertBlock(path + "blocks/_" + next_block);
         }
         // ---------------------
@@ -147,19 +144,18 @@ public class SPIMIIndex {
             readVocBuffers.get(i).start(path + "blocks/_" + i);
         }
         // ---------------------
-        globalIndexer.setup(path);
-        // 3) Merge all document indexes
-        // ---------------------
-        concatenateDocIndexes(readVocBuffers);
-        // ---------------------
+
 
         // 4) Merge all vocabularies (with relative posting lists)
         // ---------------------
         mergeAllBlocks(readVocBuffers);
         // ---------------------
-        for(int i = 0; i < next_block; i++)
-            readVocBuffers.get(i).end();
-        globalIndexer.close();
+
+
+        // 3) Merge all document indexes
+        // ---------------------
+        concatenateDocIndexes(readVocBuffers);
+        // ---------------------
 
     }
 
@@ -171,38 +167,28 @@ public class SPIMIIndex {
     public void invertBlock(String prefix) {
         // Get memory state
         Runtime.getRuntime().gc();
-        long usedMemory = Runtime.getRuntime().totalMemory();
-        System.out.println("MEMORIA USATA DI PARTENZA : " + usedMemory);
+        long startMemory = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
+        long usedMemory = startMemory;
 
         // Set up the indexer for this block
         blockIndexer.setup(prefix);
 
-        int docProcessed = 0;
+
         // 1) Process documents until memory limit reached
         // ---------------------
-        while (availableMemory(usedMemory)) {
-            // Write the block if we reached a certain (high) number of entries
-            if (docProcessed == Constants.MAX_ENTRIES_PER_SPIMI_BLOCK) {
-                System.out.println("Max number of entries per block reached (" + Constants.MAX_ENTRIES_PER_SPIMI_BLOCK + ")");
-                break;
-            }
-
+        while (availableMemory(usedMemory - startMemory)) {
             // Get the next document
             Optional<Document> doc = Optional.ofNullable(stream.nextDoc());
             if (doc.isEmpty()) {
                 // When I have finished, I set the flag
-                System.out.println("COLLECTION FINISHED");
                 finish = true;
                 break;
             }
             blockIndexer.processDocument(doc.get());
-            usedMemory = Runtime.getRuntime().totalMemory();
-
-            docProcessed += 1;
-            if (docProcessed % 50000 == 0)
-                System.out.println(docProcessed + " documents processed");
+            Runtime.getRuntime().gc();
+            usedMemory = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
+            System.out.println("USED MEMORY : " + (usedMemory - startMemory));
         }
-
         // ---------------------
         System.out.println("BLOCK CREATED");
         // 2) Dump the block
@@ -210,7 +196,6 @@ public class SPIMIIndex {
         blockIndexer.dumpVocabulary();
         blockIndexer.dumpDocumentIndex();
         // ---------------------
-        System.out.println("BLOCK DUMPED");
 
         // Reset the block indexer
         blockIndexer.close();
@@ -238,14 +223,13 @@ public class SPIMIIndex {
         for (int i = 0; i < next_block; i++) {
             Map.Entry<Integer, DocumentIndexEntry> entry;
             while ((entry = readers.get(i).loadDocEntry()) != null) {
-                // TODO - This is extremely slow
                 globalIndexer.dumpDocumentIndexLine(entry);
             }
-            //readers.get(i).end();
+            readers.get(i).end();
         }
         // ------------------------------------
 
-        //globalIndexer.close();
+        globalIndexer.close();
     }
 
     /**
@@ -264,9 +248,11 @@ public class SPIMIIndex {
         //List<Fetcher> readVocBuffers = new ArrayList<>();
         List<Boolean> processed = new ArrayList<>();
         int next_block = getNext_block();
+        globalIndexer.setup(path);
 
-        for (int i = 0; i < next_block; i++)
+        for (int i = 0; i < next_block; i++) {
             processed.add(true);
+        }
 
         int blocksClosed = 0;
         boolean[] closed = new boolean[next_block];
@@ -343,17 +329,19 @@ public class SPIMIIndex {
         Integer frequency = 0;
         Double upperBound = 0.0;
 
-        for (VocabularyEntry entry : toMerge) {
+        for (int k = 0; k < toMerge.size(); k++) {
 
             // Merge the (decompressed) posting lists of the entries
-            int L = mergedList.mergePosting(entry.getPostingList());
+            int L = mergedList.mergePosting(toMerge.get(k).getPostingList());
 
             // Update term frequency and upper bound
-            frequency += entry.getDocumentFrequency();
-            if (entry.getUpperBound() > upperBound)
-                upperBound = entry.getUpperBound();
+            frequency += toMerge.get(k).getDocumentFrequency();
+            if (toMerge.get(k).getUpperBound() > upperBound)
+                upperBound = toMerge.get(k).getUpperBound();
         }
 
-        return new VocabularyEntry(frequency, upperBound, mergedList);
+        VocabularyEntry result = new VocabularyEntry(frequency, upperBound, mergedList);
+
+        return result;
     }
 }
