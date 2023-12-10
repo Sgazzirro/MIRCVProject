@@ -71,6 +71,7 @@ public class MaxScore{
         double theta = 0;
         int pivot = 0;
         int current = minimumDocId(p);
+        if(current==-1) return null;
         int n = p.size();
         while(pivot < n){
             double score =0;
@@ -133,7 +134,7 @@ public class MaxScore{
                 try {
                     postingList.next();
                 } catch(EOFException e){
-                    e.printStackTrace();
+                    return -1;
                 }
                 if(postingList.docId()<min){
                     min=postingList.docId();
@@ -141,5 +142,27 @@ public class MaxScore{
             }
         }
         return min;
+    }
+
+    private int minimumDocIdConjunctive(List<PostingList> postingLists){
+        int minDocId = minimumDocId(postingLists);
+        if (minDocId == -1) return -1;
+        int actualMaxDocId = -1;
+        while(true) {
+            for (PostingList postingList : postingLists) {
+                if(postingList.docId()>actualMaxDocId) actualMaxDocId = postingList.docId();
+            }
+            if (actualMaxDocId == minDocId) return minDocId;        // significa che sono tutte allo stesso docId
+            else {
+                try{
+                    for(PostingList postingList: postingLists){
+                        postingList.nextGEQ(actualMaxDocId);
+                    }
+                    minDocId = actualMaxDocId;
+                } catch (EOFException e){
+                    return -1;
+                }
+            }
+        }
     }
 }
