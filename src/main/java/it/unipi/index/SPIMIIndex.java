@@ -5,6 +5,7 @@ import it.unipi.model.implementation.*;
 import it.unipi.utils.*;
 
 import java.io.*;
+import java.nio.file.Path;
 import java.util.*;
 
 public class SPIMIIndex {
@@ -37,29 +38,29 @@ public class SPIMIIndex {
     /**
      * Set to the directory in which we want to save all files
      */
-    private String path;
+    private Path path;
 
     /**
      * The indexer demand to invert the current block. Compression is not
      * predicted at this stage
      */
-    private InMemoryIndexing blockIndexer;
+    private final InMemoryIndexing blockIndexer;
 
     /**
      * Describes the mode in which we are operating
      * DEBUG: Both globalIndexer and blockIndexer operates in ASCII mode
-     * NOT_COMPRESSED: Both globalIndexer and blockIndexer write binary objects
+     * BINARY: Both globalIndexer and blockIndexer write binary objects
      * COMPRESSED: blockIndexer writes binary objects, the globalIndexer writes a compressed
      *              representation of doc_ids and term_frequencies lists
      */
-    private String mode;
+    private final CompressionType compression;
 
 
 
-    public SPIMIIndex(String mode, DocumentStream s, InMemoryIndexing i) {
+    public SPIMIIndex(CompressionType compression, DocumentStream s, InMemoryIndexing i) {
         // Parameter Allocation
         // -------------------
-        this.mode = mode;
+        this.compression = (compression == CompressionType.DEBUG) ? compression : CompressionType.BINARY;
         stream = s;
         globalIndexer = i;
         // -------------------
@@ -68,7 +69,7 @@ public class SPIMIIndex {
         // -------------------
         DocumentIndex di = new DocumentIndexImpl();
         Vocabulary v = new VocabularyImpl();
-        Dumper d = mode.equals("DEBUG") ? new DumperTXT() : new DumperBinary();
+        Dumper d = Dumper.getInstance(this.compression);
         blockIndexer = new InMemoryIndexing(v, d, di);
         // -------------------
     }
@@ -101,33 +102,34 @@ public class SPIMIIndex {
      * @return whether we have enough memory to proceed with the current block
      */
     boolean availableMemory(long usedMemory) {
-        // Returns if (usedMemory - starting memory) is less than a treshold
-        return usedMemory <= block_size;
+        // Returns if usedMemory is less than a threshold
+        double threshold = ((double) block_size / 100) * Runtime.getRuntime().maxMemory();
+        // threshold = Math.min(threshold, 1e9);
+
+        return usedMemory <= threshold;
     }
 
     /**
      * Builds the inverted index
      * @param path the directory in which we want to store all needed file
      */
-    public void buildIndexSPIMI(String path) {
+    public void buildIndexSPIMI(Path path) {
         this.path = path;
-        IOUtils.createDirectory(path + "blocks/");
+
+        Path blocksPath = path.resolve("blocks/");
 
         // Preliminary flush of files
-        for (File file : Objects.requireNonNull(new File(path + "blocks").listFiles()))
-            if (!file.isDirectory())
-                file.delete();
+        IOUtils.deleteDirectory(blocksPath);
+
+        IOUtils.createDirectory(blocksPath);
 
         // 1) create and invert a block. The block is then dumped in secondary memory
         // ---------------------
         while (!finished()) {
-            /* DEBUG
-            if(next_block == 1){
+            if (next_block == 2)
                 break;
-            }
 
-             */
-            invertBlock(path + "blocks/_" + next_block);
+            invertBlock(blocksPath.resolve("" + next_block));
         }
         // ---------------------
 
@@ -135,13 +137,10 @@ public class SPIMIIndex {
         // ---------------------
         List<Fetcher> readVocBuffers = new ArrayList<>();
         for (int i = 0; i < next_block; i++) {
-             if(mode.equals("DEBUG"))
-                readVocBuffers.add(new FetcherTXT());
-             else
-                readVocBuffers.add(new FetcherBinary());
+            Fetcher f = Fetcher.getFetcher(compression);
+            f.start(blocksPath.resolve("" + i));
 
-
-            readVocBuffers.get(i).start(path + "blocks/_" + i);
+            readVocBuffers.add(f);
         }
         // ---------------------
 
@@ -156,29 +155,32 @@ public class SPIMIIndex {
         // ---------------------
         concatenateDocIndexes(readVocBuffers);
         // ---------------------
-
-
-
     }
 
 
     /**
      * Creates, Inverts and Dumps a block
-     * @param prefix the path prefix for the current block
+     * @param blockPath the path prefix for the current block
      */
-    public void invertBlock(String prefix) {
+    public void invertBlock(Path blockPath) {
         // Get memory state
         Runtime.getRuntime().gc();
         long startMemory = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
         long usedMemory = startMemory;
 
         // Set up the indexer for this block
-        blockIndexer.setup(prefix);
-
+        blockIndexer.setup(blockPath);
 
         // 1) Process documents until memory limit reached
+        int docProcessed = 0;
         // ---------------------
         while (availableMemory(usedMemory - startMemory)) {
+            // Write the block if we reached a certain (high) number of entries
+            if (docProcessed++ == Constants.MAX_ENTRIES_PER_SPIMI_BLOCK) {
+                System.out.println("Max number of entries per block reached (" + Constants.MAX_ENTRIES_PER_SPIMI_BLOCK + ")");
+                break;
+            }
+
             // Get the next document
             Optional<Document> doc = Optional.ofNullable(stream.nextDoc());
             if (doc.isEmpty()) {
@@ -187,9 +189,8 @@ public class SPIMIIndex {
                 break;
             }
             blockIndexer.processDocument(doc.get());
-            Runtime.getRuntime().gc();
             usedMemory = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
-            System.out.println("USED MEMORY : " + (usedMemory - startMemory));
+            // System.out.println("USED MEMORY : " + (usedMemory - startMemory));
         }
         // ---------------------
         System.out.println("BLOCK CREATED");
@@ -228,9 +229,9 @@ public class SPIMIIndex {
         // ------------------------------------
         for (int i = 0; i < next_block; i++) {
             Map.Entry<Integer, DocumentIndexEntry> entry;
-            while ((entry = readers.get(i).loadDocEntry()) != null) {
+            while ( (entry = readers.get(i).loadDocEntry()) != null )
                 globalIndexer.dumpDocumentIndexLine(entry);
-            }
+
             readers.get(i).end();
         }
         // ------------------------------------
@@ -334,19 +335,19 @@ public class SPIMIIndex {
         Integer frequency = 0;
         Double upperBound = 0.0;
 
-        for (int k = 0; k < toMerge.size(); k++) {
+        for (VocabularyEntry vocabularyEntry : toMerge) {
 
             // Merge the (decompressed) posting lists of the entries
-            int L = mergedList.mergePosting(toMerge.get(k).getPostingList());
+            int L = mergedList.mergePosting(vocabularyEntry.getPostingList());
 
             // Update term frequency and upper bound
-            frequency += toMerge.get(k).getDocumentFrequency();
-            if (toMerge.get(k).getUpperBound() > upperBound)
-                upperBound = toMerge.get(k).getUpperBound();
+            frequency += vocabularyEntry.getDocumentFrequency();
+            if (vocabularyEntry.getUpperBound() > upperBound)
+                upperBound = vocabularyEntry.getUpperBound();
         }
 
         // final term upper bound computation
-        upperBound *= Math.log10((double)(Constants.N/ mergedList.getDocIdsDecompressedList().size()));
+        upperBound *= Math.log10( ((double) Constants.N/ mergedList.getDocIdsDecompressedList().size()));
 
         VocabularyEntry result = new VocabularyEntry(frequency, upperBound, mergedList);
 

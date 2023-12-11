@@ -9,18 +9,17 @@ import it.unipi.model.implementation.DocumentIndexEntry;
 import it.unipi.model.implementation.VocabularyEntry;
 
 import java.io.IOException;
+import java.nio.file.Path;
 import java.util.Map;
 
 public interface Dumper {
-
-    // TODO (INTO THE IMPLEMENTATION): Private method long[] dumpPostings(PostingList ps)
 
     /**
      * Open the stream
      * @param path the path where to dump the files
      * @return whether the stream has been open correctly or an IOException has been raised
      */
-    boolean start(String path);
+    boolean start(Path path);
     void dumpVocabularyEntry(Map.Entry<String, VocabularyEntry> entry) throws IOException;
     void dumpDocumentIndex(DocumentIndex docIndex);
     void dumpDocumentIndexEntry(Map.Entry<Integer, DocumentIndexEntry> entry);
@@ -31,4 +30,17 @@ public interface Dumper {
      * @return whether the stream has been closed correctly or an IOException has been raised
      */
     boolean end();
+
+    static Dumper getInstance(CompressionType compression) {
+        switch (compression) {
+            case DEBUG:
+                return new DumperTXT();
+            case BINARY:
+                return new DumperBinary();
+            case COMPRESSED:
+                return new DumperCompressed();
+        }
+        throw new RuntimeException("Unsupported compression type: " + compression);
+    }
+
 }

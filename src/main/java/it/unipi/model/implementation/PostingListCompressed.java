@@ -6,6 +6,7 @@ import it.unipi.utils.FetcherCompressed;
 
 import java.io.EOFException;
 import java.io.IOException;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -14,8 +15,8 @@ public class PostingListCompressed extends PostingList {
 
     public static class ByteBlock {
 
-        private byte[] bytes;
-        private long offset;
+        private final byte[] bytes;
+        private final long offset;
 
         public ByteBlock(byte[] bytes, long offset) {
             this.bytes = bytes;
@@ -140,7 +141,7 @@ public class PostingListCompressed extends PostingList {
     }
 
     @Override
-    public boolean loadPosting(String path) {
+    public boolean loadPosting(Path path) {
         try {
             fetcher.start(path);
             compressedDocIds = fetcher.fetchCompressedDocIds(getDocIdsOffset(), getDocIdsOffset() + getDocIdsLength());

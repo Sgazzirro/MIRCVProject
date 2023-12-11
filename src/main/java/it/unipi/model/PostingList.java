@@ -2,12 +2,12 @@ package it.unipi.model;
 
 import it.unipi.model.implementation.PostingListCompressed;
 import it.unipi.model.implementation.PostingListImpl;
-import it.unipi.utils.Constants;
-import opennlp.tools.parser.Cons;
+import it.unipi.utils.CompressionType;
 
 import java.io.EOFException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.List;
-import java.util.Objects;
 
 public abstract class PostingList{
 
@@ -74,11 +74,11 @@ public abstract class PostingList{
 
 
     public boolean loadPosting() {
-        return loadPosting("./data/");
+        return loadPosting(Paths.get("./data/"));
     }
 
 
-    public abstract boolean loadPosting(String path);
+    public abstract boolean loadPosting(Path path);
 
     public long getDocIdsOffset() {
         return docIdsOffset;
@@ -123,8 +123,9 @@ public abstract class PostingList{
     public abstract List<Integer> getTermFrequenciesDecompressedList();
 
     public abstract List<Integer> getDocIdsDecompressedList();
+
     @Override
-    public boolean equals(Object o){
+    public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null) return false;
         PostingList that = (PostingList) o;
@@ -153,5 +154,15 @@ public abstract class PostingList{
                 ", termFreqLength=" + termFreqLength +
                 ", nextDocId=" + docId() +
                 '}';
+    }
+
+    public static PostingList getInstance(CompressionType compression) {
+        switch (compression) {
+            case DEBUG:
+            case BINARY: return new PostingListImpl();
+
+            case COMPRESSED: return new PostingListCompressed();
+        }
+        throw new RuntimeException("Unsupported compression type: " + compression);
     }
 }

@@ -1,10 +1,15 @@
 package it.unipi.utils;
 
+import java.nio.file.Path;
+import java.nio.file.Paths;
+
 public class Constants {
     private static boolean COMPRESSION = false;
 
     public static final String COLLECTION_FILE = "data/collection.tar.gz";
     public static final String TEST_COLLECTION_FILE = "data/test_collection.tsv";
+
+    public static final Path testPath = Paths.get("./data/", "test/");
 
     public static final String VOCABULARY_FILENAME = "vocabulary.bin";
     public static final String DOCUMENT_INDEX_FILENAME = "document_index.bin";
@@ -12,9 +17,10 @@ public class Constants {
     public static final String TF_POSTING_FILENAME = "term_frequencies.bin";
 
     // Stopwords downloaded from https://raw.githubusercontent.com/stopwords-iso/stopwords-en/master/stopwords-en.txt
-    public static final String STOPWORDS_FILE = "data/stopwords-en.txt";
+    public static final Path STOPWORDS_FILE = Paths.get("data/", "stopwords-en.txt");
 
     public static int BLOCK_SIZE = 100;
+    public static int MAX_ENTRIES_PER_SPIMI_BLOCK = 50_000;
     public static final int BYTES_STORED_STRING = 32;
 
     public static final int N = 8841823;

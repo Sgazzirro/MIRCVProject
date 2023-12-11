@@ -9,18 +9,15 @@ import it.unipi.model.implementation.DocumentIndexEntry;
 import it.unipi.model.implementation.DocumentIndexImpl;
 import it.unipi.model.implementation.VocabularyImpl;
 import it.unipi.utils.*;
-import org.apache.commons.io.FileUtils;
 import org.junit.*;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
-import java.io.File;
-import java.io.IOException;
 import java.util.*;
 
-import static junit.framework.TestCase.assertEquals;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.when;
 
@@ -38,12 +35,12 @@ public class SPIMICompleteTest {
     @InjectMocks
     InMemoryIndexing indexerSingleBlock;
     @Mock
-    static
-    DocumentStream ds;
+    static DocumentStream ds;
 
     static Vocabulary correctVocabulary;
     static DocumentIndex correctDocumentIndex;
     NavigableMap<String, VocabularyEntry> testOutput = new TreeMap<>();
+
     @BeforeClass
     public static void createResult(){
         correctVocabulary = new VocabularyImpl();
@@ -75,7 +72,10 @@ public class SPIMICompleteTest {
     }
 
     @Before
-    public void setup(){
+    public void setup() {
+        IOUtils.deleteDirectory(Constants.testPath);
+        IOUtils.createDirectory(Constants.testPath);
+
         when(ds.nextDoc()).thenReturn(
                 new Document("0\tduck duck duck"),
                 new Document("1\tbeij dish duck duck"),
@@ -96,45 +96,46 @@ public class SPIMICompleteTest {
     @Test
     public void testBuildInSingleBlock_DEBUG_NOTSPIMI(){
 
-        String mode = "DEBUG";
+        CompressionType compression = CompressionType.DEBUG;
 
         // Dumping
         indexerSingleBlock = new InMemoryIndexing(new VocabularyImpl(), new DumperTXT(), new DocumentIndexImpl());
-        indexerSingleBlock.buildIndex(ds,"./test/");
-
+        indexerSingleBlock.buildIndex(ds, Constants.testPath);
 
         // Fetching
-        Fetcher fetcher = new FetcherTXT();
-        fetcher.start("./test/");
+        Fetcher fetcher = Fetcher.getFetcher(compression);
+        fetcher.start(Constants.testPath);
         Map.Entry<String, VocabularyEntry> entry;
 
-        while((entry = fetcher.loadVocEntry()) != null){
-           testOutput.put(entry.getKey(), entry.getValue());
-        }
+        while ( (entry = fetcher.loadVocEntry()) != null )
+            testOutput.put(entry.getKey(), entry.getValue());
 
         DocumentIndex fetchedIndex = new DocumentIndexImpl();
         Map.Entry<Integer, DocumentIndexEntry> entryDI;
-        while((entryDI = fetcher.loadDocEntry()) != null){
+
+        fetcher.getInformations();      // Skip first two lines
+        while((entryDI = fetcher.loadDocEntry()) != null)
             fetchedIndex.addDocument(entryDI.getKey(),entryDI.getValue().getDocumentLength());
-        }
         fetcher.end();
 
-        assertTrue(Objects.equals(correctVocabulary.getEntries(), testOutput.entrySet()) && Objects.equals(correctDocumentIndex, fetchedIndex));
+        assertEquals(correctVocabulary.getEntries(), testOutput.entrySet());
+        assertEquals(correctDocumentIndex, fetchedIndex);
     }
 
-    @Test
-    public void testBuildSingleBlock_DEBUG(){
-        String mode = "DEBUG";
 
+    @Test
+    public void testBuildSingleBlock_DEBUG() {
+
+        CompressionType compression = CompressionType.DEBUG;
 
         // Dumping
-        indexerSingleBlock = new InMemoryIndexing(new VocabularyImpl(), new DumperTXT(), new DocumentIndexImpl());
-        new SPIMIIndex("DEBUG", ds, indexerSingleBlock).buildIndexSPIMI("./test/");
+        indexerSingleBlock = new InMemoryIndexing(new VocabularyImpl(), Dumper.getInstance(compression), new DocumentIndexImpl());
+        new SPIMIIndex(compression, ds, indexerSingleBlock).buildIndexSPIMI(Constants.testPath);
 
 
         // Fetching
-        Fetcher fetcher = new FetcherTXT();
-        fetcher.start("./test/");
+        Fetcher fetcher = Fetcher.getFetcher(compression);
+        fetcher.start(Constants.testPath);
         Map.Entry<String, VocabularyEntry> entry;
         while((entry = fetcher.loadVocEntry()) != null){
             testOutput.put(entry.getKey(), entry.getValue());
@@ -142,6 +143,8 @@ public class SPIMICompleteTest {
 
         DocumentIndex fetchedIndex = new DocumentIndexImpl();
         Map.Entry<Integer, DocumentIndexEntry> entryDI;
+
+        fetcher.getInformations();      // Skip first two lines
         while((entryDI = fetcher.loadDocEntry()) != null){
             fetchedIndex.addDocument(entryDI.getKey(),entryDI.getValue().getDocumentLength());
         }
@@ -153,18 +156,18 @@ public class SPIMICompleteTest {
     @Test
     public void testBuildManyBlocks_DEBUG(){
 
-        String mode = "DEBUG";
+        CompressionType compression = CompressionType.DEBUG;
 
         // Dumping
-        indexerSingleBlock = new InMemoryIndexing(new VocabularyImpl(), new DumperTXT(), new DocumentIndexImpl());
-        SPIMIIndex spimi = new SPIMIIndex("DEBUG", ds, indexerSingleBlock);
+        indexerSingleBlock = new InMemoryIndexing(new VocabularyImpl(), Dumper.getInstance(compression), new DocumentIndexImpl());
+        SPIMIIndex spimi = new SPIMIIndex(compression, ds, indexerSingleBlock);
         spimi.setLimit(1);
-        spimi.buildIndexSPIMI("./test/");
+        spimi.buildIndexSPIMI(Constants.testPath);
 
 
         // Fetching
-        Fetcher fetcher = new FetcherTXT();
-        fetcher.start("./test/");
+        Fetcher fetcher = Fetcher.getFetcher(compression);
+        fetcher.start(Constants.testPath);
         Map.Entry<String, VocabularyEntry> entry;
         while((entry = fetcher.loadVocEntry()) != null){
             testOutput.put(entry.getKey(), entry.getValue());
@@ -172,6 +175,8 @@ public class SPIMICompleteTest {
 
         DocumentIndex fetchedIndex = new DocumentIndexImpl();
         Map.Entry<Integer, DocumentIndexEntry> entryDI;
+
+        fetcher.getInformations();      // Skip first two lines
         while((entryDI = fetcher.loadDocEntry()) != null){
             fetchedIndex.addDocument(entryDI.getKey(),entryDI.getValue().getDocumentLength());
         }
@@ -181,44 +186,47 @@ public class SPIMICompleteTest {
 
     @Test
     public void testBuildSingleBlock_BINARY(){
-        String mode = "DEBUG";
+
+        CompressionType compression = CompressionType.BINARY;
 
         // Dumping
-        indexerSingleBlock = new InMemoryIndexing(new VocabularyImpl(), new DumperBinary(), new DocumentIndexImpl());
-        new SPIMIIndex("NOT_COMPRESSED", ds, indexerSingleBlock).buildIndexSPIMI("./test/");
+        indexerSingleBlock = new InMemoryIndexing(new VocabularyImpl(), Dumper.getInstance(compression), new DocumentIndexImpl());
+        new SPIMIIndex(compression, ds, indexerSingleBlock).buildIndexSPIMI(Constants.testPath);
 
 
         // Fetching
-        Fetcher fetcher = new FetcherBinary();
-        fetcher.start("./test/");
+        Fetcher fetcher = Fetcher.getFetcher(compression);
+        fetcher.start(Constants.testPath);
         Map.Entry<String, VocabularyEntry> entry;
-        while((entry = fetcher.loadVocEntry()) != null){
+        while ( (entry = fetcher.loadVocEntry()) != null )
             testOutput.put(entry.getKey(), entry.getValue());
-        }
+
         int[] docIndexInfo = fetcher.getInformations();
         DocumentIndex fetchedIndex = new DocumentIndexImpl();
         Map.Entry<Integer, DocumentIndexEntry> entryDI;
-        while((entryDI = fetcher.loadDocEntry()) != null){
+        while ( (entryDI = fetcher.loadDocEntry()) != null )
             fetchedIndex.addDocument(entryDI.getKey(),entryDI.getValue().getDocumentLength());
-        }
+
         fetcher.end();
         Assert.assertEquals(correctVocabulary.getEntries(), testOutput.entrySet());
-        assertTrue( Objects.equals(correctDocumentIndex, fetchedIndex));
+        assertEquals(correctDocumentIndex, fetchedIndex);
     }
 
     @Test
     public void testBuildManyBlocks_BINARY(){
 
+        CompressionType compression = CompressionType.BINARY;
+
         // Dumping
-        indexerSingleBlock = new InMemoryIndexing(new VocabularyImpl(), new DumperBinary(), new DocumentIndexImpl());
-        SPIMIIndex spimi = new SPIMIIndex("NOT_COMPRESSED", ds, indexerSingleBlock);
+        indexerSingleBlock = new InMemoryIndexing(new VocabularyImpl(), Dumper.getInstance(compression), new DocumentIndexImpl());
+        SPIMIIndex spimi = new SPIMIIndex(compression, ds, indexerSingleBlock);
         spimi.setLimit(1);
-        spimi.buildIndexSPIMI("./test/");
+        spimi.buildIndexSPIMI(Constants.testPath);
 
 
         // Fetching
-        Fetcher fetcher = new FetcherBinary();
-        fetcher.start("./test/");
+        Fetcher fetcher = Fetcher.getFetcher(compression);
+        fetcher.start(Constants.testPath);
         Map.Entry<String, VocabularyEntry> entry;
         while((entry = fetcher.loadVocEntry()) != null){
             testOutput.put(entry.getKey(), entry.getValue());
@@ -230,24 +238,27 @@ public class SPIMICompleteTest {
             fetchedIndex.addDocument(entryDI.getKey(),entryDI.getValue().getDocumentLength());
         }
         fetcher.end();
-        assertTrue(Objects.equals(correctVocabulary.getEntries(), testOutput.entrySet()));
+
+        Assert.assertEquals(correctVocabulary.getEntries(), testOutput.entrySet());
         System.out.println(correctDocumentIndex);
         System.out.println(fetchedIndex);
-        assertTrue( Objects.equals(correctDocumentIndex, fetchedIndex));
+        Assert.assertEquals(correctDocumentIndex, fetchedIndex);
     }
 
     @Test
     public void testBuildSingleBlock_COMPRESSED(){
         Constants.setCompression(true);
-        String mode = "DEBUG";
+
+        CompressionType compression = CompressionType.COMPRESSED;
+
         // Dumping
-        indexerSingleBlock = new InMemoryIndexing(new VocabularyImpl(), new DumperCompressed(), new DocumentIndexImpl());
-        new SPIMIIndex("COMPRESSED", ds, indexerSingleBlock).buildIndexSPIMI("./test/");
+        indexerSingleBlock = new InMemoryIndexing(new VocabularyImpl(), Dumper.getInstance(compression), new DocumentIndexImpl());
+        new SPIMIIndex(compression, ds, indexerSingleBlock).buildIndexSPIMI(Constants.testPath);
 
 
         // Fetching
-        Fetcher fetcher = new FetcherCompressed();
-        fetcher.start("./test/");
+        Fetcher fetcher = Fetcher.getFetcher(compression);
+        fetcher.start(Constants.testPath);
         Map.Entry<String, VocabularyEntry> entry;
         while((entry = fetcher.loadVocEntry()) != null){
             testOutput.put(entry.getKey(), entry.getValue());
@@ -259,29 +270,33 @@ public class SPIMICompleteTest {
             fetchedIndex.addDocument(entryDI.getKey(),entryDI.getValue().getDocumentLength());
         }
         fetcher.end();
+
         System.out.println(testOutput.entrySet());
         System.out.println(correctVocabulary.getEntries());
-        assertTrue(Objects.equals(correctVocabulary.getEntries(), testOutput.entrySet()));
+        Assert.assertEquals(correctVocabulary.getEntries(), testOutput.entrySet());
         System.out.println(correctDocumentIndex);
         System.out.println(fetchedIndex);
 
-        assertTrue( Objects.equals(correctDocumentIndex, fetchedIndex));
+        Assert.assertEquals(correctDocumentIndex, fetchedIndex);
         Constants.setCompression(false);
     }
 
     @Test
     public void testBuildManyBlocks_COMPRESSED(){
+
         Constants.setCompression(true);
+        CompressionType compression = CompressionType.COMPRESSED;
+
         // Dumping
-        indexerSingleBlock = new InMemoryIndexing(new VocabularyImpl(), new DumperCompressed(), new DocumentIndexImpl());
-        SPIMIIndex spimi = new SPIMIIndex("COMPRESSED", ds, indexerSingleBlock);
+        indexerSingleBlock = new InMemoryIndexing(new VocabularyImpl(), Dumper.getInstance(compression), new DocumentIndexImpl());
+        SPIMIIndex spimi = new SPIMIIndex(compression, ds, indexerSingleBlock);
         spimi.setLimit(1);
-        spimi.buildIndexSPIMI("./test/");
+        spimi.buildIndexSPIMI(Constants.testPath);
 
 
         // Fetching
-        Fetcher fetcher = new FetcherCompressed();
-        fetcher.start("./test/");
+        Fetcher fetcher = Fetcher.getFetcher(compression);
+        fetcher.start(Constants.testPath);
         Map.Entry<String, VocabularyEntry> entry;
         while((entry = fetcher.loadVocEntry()) != null){
             testOutput.put(entry.getKey(), entry.getValue());
@@ -294,20 +309,13 @@ public class SPIMICompleteTest {
         }
         fetcher.end();
 
-
-        assertTrue(Objects.equals(correctVocabulary.getEntries(), testOutput.entrySet()) && Objects.equals(correctDocumentIndex, fetchedIndex));
+        Assert.assertEquals(correctVocabulary.getEntries(), testOutput.entrySet());
+        Assert.assertEquals(correctDocumentIndex, fetchedIndex);
     }
-
-
 
 
     @After
     public void flush() {
-        try{
-            FileUtils.deleteDirectory(new File("./test/"));
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
+        IOUtils.deleteDirectory(Constants.testPath);
     }
 }

@@ -2,6 +2,7 @@ package it.unipi.utils;
 
 
 import it.unipi.model.DocumentIndex;
+import it.unipi.model.PostingList;
 import it.unipi.model.Vocabulary;
 import it.unipi.model.implementation.DocumentIndexEntry;
 import it.unipi.model.implementation.VocabularyEntry;
@@ -10,6 +11,7 @@ import it.unipi.model.implementation.PostingListImpl;
 import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.nio.file.Path;
 import java.util.Map;
 
 public class DumperTXT implements Dumper {
@@ -18,21 +20,25 @@ public class DumperTXT implements Dumper {
     private BufferedWriter writerDIX;
     private BufferedWriter writerDIDS;
     private BufferedWriter writerTF;
+
     private boolean opened = false;
     private long writtenTF;
     private long writtenDIDS;
 
     @Override
-    public boolean start(String path) {
+    public boolean start(Path path) {
         // ./data/blocks/_
         try {
+            IOUtils.createDirectory(path);
+
             if (opened)
                 throw new IOException();
 
-            writerVOC  = new BufferedWriter(new FileWriter(path + Constants.VOCABULARY_FILENAME));
-            writerDIX  = new BufferedWriter(new FileWriter(path + Constants.DOCUMENT_INDEX_FILENAME));
-            writerDIDS = new BufferedWriter(new FileWriter(path + Constants.DOC_IDS_POSTING_FILENAME));
-            writerTF   = new BufferedWriter(new FileWriter(path + Constants.TF_POSTING_FILENAME));
+            writerVOC  = new BufferedWriter(new FileWriter(path.resolve(Constants.VOCABULARY_FILENAME).toFile()));
+            writerDIX  = new BufferedWriter(new FileWriter(path.resolve(Constants.DOCUMENT_INDEX_FILENAME).toFile()));
+            writerDIDS = new BufferedWriter(new FileWriter(path.resolve(Constants.DOC_IDS_POSTING_FILENAME).toFile()));
+            writerTF   = new BufferedWriter(new FileWriter(path.resolve(Constants.TF_POSTING_FILENAME).toFile()));
+
             opened = true;
 
         } catch(IOException ie) {
@@ -60,7 +66,7 @@ public class DumperTXT implements Dumper {
 
             PostingListImpl postingListImpl = (PostingListImpl) vocEntry.getPostingList();
             long[] offsets = dumpPostings(postingListImpl);
-            int length = postingListImpl.getDocIds().size();
+            int length = postingListImpl.getDocIdsDecompressedList().size();
 
             String result =  new StringBuilder().append(term).append(",")
                     .append(termFrequency).append(",")
@@ -77,14 +83,14 @@ public class DumperTXT implements Dumper {
         }
     }
 
-    private long[] dumpPostings(PostingListImpl postingListImpl) throws IOException {
+    private long[] dumpPostings(PostingList postingList) throws IOException {
         long offsetID = writtenDIDS;
         long offsetTF = writtenTF;
-        int length = postingListImpl.getDocIds().size();
+        int length = postingList.getDocIdsDecompressedList().size();
 
         for(int i = 0; i < length; i++) {
-            String bufferID = postingListImpl.getDocIds().get(i) + "\n";
-            String bufferTF = postingListImpl.getTermFrequencies().get(i) + "\n";
+            String bufferID = postingList.getDocIdsDecompressedList().get(i) + "\n";
+            String bufferTF = postingList.getTermFrequenciesDecompressedList().get(i) + "\n";
             writerDIDS.write(bufferID);
             writerTF.write(bufferTF);
             writtenDIDS += bufferID.getBytes().length;

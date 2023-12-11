@@ -5,6 +5,7 @@ import it.unipi.model.implementation.*;
 import it.unipi.utils.Dumper;
 
 import java.io.*;
+import java.nio.file.Path;
 import java.util.*;
 
 import static java.lang.System.exit;
@@ -202,8 +203,8 @@ public class InMemoryIndexing {
 
      */
     private Vocabulary vocabulary;
-    private Dumper dumper;
-    private Tokenizer tokenizer;
+    private final Dumper dumper;
+    private final Tokenizer tokenizer;
     private DocumentIndex docIndex;
 
     public InMemoryIndexing(Vocabulary voc, Dumper d, DocumentIndex di){
@@ -213,7 +214,7 @@ public class InMemoryIndexing {
         docIndex = di;
     }
 
-    boolean setup(String filename){
+    boolean setup(Path filename){
         return dumper.start(filename);
     }
 
@@ -222,10 +223,10 @@ public class InMemoryIndexing {
     }
 
     // FIXME: This function is only used when you write the fully index in memory
-    public void buildIndex(DocumentStream tokenStream, String filename){
+    public void buildIndex(DocumentStream tokenStream, Path filePath) {
         Optional<Document> document;
 
-        if(!setup(filename)) {
+        if (!setup(filePath)) {
             System.err.println("Something strange in opening the file");
             exit(1);
         }
@@ -236,14 +237,14 @@ public class InMemoryIndexing {
         dumpVocabulary();
         dumpDocumentIndex();
 
-        if(!close()){
+        if (!close()) {
             System.err.println("Something strange in closing the file");
             exit(1);
         }
     }
 
     public boolean processDocument(Document document) {
-        if(document == null || document.getText().equals(""))
+        if(document == null || document.getText().isEmpty())
             return false;
         List<String> tokenized = tokenizer.tokenizeBySpace(document.getText());
 

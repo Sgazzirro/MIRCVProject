@@ -5,6 +5,7 @@ import it.unipi.model.implementation.DocumentIndexEntry;
 import it.unipi.model.implementation.VocabularyEntry;
 
 import java.io.*;
+import java.nio.file.Path;
 import java.util.Map;
 
 public class FetcherTXT implements Fetcher {
@@ -12,16 +13,18 @@ public class FetcherTXT implements Fetcher {
     BufferedReader globalReaderVOC;
     BufferedReader globalReaderDOC;
     boolean opened = false;
-    String path;
+    Path path;
 
     @Override
-    public boolean start(String path) {
+    public boolean start(Path path) {
         try{
             if (opened)
                 throw new IOException();
+
             // System.out.println("TRYING TO OPEN" + path);
-            globalReaderVOC = new BufferedReader(new FileReader(path + Constants.VOCABULARY_FILENAME));
-            globalReaderDOC = new BufferedReader(new FileReader(path + Constants.DOCUMENT_INDEX_FILENAME));
+            globalReaderVOC = new BufferedReader(new FileReader(path.resolve(Constants.VOCABULARY_FILENAME).toFile()));
+            globalReaderDOC = new BufferedReader(new FileReader(path.resolve(Constants.DOCUMENT_INDEX_FILENAME).toFile()));
+
             opened = true;
             this.path = path;
         }
@@ -36,7 +39,7 @@ public class FetcherTXT implements Fetcher {
         loadPosting(list, path);
     }
 
-    public void loadPosting(PostingList list, String path) {
+    public void loadPosting(PostingList list, Path path) {
 
         // The loading of a posting list uses two inner buffers
 
@@ -44,8 +47,8 @@ public class FetcherTXT implements Fetcher {
         int len = list.getDocIdsLength();
 
         try (
-                BufferedReader readerIds = new BufferedReader(new FileReader(path + Constants.DOC_IDS_POSTING_FILENAME));
-                BufferedReader readerTf = new BufferedReader(new FileReader(path + Constants.TF_POSTING_FILENAME))
+                BufferedReader readerIds = new BufferedReader(new FileReader(path.resolve(Constants.DOC_IDS_POSTING_FILENAME).toFile()));
+                BufferedReader readerTf = new BufferedReader(new FileReader(path.resolve(Constants.TF_POSTING_FILENAME).toFile()))
         ) {
             readerIds.skip(offsets[0]);
             readerTf.skip(offsets[1]);
@@ -107,6 +110,7 @@ public class FetcherTXT implements Fetcher {
         if (!opened)
             if (!start(path))
                 return null;
+
         try {
             // Read next line
             String line = globalReaderVOC.readLine();

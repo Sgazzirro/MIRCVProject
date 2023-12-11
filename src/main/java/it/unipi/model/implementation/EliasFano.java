@@ -15,7 +15,6 @@ public class EliasFano implements Encoder {
         int originalU = array.get(array.size() - 1);
         int U = originalU > 0 ? originalU : 1;
         // It could happen that U is 0 (if we only have one docId=0), in this case set U=1
-        // TODO - Check that in this way we don't break anything
         int n = array.size();
 
         // number of bits

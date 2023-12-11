@@ -6,6 +6,7 @@ import it.unipi.utils.Constants;
 import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
 
@@ -43,15 +44,14 @@ public class PostingListImpl extends PostingList {
         //if (!(toMerge instanceof PostingListImpl))
         //    throw new RuntimeException("Cannot merge PostingLists with different implementations");
 
-        PostingListImpl other = (PostingListImpl) toMerge;
-        docIdsDecompressedList.addAll(other.getDocIds());
-        termFrequenciesDecompressedList.addAll(other.getTermFrequencies());
+        docIdsDecompressedList.addAll(toMerge.getDocIdsDecompressedList());
+        termFrequenciesDecompressedList.addAll(toMerge.getTermFrequenciesDecompressedList());
         return docIdsDecompressedList.size();
     }
 
 
     @Override
-    public boolean loadPosting(String path) {
+    public boolean loadPosting(Path path) {
         return true;
         /*
         // Method that loads the posting list in memory if not present
@@ -184,14 +184,6 @@ public class PostingListImpl extends PostingList {
             termFrequenciesDecompressedList.set(lastIndex, termFrequenciesDecompressedList.get(lastIndex) + termFrequency);
             return false;
         }
-    }
-
-    public List<Integer> getDocIds() {
-        return docIdsDecompressedList;
-    }
-
-    public List<Integer> getTermFrequencies() {
-        return termFrequenciesDecompressedList;
     }
 
     @Override

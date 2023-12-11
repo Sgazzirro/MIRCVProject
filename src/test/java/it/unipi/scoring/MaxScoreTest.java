@@ -22,6 +22,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
 public class MaxScoreTest {
+
     Vocabulary vocDumped;
     VocabularyImpl vocFetched;
     MaxScore maxScore;
@@ -38,12 +39,12 @@ public class MaxScoreTest {
         vocDumped.addEntry("a", 2);
         vocDumped.addEntry("c",(int)Math.pow(2,30));
 
-        dumper.start("./data/test/");
+        dumper.start(Constants.testPath);
         dumper.dumpVocabulary(vocDumped);
         dumper.end();
 
         vocFetched = new VocabularyImpl();
-        fetcher.start("./data/test/");
+        fetcher.start(Constants.testPath);
         for(int i=0; i<3; i++){
             Map.Entry<String, VocabularyEntry> output = fetcher.loadVocEntry();
             vocFetched.setEntry(output.getKey(), output.getValue());

@@ -58,7 +58,7 @@ public class ByteUtils {
         return new String(marcoIdea, StandardCharsets.UTF_8).trim();
     }
 
-    public static VocabularyEntry bytesToVocabularyEntry(byte[] byteList) {
+    public static VocabularyEntry bytesToVocabularyEntry(byte[] byteList, CompressionType compression) {
         ByteBuffer bytes = ByteBuffer.wrap(byteList);
         bytes.position(Constants.BYTES_STORED_STRING);
         int documentFrequency = bytes.getInt();
@@ -72,8 +72,15 @@ public class ByteUtils {
         VocabularyEntry entry = new VocabularyEntry();
         entry.setDocumentFrequency(documentFrequency);
         entry.setUpperBound(upperBound);
-        PostingList postingList = new PostingListCompressed(docIdsOffset, termFreqOffset, docIdsLength, termFreqLength, idf);
+
+        PostingList postingList = PostingList.getInstance(compression);
+        postingList.setDocIdsOffset(docIdsOffset);
+        postingList.setTermFreqOffset(termFreqOffset);
+        postingList.setDocIdsLength(docIdsLength);
+        postingList.setTermFreqLength(termFreqLength);
+        postingList.setIdf(idf);
         entry.setPostingList(postingList);
+
         return entry;
     }
 

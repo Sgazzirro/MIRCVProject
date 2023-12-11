@@ -3,34 +3,43 @@ package it.unipi.utils;
 import it.unipi.model.PostingList;
 import it.unipi.model.implementation.VocabularyEntry;
 import it.unipi.model.implementation.DocumentIndexEntry;
-import it.unipi.model.implementation.PostingListImpl;
 
-import java.io.DataInputStream;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.nio.ByteBuffer;
+import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.Map;
 
-public class FetcherBinary implements Fetcher{
-    FileInputStream vocabularyReader;
-    FileInputStream docIdsReader;
-    FileInputStream termFreqReader;
-    FileInputStream documentIndexReader;
-    boolean opened = false;
+public class FetcherBinary implements Fetcher {
 
+    private   FileInputStream vocabularyReader;
+    private   InputStream documentIndexReader;
+    protected FileInputStream docIdsReader;
+    protected FileInputStream termFreqReader;
+
+    protected boolean opened = false;
+    protected CompressionType compression;
+
+    private Path path;
     private int vocabularySize;
+
+    public FetcherBinary() {
+        compression = CompressionType.BINARY;
+    }
+
     @Override
-    public boolean start(String path) {
+    public boolean start(Path path) {
+        this.path = path;
+
         try {
-            Path vocpath = Paths.get(path + Constants.VOCABULARY_FILENAME);
-            vocabularySize =(int) Files.size(vocpath)/Constants.VOCABULARY_ENTRY_BYTES_SIZE;
-            vocabularyReader = new FileInputStream(path + Constants.VOCABULARY_FILENAME);
-            docIdsReader = new FileInputStream(path + Constants.DOC_IDS_POSTING_FILENAME);
-            termFreqReader = new FileInputStream(path + Constants.TF_POSTING_FILENAME);
-            documentIndexReader = new FileInputStream(path + Constants.DOCUMENT_INDEX_FILENAME);
+            Path vocpath = path.resolve(Constants.VOCABULARY_FILENAME);
+            vocabularySize = (int) Files.size(vocpath)/Constants.VOCABULARY_ENTRY_BYTES_SIZE;
+
+            vocabularyReader    = new FileInputStream(vocpath.toFile());
+            docIdsReader        = new FileInputStream(path.resolve(Constants.DOC_IDS_POSTING_FILENAME).toFile());
+            termFreqReader      = new FileInputStream(path.resolve(Constants.TF_POSTING_FILENAME).toFile());
+            documentIndexReader = new BufferedInputStream(
+                    new FileInputStream(path.resolve(Constants.DOCUMENT_INDEX_FILENAME).toFile())
+            );
             opened = true;
 
         } catch (IOException ie) {
@@ -40,6 +49,23 @@ public class FetcherBinary implements Fetcher{
         return opened;
     }
 
+    @Override
+    public boolean end() {
+        try {
+            if (opened) {
+                vocabularyReader.close();
+                docIdsReader.close();
+                termFreqReader.close();
+                documentIndexReader.close();
+                opened = false;
+            } else
+                throw new IOException();
+        } catch (IOException ie) {
+            ie.printStackTrace();
+        }
+        return !opened;
+    }
+
 
 
     @Override
@@ -47,6 +73,7 @@ public class FetcherBinary implements Fetcher{
         // questo secondo me non va usato, dobbiamo implementare l'interfaccia con quello sotto.
         // termFreqLength non la uso ma sicuro nella compressa servirà
     }
+
     public void loadPosting(PostingList list, long docIdsOffset, int docIdsLength, long termFreqOffset, int termFreqLength) {
         try {
             docIdsReader.getChannel().position(docIdsOffset);
@@ -79,14 +106,13 @@ public class FetcherBinary implements Fetcher{
 
     @Override
     public VocabularyEntry loadVocEntry(String term) {
-        try{
-            if(!opened){
-                throw new IOException();
-            }
+        try {
+            if (!opened)
+                throw new IOException("Fetcher has not been started");
+
             // Binary search to find the term
             // Remember to consider also the int at the beginning of file denoting vocabulary size
             int start = 0, end = vocabularySize;
-
             int middle;
             byte[] vocabularyEntryBytes = new byte[Constants.VOCABULARY_ENTRY_BYTES_SIZE];
 
@@ -99,15 +125,19 @@ public class FetcherBinary implements Fetcher{
             while (start < end) {
                 middle = (end + start) / 2;
                 vocabularyReader.getChannel().position((long) middle * Constants.VOCABULARY_ENTRY_BYTES_SIZE);
-                vocabularyReader.read(vocabularyEntryBytes, 0, Constants.VOCABULARY_ENTRY_BYTES_SIZE);
+                if (vocabularyReader.read(vocabularyEntryBytes, 0, Constants.VOCABULARY_ENTRY_BYTES_SIZE) != Constants.VOCABULARY_ENTRY_BYTES_SIZE)
+                    throw new IOException("Could not read vocabulary entry");
 
                 int comparison = truncatedTerm.compareTo(ByteUtils.bytesToString(vocabularyEntryBytes, 0, Constants.BYTES_STORED_STRING));
                 if (comparison > 0)         // This means term > entry
                     start = middle;
                 else if (comparison < 0)    // This means term < entry
                     end = middle;
-                else                        // This means term = entry
-                    return bytesToVocabularyEntry(vocabularyEntryBytes);
+                else {                      // This means term = entry
+                    VocabularyEntry result = ByteUtils.bytesToVocabularyEntry(vocabularyEntryBytes, compression);
+                    result.getPostingList().loadPosting(path);
+                    return result;
+                }
             }
         } catch (IOException e) {
             e.printStackTrace();
@@ -115,45 +145,26 @@ public class FetcherBinary implements Fetcher{
         return null;
     }
 
-    private VocabularyEntry bytesToVocabularyEntry(byte[] byteList) {
-        ByteBuffer bytes = ByteBuffer.wrap(byteList);
-        bytes.position(Constants.BYTES_STORED_STRING);
-        int documentFrequency = bytes.getInt();
-        double upperBound = bytes.getDouble();
-        double idf = bytes.getDouble();
-        long docIdsOffset = bytes.getLong();
-        int docIdsLength = bytes.getInt();
-        long termFreqOffset = bytes.getLong();
-        int termFreqLength = bytes.getInt();
-
-        VocabularyEntry entry = new VocabularyEntry();
-        entry.setDocumentFrequency(documentFrequency);
-        entry.setUpperBound(upperBound);
-
-        PostingList postingList = new PostingListImpl();
-        loadPosting(postingList, docIdsOffset, docIdsLength, termFreqOffset, termFreqLength);
-        entry.setPostingList(postingList);
-        return entry;
-    }
 
     @Override
     public Map.Entry<String, VocabularyEntry> loadVocEntry() {
-        VocabularyEntry vocabularyEntry = null;
-        String term = null;
-        try{
-            if(!opened){
-                throw new IOException();
-            }
-           /* byte [] termByte = new byte[Constants.BYTES_STORED_STRING];
-            if(vocabularyReader.read(termByte)!=Constants.BYTES_STORED_STRING) throw new IOException();
-            term = ByteUtils.bytesToString(termByte, 0, Constants.BYTES_STORED_STRING);
-            */
+        VocabularyEntry vocabularyEntry;
+        String term;
+        try {
+            if (!opened)
+                throw new IOException("Fetcher has not been started");
+
             byte[] vocabularyEntryBytes = new byte[Constants.VOCABULARY_ENTRY_BYTES_SIZE];
-            if(vocabularyReader.read(vocabularyEntryBytes)!=Constants.VOCABULARY_ENTRY_BYTES_SIZE) return null;
-            vocabularyEntry = bytesToVocabularyEntry(vocabularyEntryBytes);
+            if (vocabularyReader.read(vocabularyEntryBytes) != Constants.VOCABULARY_ENTRY_BYTES_SIZE)
+                return null;
+            vocabularyEntry = ByteUtils.bytesToVocabularyEntry(vocabularyEntryBytes, compression);
+            vocabularyEntry.getPostingList().loadPosting(path);
+
             term = ByteUtils.bytesToString(vocabularyEntryBytes, 0, Constants.BYTES_STORED_STRING);
-        } catch (IOException ie){
+
+        } catch (IOException ie) {
             ie.printStackTrace();
+            return null;
         }
         return Map.entry(term, vocabularyEntry);
     }
@@ -165,55 +176,43 @@ public class FetcherBinary implements Fetcher{
 
     @Override
     public Map.Entry<Integer, DocumentIndexEntry> loadDocEntry() {
-        DocumentIndexEntry documentIndexEntry = null;
-        int docId = 0;
+        DocumentIndexEntry documentIndexEntry;
+        byte[] docId, length;
+
         try {
-            if (!opened) {
-                throw new IOException();
-            }
+            if (!opened)
+                throw new IOException("Fetcher has not been started");
 
-            DataInputStream disDocIndex = new DataInputStream(documentIndexReader);
+            docId = new byte[Integer.BYTES];     // Store the 4 bytes of docId
+            if (documentIndexReader.read(docId) != Integer.BYTES)
+                return null;
 
-            docId = disDocIndex.readInt();
-            int length = disDocIndex.readInt();
-            documentIndexEntry= new DocumentIndexEntry();
-            documentIndexEntry.setDocumentLength(length);
-        } catch(IOException ie){
+            length = new byte[Integer.BYTES];    // Store the 4 bytes of document length
+            if (documentIndexReader.read(length) != Integer.BYTES)
+                return null;
+
+            documentIndexEntry = new DocumentIndexEntry();
+            documentIndexEntry.setDocumentLength(ByteUtils.bytesToInt(length));
+
+        } catch(IOException ie) {
+            ie.printStackTrace();
             return null;
         }
-        return Map.entry(docId, documentIndexEntry);
+
+        return Map.entry(ByteUtils.bytesToInt(docId), documentIndexEntry);
     }
 
     @Override
     public int[] getInformations() {
-        int N;
-        int l;
+        byte[] N = new byte[Integer.BYTES];
+        byte[] l = new byte[Integer.BYTES];
         try {
-            DataInputStream disDocIndex = new DataInputStream(documentIndexReader);
-            l = disDocIndex.readInt();
-            N = disDocIndex.readInt();
-        }
-        catch (IOException e) {
+            if (documentIndexReader.read(N) + documentIndexReader.read(l) != 2 * Integer.BYTES)
+                throw new IOException("Document index: error reading metadata");
+
+        } catch (IOException e) {
             throw new RuntimeException(e);
         }
-        return new int[]{N, l};
+        return new int[]{ByteUtils.bytesToInt(N), ByteUtils.bytesToInt(l)};
     }
-    @Override
-    public boolean end() {
-        try {
-            if (opened) {
-                vocabularyReader.close();
-                docIdsReader.close();
-                termFreqReader.close();
-                documentIndexReader.close();
-                opened = false;
-            } else
-                throw new IOException();
-        } catch (IOException ie) {
-            ie.printStackTrace();
-        }
-        return !opened;
-    }
-
-
 }

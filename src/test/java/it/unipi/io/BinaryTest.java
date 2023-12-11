@@ -12,6 +12,8 @@ import org.junit.*;
 import java.io.EOFException;
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.*;
 
 import static org.junit.Assert.assertEquals;
@@ -40,11 +42,11 @@ public class BinaryTest {
         voc.addEntry(testTerm, 2);
 
         VocabularyEntry entry = voc.getEntry(testTerm);
-        dumper.start("./data/test/");
+        dumper.start(Constants.testPath);
         dumper.dumpVocabulary(voc);
         dumper.end();
 
-        fetcher.start("./data/test/");
+        fetcher.start(Constants.testPath);
         Map.Entry<String, VocabularyEntry> output = fetcher.loadVocEntry();
         VocabularyEntry testEntry = output.getValue();
         fetcher.end();
@@ -73,11 +75,11 @@ public class BinaryTest {
         NavigableMap<String, VocabularyEntry> tree = new TreeMap<>();
         tree.put(testTerm, i);
         Map.Entry<String, VocabularyEntry> input = tree.entrySet().iterator().next();
-        dumper.start("./data/test/");
+        dumper.start(Constants.testPath);
         dumper.dumpVocabularyEntry(input);
         dumper.end();
 
-        fetcher.start("./data/test/");
+        fetcher.start(Constants.testPath);
         Map.Entry<String, VocabularyEntry> output = fetcher.loadVocEntry();
         fetcher.end();
 
@@ -98,11 +100,11 @@ public class BinaryTest {
 
         VocabularyEntry entry = voc.getEntry(testTerm2);
         Map.Entry<String, VocabularyEntry> input = new AbstractMap.SimpleEntry<>(testTerm2, entry);
-        dumper.start("./data/test/");
+        dumper.start(Constants.testPath);
         dumper.dumpVocabulary(voc);
         dumper.end();
 
-        fetcher.start("./data/test/");
+        fetcher.start(Constants.testPath);
         VocabularyEntry output = fetcher.loadVocEntry("dog");
         fetcher.end();
 
@@ -124,11 +126,11 @@ public class BinaryTest {
         VocabularyEntry entry = voc.getEntry(test);
         Map.Entry<String, VocabularyEntry> input = new AbstractMap.SimpleEntry<>(test, entry);
 
-        dumper.start("./data/test/");
+        dumper.start(Constants.testPath);
         dumper.dumpVocabulary(voc);
         dumper.end();
 
-        fetcher.start("./data/test/");
+        fetcher.start(Constants.testPath);
         Map.Entry<String, VocabularyEntry> output = fetcher.loadVocEntry();
         fetcher.end();
 
@@ -148,11 +150,11 @@ public class BinaryTest {
         VocabularyEntry entry = voc.getEntry(test);
         Map.Entry<String, VocabularyEntry> input = new AbstractMap.SimpleEntry<>(test, entry);
 
-        dumper.start("./data/test/");
+        dumper.start(Constants.testPath);
         dumper.dumpVocabulary(voc);
         dumper.end();
 
-        fetcher.start("./data/test/");
+        fetcher.start(Constants.testPath);
         Map.Entry<String, VocabularyEntry> output = fetcher.loadVocEntry();
         fetcher.end();
 
@@ -187,11 +189,11 @@ public class BinaryTest {
         VocabularyEntry entry = voc.getEntry(test2);
         Map.Entry<String, VocabularyEntry> input = new AbstractMap.SimpleEntry<>(test2, entry);
 
-        dumper.start("./data/test/");
+        dumper.start(Constants.testPath);
         dumper.dumpVocabulary(voc);
         dumper.end();
 
-        fetcher.start("./data/test/");
+        fetcher.start(Constants.testPath);
         Map.Entry<String, VocabularyEntry> output = fetcher.loadVocEntry(); // carica test2
         output = fetcher.loadVocEntry();                                    // carica test
         fetcher.end();
@@ -231,11 +233,11 @@ public class BinaryTest {
         VocabularyEntry entry = voc.getEntry(test);
         Map.Entry<String, VocabularyEntry> input = new AbstractMap.SimpleEntry<>(test, entry);
 
-        dumper.start("./data/test/");
+        dumper.start(Constants.testPath);
         dumper.dumpVocabulary(voc);
         dumper.end();
 
-        fetcher.start("./data/test/");
+        fetcher.start(Constants.testPath);
         Map.Entry<String, VocabularyEntry> output = fetcher.loadVocEntry();
         fetcher.end();
 
@@ -273,11 +275,11 @@ public class BinaryTest {
         VocabularyEntry entry = voc.getEntry(test);
         Map.Entry<String, VocabularyEntry> input = new AbstractMap.SimpleEntry<>(test, entry);
 
-        dumper.start("./data/test/");
+        dumper.start(Constants.testPath);
         dumper.dumpVocabulary(voc);
         dumper.end();
 
-        fetcher.start("./data/test/");
+        fetcher.start(Constants.testPath);
         Map.Entry<String, VocabularyEntry> output = fetcher.loadVocEntry();
         fetcher.end();
 
@@ -315,11 +317,11 @@ public class BinaryTest {
         VocabularyEntry entry = voc.getEntry(test);
         Map.Entry<String, VocabularyEntry> input = new AbstractMap.SimpleEntry<>(test, entry);
 
-        dumper.start("./data/test/");
+        dumper.start(Constants.testPath);
         dumper.dumpVocabulary(voc);
         dumper.end();
 
-        fetcher.start("./data/test/");
+        fetcher.start(Constants.testPath);
         Map.Entry<String, VocabularyEntry> output = fetcher.loadVocEntry();
         fetcher.end();
 
@@ -357,11 +359,11 @@ public class BinaryTest {
         VocabularyEntry entry = voc.getEntry(test);
         Map.Entry<String, VocabularyEntry> input = new AbstractMap.SimpleEntry<>(test, entry);
 
-        dumper.start("./data/test/");
+        dumper.start(Constants.testPath);
         dumper.dumpVocabulary(voc);
         dumper.end();
 
-        fetcher.start("./data/test/");
+        fetcher.start(Constants.testPath);
         Map.Entry<String, VocabularyEntry> output = fetcher.loadVocEntry();
         fetcher.end();
 
@@ -379,11 +381,7 @@ public class BinaryTest {
 
     @After
     public void flush() {
-        try{
-            FileUtils.deleteDirectory(new File("./data/test/"));
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        IOUtils.deleteDirectory(Constants.testPath);
     }
 
 
