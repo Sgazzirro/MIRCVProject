@@ -79,7 +79,7 @@ public class MaxScoreTest {
     @Test
     public void testMaxScore1(){
         int numResults = 10;
-        PriorityQueue<MaxScore.DocumentScore> results = maxScore.score("a", numResults);
+        PriorityQueue<DocumentScore> results = maxScore.score("a", numResults);
 
         // del secondo documento nemmeno faccio lo score, perchè so già che non potrà raggiungere la threshold
         assertEquals(1, results.size());
@@ -92,7 +92,7 @@ public class MaxScoreTest {
     @Test
     public void testMaxScore2(){
         int numResults = 10;
-        PriorityQueue<MaxScore.DocumentScore> results = maxScore.score("b", numResults);
+        PriorityQueue<DocumentScore> results = maxScore.score("b", numResults);
 
         assertEquals(1, results.size());
 
@@ -104,7 +104,7 @@ public class MaxScoreTest {
     @Test
     public void testMaxScore3(){
         int numResults = 10;
-        PriorityQueue<MaxScore.DocumentScore> results = maxScore.score("c", numResults);
+        PriorityQueue<DocumentScore> results = maxScore.score("c", numResults);
 
         assertEquals(1, results.size());
 
