@@ -2,6 +2,7 @@ package it.unipi.scoring;
 
 import it.unipi.model.PostingList;
 import it.unipi.model.implementation.*;
+import it.unipi.utils.DocumentScore;
 
 import java.io.EOFException;
 import java.util.*;
@@ -10,29 +11,6 @@ public class MaxScore{
     private final VocabularyImpl vocabularyImpl;
     //private final DocumentIndexImpl documentIndexImpl;
     private final TokenizerImpl tokenizerImpl;
-
-    static class DocumentScore implements Comparable<Scorer.DocumentScore> {
-        int docId;
-        double score;
-
-        public DocumentScore(int docId, double score) {
-            this.docId = docId;
-            this.score = score;
-        }
-
-        @Override
-        public int compareTo(Scorer.DocumentScore o) {
-            // Reverse order so documents with higher score are first
-            return Double.compare(o.score, score);
-        }
-
-        @Override
-        public String toString() {
-            return "{docId=" + docId +
-                    ", score=" + String.format("%.4f", score) +
-                    '}';
-        }
-    }
 
     public MaxScore(VocabularyImpl vocabularyImpl, TokenizerImpl tokenizerImpl) {
         this.vocabularyImpl = vocabularyImpl;

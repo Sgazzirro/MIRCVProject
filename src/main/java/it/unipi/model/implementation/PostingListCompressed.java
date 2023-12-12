@@ -95,8 +95,6 @@ public class PostingListCompressed extends PostingList {
     @Override
     public void next() throws EOFException{
         long docIdsEndOffset = getDocIdsLength();
-        System.out.println("NEXT: docIdsBlockPointer "+docIdsBlockPointer);
-        System.out.println("NEX: docIdsEndOffset "+docIdsEndOffset);
         if(docIdsBlockPointer==docIdsEndOffset && blockPointer==docIdsDecompressedList.size()-1) throw new EOFException();
         if (blockPointer + 1 < docIdsDecompressedList.size()) {
             blockPointer++;
