@@ -158,7 +158,10 @@ public class FetcherBinary implements Fetcher {
             if (vocabularyReader.read(vocabularyEntryBytes) != Constants.VOCABULARY_ENTRY_BYTES_SIZE)
                 return null;
             vocabularyEntry = ByteUtils.bytesToVocabularyEntry(vocabularyEntryBytes, compression);
-            vocabularyEntry.getPostingList().loadPosting(path);
+            loadPosting(vocabularyEntry.getPostingList(), vocabularyEntry.getPostingList().getDocIdsOffset(),
+                    vocabularyEntry.getPostingList().getDocIdsLength(), vocabularyEntry.getPostingList().getTermFreqOffset(),
+                    vocabularyEntry.getPostingList().getTermFreqLength());
+            //vocabularyEntry.getPostingList().loadPosting(path);
 
             term = ByteUtils.bytesToString(vocabularyEntryBytes, 0, Constants.BYTES_STORED_STRING);
 

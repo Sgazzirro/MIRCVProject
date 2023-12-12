@@ -314,6 +314,8 @@ public class SPIMICompleteTest {
     }
 
 
+
+
     @After
     public void flush() {
         IOUtils.deleteDirectory(Constants.testPath);

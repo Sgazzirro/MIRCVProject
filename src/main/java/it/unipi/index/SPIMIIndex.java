@@ -126,9 +126,10 @@ public class SPIMIIndex {
         // 1) create and invert a block. The block is then dumped in secondary memory
         // ---------------------
         while (!finished()) {
+            /*
             if (next_block == 2)
                 break;
-
+            */
             invertBlock(blocksPath.resolve("" + next_block));
         }
         // ---------------------
