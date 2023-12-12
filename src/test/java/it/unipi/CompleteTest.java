@@ -12,14 +12,16 @@ import it.unipi.model.implementation.VocabularyImpl;
 import it.unipi.scoring.MaxScore;
 import it.unipi.utils.*;
 import org.junit.*;
+import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.junit.MockitoJUnitRunner;
 
 import javax.print.Doc;
 import java.util.PriorityQueue;
 
 import static org.mockito.Mockito.when;
-
+@RunWith(MockitoJUnitRunner.class)
 public class CompleteTest {
     @Mock
     static DocumentStream ds;
@@ -42,7 +44,6 @@ public class CompleteTest {
                 null
         );
         Constants.setCompression(true);
-        System.out.println("CORRENTE STATO DELLA COMPRESSIONE: " + Constants.getCompression());
         CompressionType compression = CompressionType.COMPRESSED;
         // Dumping
         indexerSingleBlock = new InMemoryIndexing(new VocabularyImpl(), Dumper.getInstance(compression), new DocumentIndexImpl());
