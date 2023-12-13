@@ -16,13 +16,15 @@ public class TokenizerImpl implements Tokenizer {
     PorterStemmer stemmer = new PorterStemmer();
 
     private final boolean applyStemming;
+    private final boolean removeStopwords;
 
     public TokenizerImpl() {
-        this(true);
+        this(true, true);
     }
 
-    public TokenizerImpl(boolean applyStemming) {
+    public TokenizerImpl(boolean applyStemming, boolean removeStopwords) {
         this.applyStemming = applyStemming;
+        this.removeStopwords = removeStopwords;
     }
 
     @Override
@@ -33,8 +35,9 @@ public class TokenizerImpl implements Tokenizer {
         // Remove punctuation
         String removedPunctuation = cleanedHTML.replaceAll("[\\p{Punct}]", " ");
 
-        Stream<String> stream = Arrays.stream(removedPunctuation.toLowerCase().split("\\s+"))
-                .filter(s -> !stopwords.contains(s));
+        Stream<String> stream = Arrays.stream(removedPunctuation.toLowerCase().split("\\s+"));
+        if (removeStopwords)
+            stream = stream.filter(s -> !stopwords.contains(s));
         if (applyStemming)
             stream = stream.map(s -> stemmer.stem(s));
 

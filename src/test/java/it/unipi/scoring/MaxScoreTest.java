@@ -51,7 +51,7 @@ public class MaxScoreTest {
         }
         fetcher.end();
 
-        TokenizerImpl tokenizer = new TokenizerImpl();
+        TokenizerImpl tokenizer = new TokenizerImpl(false, false);
         maxScore = new MaxScore(vocFetched, tokenizer);
 
         // setting idfs by hand
