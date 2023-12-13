@@ -163,6 +163,8 @@ public class SPIMIIndex {
         for(int i = 0; i < next_block; i++)
             readVocBuffers.get(i).end();
         globalIndexer.close();
+
+        Constants.N=N;
     }
 
 

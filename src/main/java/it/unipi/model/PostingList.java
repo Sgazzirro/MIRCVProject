@@ -11,7 +11,9 @@ import java.nio.file.Paths;
 import java.util.List;
 
 public abstract class PostingList{
-
+    // aggiunta per calcolare lo score
+    private int documentFrequency;
+    ///
     private long docIdsOffset;
     private long termFreqOffset;
     private int docIdsLength;
@@ -21,6 +23,13 @@ public abstract class PostingList{
 
     // A default constructor used when building the list
     public PostingList() {
+    }
+
+    public void setDocumentFrequency(int documentFrequency){
+        this.documentFrequency=documentFrequency;
+    }
+    public int getDocumentFrequency(){
+        return documentFrequency;
     }
 
     // A constructor used when we fetch information from vocabulary entry

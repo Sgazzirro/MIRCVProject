@@ -32,6 +32,7 @@ public class MaxScoreTest {
         Dumper dumper = new DumperCompressed();
         Fetcher fetcher = new FetcherCompressed();
         Constants.setCompression(CompressionType.COMPRESSED);
+        Constants.N = 2;
 
         vocDumped = new VocabularyImpl();
         vocDumped.addEntry("a", 1);
@@ -81,12 +82,12 @@ public class MaxScoreTest {
     public void testMaxScore1(){
         int numResults = 10;
         PriorityQueue<DocumentScore> results = maxScore.score("a", numResults);
-
-        // del secondo documento nemmeno faccio lo score, perchè so già che non potrà raggiungere la threshold
-        assertEquals(1, results.size());
+        assertEquals(2, results.size());
 
         assert results.peek() != null;
         assertEquals(1, results.peek().docId);
+        assertEquals(0, Objects.requireNonNull(results.poll()).score, 0.1);
+        assertEquals(2, results.peek().docId);
         assertEquals(0, Objects.requireNonNull(results.poll()).score, 0.1);
     }
 

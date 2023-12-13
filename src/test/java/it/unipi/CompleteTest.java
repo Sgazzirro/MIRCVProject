@@ -66,8 +66,6 @@ public class CompleteTest {
             Assert.assertEquals(0.0, documentScore.score, 0.01);
         }
         Assert.assertNull(results.poll());
-
-
     }
 
     @Test
@@ -95,15 +93,15 @@ public class CompleteTest {
         PriorityQueue<DocumentScore> results = maxScore.score(query, 10);
         Assert.assertEquals(results.size(), 2);
 
-        DocumentScore documentScore2 = results.poll();
         DocumentScore documentScore1 = results.poll();
+        DocumentScore documentScore2 = results.poll();
 
-        Assert.assertEquals(documentScore1.score, Math.pow(Math.log10(2.0),2), 0.01);
+        Assert.assertEquals(documentScore1.score, (1+Math.log10(2.0))*Math.log10(2.0), 0.01);
         Assert.assertEquals(documentScore2.score, Math.log10(2.0), 0.01);
 
         Assert.assertNull(results.poll());
     }
-    /*
+
     @Test
     public void testQueryEmpty(){
         // fetching
@@ -111,10 +109,8 @@ public class CompleteTest {
         MaxScore maxScore = new MaxScore(vocabulary, new TokenizerImpl());
 
         PriorityQueue<DocumentScore> results = maxScore.score(query, 10);
-        Assert.assertNull(results.poll());
+        Assert.assertNull(results);
     }
-
-     */
 
     @Test
     public void testQueryRabbitRecip(){

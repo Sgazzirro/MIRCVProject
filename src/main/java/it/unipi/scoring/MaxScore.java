@@ -8,6 +8,8 @@ import java.io.EOFException;
 import java.util.*;
 
 public class MaxScore{
+    ////////////////////////////////////////////////////
+    // TODO: GROSSO COME UNA CASA: LE POSTING LIST DOPO ESSER STATE VISTE DEVONO ESSERE RIPORTATE A 0, SENNò RIMANGONO PIANTATE INFONDO
     private final VocabularyImpl vocabularyImpl;
     //private final DocumentIndexImpl documentIndexImpl;
     private final TokenizerImpl tokenizerImpl;
@@ -30,12 +32,11 @@ public class MaxScore{
             System.out.println(query);
             for (String token : queryTokens) {
                 VocabularyEntry entry = vocabularyImpl.getEntry(token);
-                if (entry == null) {
-                    queryTokens.remove(token);
-                } else {
+                if(entry!=null) {
                     treeMap.put(entry.getUpperBound(), entry.getPostingList());
                 }
             }
+            if(treeMap.isEmpty()) return null;
             return maxScore(new ArrayList<>(treeMap.values()), new ArrayList<>(treeMap.keySet()), numResults);
         }
         ////////////////// CONJUNCTIVE MODE ///////////////////////
@@ -64,6 +65,7 @@ public class MaxScore{
     }
 
     private PriorityQueue<DocumentScore> maxScore(List<PostingList> p, List<Double> sigma, int K) {
+
         PriorityQueue<DocumentScore> scores = new PriorityQueue<>(K);
         List<Double> ub = computeUB(p, sigma);
         double theta = 0;
@@ -164,7 +166,6 @@ public class MaxScore{
 
     private List<Double> computeUB (List<PostingList> p, List<Double> sigma){
         List<Double> ub = new ArrayList<>(p.size());
-
         ub.add(0, sigma.get(0));
         for(int i=1; i< p.size(); i++){
             ub.add(i, (ub.get(i-1)+sigma.get(i)));

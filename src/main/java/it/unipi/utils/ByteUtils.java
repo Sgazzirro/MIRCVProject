@@ -83,6 +83,9 @@ public class ByteUtils {
         postingList.setDocIdsLength(docIdsLength);
         postingList.setTermFreqLength(termFreqLength);
         postingList.setIdf(idf);
+        /// modifica che ho fatto per calcolare lo score
+        postingList.setDocumentFrequency(documentFrequency);
+        ///
         entry.setPostingList(postingList);
 
         return entry;

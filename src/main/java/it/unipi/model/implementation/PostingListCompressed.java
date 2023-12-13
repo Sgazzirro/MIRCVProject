@@ -87,8 +87,7 @@ public class PostingListCompressed extends PostingList {
     @Override
     public double score() {
         double tf = 1+Math.log10(termFrequenciesDecompressedList.get(blockPointer));
-        // double idf = Constants.NumDocuments /
-        double idf = getIdf();
+        double idf = Math.log10((float)Constants.N/this.getDocumentFrequency());
         return tf*idf;
     }
 

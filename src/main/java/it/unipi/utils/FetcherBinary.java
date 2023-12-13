@@ -115,13 +115,19 @@ public class FetcherBinary implements Fetcher {
             System.arraycopy(term.getBytes(), 0, termBytes, 0, termNumBytes);
             String truncatedTerm = ByteUtils.bytesToString(termBytes, 0, Constants.BYTES_STORED_STRING);
 
-            while (start < end) {
+
+            while (true) {
                 middle = (end + start) / 2;
                 vocabularyReader.getChannel().position((long) middle * Constants.VOCABULARY_ENTRY_BYTES_SIZE);
                 if (vocabularyReader.read(vocabularyEntryBytes, 0, Constants.VOCABULARY_ENTRY_BYTES_SIZE) != Constants.VOCABULARY_ENTRY_BYTES_SIZE)
                     throw new IOException("Could not read vocabulary entry");
 
                 int comparison = truncatedTerm.compareTo(ByteUtils.bytesToString(vocabularyEntryBytes, 0, Constants.BYTES_STORED_STRING));
+
+                // condizione di stop
+                if(comparison!=0 && end-start==1){
+                    return null;
+                }
                 if (comparison > 0)         // This means term > entry
                     start = middle;
                 else if (comparison < 0)    // This means term < entry
