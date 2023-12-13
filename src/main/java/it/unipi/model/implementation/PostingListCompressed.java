@@ -142,8 +142,8 @@ public class PostingListCompressed extends PostingList {
     public boolean loadPosting(Path path) {
         try {
             fetcher.start(path);
-            compressedDocIds = fetcher.fetchCompressedDocIds(getDocIdsOffset(), getDocIdsOffset() + getDocIdsLength());
-            compressedTermFrequencies = fetcher.fetchCompressedTermFrequencies(getTermFreqOffset(), getTermFreqOffset() + getTermFreqLength());
+            compressedDocIds = fetcher.fetchCompressedDocIds(getDocIdsOffset(), getDocIdsLength());
+            compressedTermFrequencies = fetcher.fetchCompressedTermFrequencies(getTermFreqOffset(), getTermFreqLength());
             fetcher.end();
             docIdsBlockPointer = termFrequenciesBlockPointer = 0;
             loadNextBlock();

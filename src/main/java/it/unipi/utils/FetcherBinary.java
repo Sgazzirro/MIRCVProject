@@ -19,7 +19,7 @@ public class FetcherBinary implements Fetcher {
     protected boolean opened = false;
     protected CompressionType compression;
 
-    private Path path;
+    protected Path path;
     private int vocabularySize;
 
     public FetcherBinary() {
@@ -69,12 +69,11 @@ public class FetcherBinary implements Fetcher {
 
 
     @Override
-    public void loadPosting(PostingList list){
-        // questo secondo me non va usato, dobbiamo implementare l'interfaccia con quello sotto.
-        // termFreqLength non la uso ma sicuro nella compressa servirà
-    }
+    public void loadPosting(PostingList list) {
+        long docIdsOffset = list.getDocIdsOffset(),
+                termFreqOffset = list.getTermFreqOffset();
+        int docIdsLength = list.getDocIdsLength();
 
-    public void loadPosting(PostingList list, long docIdsOffset, int docIdsLength, long termFreqOffset, int termFreqLength) {
         try {
             docIdsReader.getChannel().position(docIdsOffset);
             DataInputStream disDocId = new DataInputStream(docIdsReader);
@@ -99,6 +98,7 @@ public class FetcherBinary implements Fetcher {
             }
             //disDocId.close();
             //disTermFreq.close();
+
         } catch (IOException ie){
             ie.printStackTrace();
         }
@@ -158,9 +158,7 @@ public class FetcherBinary implements Fetcher {
             if (vocabularyReader.read(vocabularyEntryBytes) != Constants.VOCABULARY_ENTRY_BYTES_SIZE)
                 return null;
             vocabularyEntry = ByteUtils.bytesToVocabularyEntry(vocabularyEntryBytes, compression);
-            loadPosting(vocabularyEntry.getPostingList(), vocabularyEntry.getPostingList().getDocIdsOffset(),
-                    vocabularyEntry.getPostingList().getDocIdsLength(), vocabularyEntry.getPostingList().getTermFreqOffset(),
-                    vocabularyEntry.getPostingList().getTermFreqLength());
+            loadPosting(vocabularyEntry.getPostingList());
             //vocabularyEntry.getPostingList().loadPosting(path);
 
             term = ByteUtils.bytesToString(vocabularyEntryBytes, 0, Constants.BYTES_STORED_STRING);

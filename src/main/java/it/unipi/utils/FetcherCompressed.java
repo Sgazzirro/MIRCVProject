@@ -1,5 +1,6 @@
 package it.unipi.utils;
 
+import it.unipi.model.PostingList;
 import it.unipi.model.implementation.PostingListCompressed;
 
 import java.io.*;
@@ -10,25 +11,25 @@ public class FetcherCompressed extends FetcherBinary {
         compression = CompressionType.COMPRESSED;
     }
 
-    private byte[] fetchBytes(FileInputStream stream, long startOffset, long endOffset) throws IOException {
+    private byte[] fetchBytes(FileInputStream stream, long startOffset, int length) throws IOException {
         if (!opened)
             throw new IOException("Fetcher has not been started");
 
-        byte[] bytes = new byte[(int) (endOffset - startOffset)];
+        byte[] bytes = new byte[length];
         stream.getChannel().position(startOffset);
 
-        if (stream.read(bytes) != endOffset - startOffset)
-            throw new IOException();
+        if (stream.read(bytes) != length)
+            throw new IOException("Could not fetch posting list");
 
         return bytes;
     }
 
-    public byte[] fetchCompressedDocIds(long startOffset, long endOffset) throws IOException {
-        return fetchBytes(docIdsReader, startOffset, endOffset);
+    public byte[] fetchCompressedDocIds(long startOffset, int length) throws IOException {
+        return fetchBytes(docIdsReader, startOffset, length);
     }
 
-    public byte[] fetchCompressedTermFrequencies(long startOffset, long endOffset) throws IOException {
-        return fetchBytes(termFreqReader, startOffset, endOffset);
+    public byte[] fetchCompressedTermFrequencies(long startOffset, int length) throws IOException {
+        return fetchBytes(termFreqReader, startOffset, length);
     }
 
     public PostingListCompressed.ByteBlock fetchDocIdsBlock(byte[] compressedDocIds, int docId, long docIdsBlockOffset) {
@@ -105,6 +106,25 @@ public class FetcherCompressed extends FetcherBinary {
             e.printStackTrace();
         }
         return null;
+    }
+
+    @Override
+    public void loadPosting(PostingList list) {
+        list.loadPosting(this.path);
+        /*
+        long docIdsOffset = list.getDocIdsOffset(),
+                termFreqOffset = list.getTermFreqOffset();
+        int docIdsLength = list.getDocIdsLength(),
+                termFreqLength = list.getTermFreqLength();
+
+        try {
+            byte[] compressedDocIds = fetchCompressedDocIds(docIdsOffset, docIdsLength);
+            byte[] termFreqBytes = fetchCompressedTermFrequencies(termFreqOffset, termFreqLength);
+
+        } catch (IOException ie) {
+            ie.printStackTrace();
+        }
+         */
     }
 
 }
