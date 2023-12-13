@@ -150,27 +150,6 @@ public class PostingListCompressed extends PostingList {
         return false;
     }
 
-    @Override
-    public boolean loadPosting() {
-        /*
-        try {
-            fetcher.start(Constants.getPath());
-            compressedDocIds = fetcher.fetchCompressedDocIds(getDocIdsOffset(), getDocIdsLength());
-            compressedTermFrequencies = fetcher.fetchCompressedTermFrequencies(getTermFreqOffset(), getTermFreqLength());
-            fetcher.end();
-
-            loadNextBlock();
-            blockPointer = -1;
-
-            return true;
-
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-         */
-        return false;
-    }
-
     public void loadNextBlock() {
         FetcherCompressed fetcher = (FetcherCompressed) Fetcher.getFetcher(CompressionType.COMPRESSED);
         fetcher.start(Constants.getPath());

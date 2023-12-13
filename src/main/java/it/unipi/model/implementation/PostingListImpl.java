@@ -46,54 +46,6 @@ public class PostingListImpl extends PostingList {
         return docIdsDecompressedList.size();
     }
 
-
-    @Override
-    public boolean loadPosting() {
-        return true;
-        /*
-        // Method that loads the posting list in memory if not present
-        if (docIdsDecompressedList == null) {
-            docIdsDecompressedList = new ArrayList<>();
-            termFrequenciesDecompressedList = new ArrayList<>();
-
-            try (
-                    BufferedReader docIdsReader = new BufferedReader(new InputStreamReader(Files.newInputStream(Paths.get(docIdsFilename)), StandardCharsets.UTF_8));
-                    BufferedReader termFreqReader = new BufferedReader(new InputStreamReader(Files.newInputStream(Paths.get(termFreqFilename)), StandardCharsets.UTF_8))
-            ) {
-                // Skip lines to reach the start of the posting list
-                long docIdsOffset = getDocIdsOffset();
-                long termFreqOffset = getTermFreqOffset();
-                int length = getDocIdsLength();     // It should be the same as termFrequenciesLength
-                docIdsReader.skip(docIdsOffset);
-                termFreqReader.skip(termFreqOffset);
-                int count = 0;
-
-                String docIdsLine, termFreqLine;
-                while (count < length) {
-                    docIdsLine = docIdsReader.readLine();
-                    termFreqLine = termFreqReader.readLine();
-                    if (docIdsLine == null || termFreqLine == null)
-                        throw new IOException("There has been an error loading the posting list: length is too high, EOF reached");
-
-                    // Add posting
-                    addPosting(Integer.parseInt(docIdsLine), Integer.parseInt(termFreqLine));
-                    count++;
-                }
-
-            } catch (IOException e) {
-                docIdsDecompressedList = null;
-                termFrequenciesDecompressedList = null;
-
-                e.printStackTrace();
-                return false;
-            }
-        }
-        return true;
-         */
-    }
-
-
-
     public List<Integer> getTermFrequenciesDecompressedList() {
         return termFrequenciesDecompressedList;
     }

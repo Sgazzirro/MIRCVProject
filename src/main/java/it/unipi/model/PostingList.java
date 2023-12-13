@@ -73,9 +73,6 @@ public abstract class PostingList{
 
     public abstract boolean addPosting(int docId, int freq);
 
-
-    public abstract boolean loadPosting();
-
     public long getDocIdsOffset() {
         return docIdsOffset;
     }
