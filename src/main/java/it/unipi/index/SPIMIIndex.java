@@ -145,17 +145,24 @@ public class SPIMIIndex {
         }
         // ---------------------
 
+        // TODO: SECONDO ME INVERTIRE DI NUOVO
+        // TODO: Se tu inverti i buffer si devono aprire dentro docIndex e chiudere dentro la merge
 
-        // 4) Merge all vocabularies (with relative posting lists)
-        // ---------------------
-        mergeAllBlocks(readVocBuffers);
-        // ---------------------
-
+        globalIndexer.setup(path);
 
         // 3) Merge all document indexes
         // ---------------------
-        concatenateDocIndexes(readVocBuffers);
+        int N = concatenateDocIndexes(readVocBuffers);
         // ---------------------
+
+        // 4) Merge all vocabularies (with relative posting lists)
+        // ---------------------
+        mergeAllBlocks(readVocBuffers, N);
+        // ---------------------
+
+        for(int i = 0; i < next_block; i++)
+            readVocBuffers.get(i).end();
+        globalIndexer.close();
     }
 
 
@@ -210,7 +217,7 @@ public class SPIMIIndex {
         next_block++;
     }
 
-    private void concatenateDocIndexes(List<Fetcher> readers) {
+    private Integer concatenateDocIndexes(List<Fetcher> readers) {
         // 1) We accumulate length and total number of documents from blocks
         //      This information is the first thing to dump
         // ------------------------------------
@@ -232,19 +239,16 @@ public class SPIMIIndex {
             Map.Entry<Integer, DocumentIndexEntry> entry;
             while ( (entry = readers.get(i).loadDocEntry()) != null )
                 globalIndexer.dumpDocumentIndexLine(entry);
-
-            readers.get(i).end();
         }
         // ------------------------------------
-
-        globalIndexer.close();
+        return N;
     }
 
     /**
      * Read
      * @param readVocBuffers the list of blocks readers
      */
-    void mergeAllBlocks(List<Fetcher> readVocBuffers) {
+    void mergeAllBlocks(List<Fetcher> readVocBuffers, Integer numDocuments) {
         // Key idea to merge all blocks together
         // To do the merging, we open all block files simultaneously
         // We maintain small read buffers for blocks we are reading
@@ -256,7 +260,7 @@ public class SPIMIIndex {
         //List<Fetcher> readVocBuffers = new ArrayList<>();
         List<Boolean> processed = new ArrayList<>();
         int next_block = getNext_block();
-        globalIndexer.setup(path);
+
 
         for (int i = 0; i < next_block; i++) {
             processed.add(true);
@@ -317,12 +321,13 @@ public class SPIMIIndex {
 
             // Write the merge onto the output file
             try {
-                VocabularyEntry entry = mergeEntries(toMerge);
+                VocabularyEntry entry = mergeEntries(toMerge, numDocuments);
                 globalIndexer.dumpVocabularyLine(new AbstractMap.SimpleEntry<>(lowestTerm, entry));
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
         }
+
     }
 
 
@@ -331,7 +336,7 @@ public class SPIMIIndex {
      * @param toMerge the list of vocabulary entries to merge
      * @return a merged entry
      */
-    VocabularyEntry mergeEntries(List<VocabularyEntry> toMerge){
+    VocabularyEntry mergeEntries(List<VocabularyEntry> toMerge, int numDocuments){
         PostingListImpl mergedList = new PostingListImpl();
         Integer frequency = 0;
         Double upperBound = 0.0;
@@ -348,8 +353,8 @@ public class SPIMIIndex {
         }
 
         // final term upper bound computation
-        upperBound *= Math.log10( ((double) Constants.N/ mergedList.getDocIdsDecompressedList().size()));
-
+        Double to_multiply = Math.log10( ((double) numDocuments/ mergedList.getDocIdsDecompressedList().size()));
+        upperBound *= to_multiply;
         VocabularyEntry result = new VocabularyEntry(frequency, upperBound, mergedList);
 
         return result;

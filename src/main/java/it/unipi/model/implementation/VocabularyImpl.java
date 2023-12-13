@@ -1,6 +1,7 @@
 package it.unipi.model.implementation;
 import it.unipi.model.Vocabulary;
 import it.unipi.utils.Constants;
+import it.unipi.utils.Fetcher;
 import it.unipi.utils.FetcherBinary;
 import opennlp.tools.parser.Cons;
 
@@ -10,11 +11,11 @@ import java.util.*;
 public class VocabularyImpl implements Vocabulary, Serializable {
 
     private final NavigableMap<String, VocabularyEntry> table;
-    private final FetcherBinary fetcherBinary;
+    private final Fetcher fetcher;
 
     public VocabularyImpl(){
         table = new TreeMap<>();
-        fetcherBinary = new FetcherBinary();
+        fetcher = Fetcher.getFetcher(Constants.getCompression());
     }
 
     @Override
@@ -45,9 +46,9 @@ public class VocabularyImpl implements Vocabulary, Serializable {
     @Override
     public VocabularyEntry getEntry(String token) {
         if(!isPresent(token)){
-            fetcherBinary.start(Constants.testPath);
-            VocabularyEntry entry = fetcherBinary.loadVocEntry(token);
-            fetcherBinary.end();
+            fetcher.start(Constants.testPath);
+            VocabularyEntry entry = fetcher.loadVocEntry(token);
+            fetcher.end();
             if(entry!=null){
                 table.put(token, entry);
                 return entry;

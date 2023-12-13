@@ -27,7 +27,7 @@ public class Constants {
             BYTES_STORED_STRING + 3*Integer.BYTES + 2*Double.BYTES + 2*Long.BYTES;
 
     private static Path currentPath;
-    private static CompressionType currentCompression;
+    private static CompressionType currentCompression = CompressionType.DEBUG;
 
     public static void setCompression(CompressionType compression) {
         currentCompression = compression;

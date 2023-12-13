@@ -2,10 +2,7 @@ package it.unipi.model.implementation;
 
 import it.unipi.model.Encoder;
 import it.unipi.model.PostingList;
-import it.unipi.utils.CompressionType;
-import it.unipi.utils.Constants;
-import it.unipi.utils.Fetcher;
-import it.unipi.utils.FetcherCompressed;
+import it.unipi.utils.*;
 
 import java.io.EOFException;
 import java.io.IOException;
@@ -46,7 +43,7 @@ public class PostingListCompressed extends PostingList {
 
     private final Encoder docIdsEncoder = new EliasFano();
     private final Encoder termFrequenciesEncoder = new Simple9(true);
-    FetcherCompressed fetcher = new FetcherCompressed();
+
 
     public PostingListCompressed(long docIdsOffset, long termFreqOffset, int docIdsLength, int termFreqLength, double idf) {
         super(docIdsOffset, termFreqOffset, docIdsLength, termFreqLength, idf);
@@ -90,6 +87,7 @@ public class PostingListCompressed extends PostingList {
     @Override
     public double score() {
         double tf = 1+Math.log10(termFrequenciesDecompressedList.get(blockPointer));
+        // double idf = Constants.NumDocuments /
         double idf = getIdf();
         return tf*idf;
     }
@@ -151,18 +149,14 @@ public class PostingListCompressed extends PostingList {
     }
 
     public void loadNextBlock() {
-        FetcherCompressed fetcher = (FetcherCompressed) Fetcher.getFetcher(CompressionType.COMPRESSED);
-        fetcher.start(Constants.getPath());
-
-        ByteBlock docIdsBlock = fetcher.fetchDocIdsBlock(compressedDocIds, 0, docIdsBlockPointer);
+        ByteBlock docIdsBlock = ByteUtils.fetchDocIdsBlock(compressedDocIds, 0, docIdsBlockPointer);
         docIdsBlockPointer = docIdsBlock.getOffset();
         docIdsDecompressedList = docIdsEncoder.decode(docIdsBlock.getBytes());
 
-        ByteBlock termFrequenciesBlock = fetcher.fetchNextTermFrequenciesBlock(compressedTermFrequencies, termFrequenciesBlockPointer);
+        ByteBlock termFrequenciesBlock = ByteUtils.fetchNextTermFrequenciesBlock(compressedTermFrequencies, termFrequenciesBlockPointer);
         termFrequenciesBlockPointer = termFrequenciesBlock.getOffset();
         termFrequenciesDecompressedList = termFrequenciesEncoder.decode(termFrequenciesBlock.getBytes());
 
-        fetcher.end();
     }
 
     @Override

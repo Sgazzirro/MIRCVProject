@@ -287,6 +287,7 @@ public class InMemoryIndexing {
     }
 
     public void computePartialTermUB(){
+        // TODO: With BM25 serve l'average length, quindi stiamo attenti a come calcolare questo partial score perché forse in realtà non si può
         for(Map.Entry<String, VocabularyEntry> entry: vocabulary.getEntries()){
             VocabularyEntry vocabularyEntry = entry.getValue();
             List<Integer> termFreqList = vocabularyEntry.getPostingList().getTermFrequenciesDecompressedList();

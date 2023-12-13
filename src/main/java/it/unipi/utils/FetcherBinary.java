@@ -201,7 +201,7 @@ public class FetcherBinary implements Fetcher {
         byte[] N = new byte[Integer.BYTES];
         byte[] l = new byte[Integer.BYTES];
         try {
-            if (documentIndexReader.read(N) + documentIndexReader.read(l) != 2 * Integer.BYTES)
+            if (documentIndexReader.read(l) + documentIndexReader.read(N) != 2 * Integer.BYTES)
                 throw new IOException("Document index: error reading metadata");
 
         } catch (IOException e) {

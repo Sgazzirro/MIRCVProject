@@ -71,7 +71,7 @@ public class MaxScore{
         int current = minimumDocId(p);
         if (current == -1) return null;
         int n = p.size();
-        while (pivot < n) {
+        while (pivot < p.size()) {
             double score = 0;
             int next = Integer.MAX_VALUE;
             for (int i = pivot; i < n; i++) {
@@ -102,6 +102,7 @@ public class MaxScore{
                 }
                 if (p.get(i).docId() == current) {
                     score += p.get(i).score();
+
                 }
             }
             DocumentScore ds = new DocumentScore(current, score);
@@ -109,10 +110,11 @@ public class MaxScore{
                 scores.add(ds);
                 if (!(scores.size() < K)) scores.poll();
                 theta = scores.peek().score;
-                while (pivot < n && ub.get(pivot) <= theta) {
+                while (pivot < p.size() && ub.get(pivot) < theta) {
                     pivot++;
                 }
             }
+            // NESSUNO HA MODIFICATO NEXT
             current = next;
         }
         return scores;
@@ -162,6 +164,7 @@ public class MaxScore{
 
     private List<Double> computeUB (List<PostingList> p, List<Double> sigma){
         List<Double> ub = new ArrayList<>(p.size());
+
         ub.add(0, sigma.get(0));
         for(int i=1; i< p.size(); i++){
             ub.add(i, (ub.get(i-1)+sigma.get(i)));
