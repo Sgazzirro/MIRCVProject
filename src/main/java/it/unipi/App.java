@@ -56,9 +56,10 @@ public class App
         Dumper d = Dumper.getInstance(CompressionType.COMPRESSED);
 
         InMemoryIndexing memoryIndexing = new InMemoryIndexing(v, d, di);
-        Constants.setCompression(true);
+        Constants.setCompression(CompressionType.COMPRESSED);
         SPIMIIndex spimi = new SPIMIIndex(CompressionType.COMPRESSED, ds, memoryIndexing);
         Path indexPath = Paths.get("./data");
+        Constants.setPath(indexPath);
         spimi.buildIndexSPIMI(indexPath);
 
     }

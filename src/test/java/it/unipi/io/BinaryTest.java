@@ -25,10 +25,12 @@ public class BinaryTest {
     Fetcher fetcher;
 
     @Before
-    public void setup(){
+    public void setup() {
         dumper = new DumperCompressed();
         fetcher = new FetcherCompressed();
-        Constants.setCompression(true);
+
+        Constants.setCompression(CompressionType.COMPRESSED);
+        Constants.setPath(Constants.testPath);
     }
 
     @Test
@@ -63,7 +65,7 @@ public class BinaryTest {
         PostingList p;
         p = new PostingListImpl();
 
-        if(!Constants.getCompression())
+        if (!(Constants.getCompression() == CompressionType.COMPRESSED))
             p = new PostingListImpl();
         else
             p = new PostingListCompressed();

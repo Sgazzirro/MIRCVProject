@@ -1,13 +1,9 @@
 package it.unipi.model.implementation;
 
 import it.unipi.model.PostingList;
-import it.unipi.utils.Constants;
+import it.unipi.utils.Fetcher;
 
 import java.io.*;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.*;
 
 
@@ -16,6 +12,7 @@ import java.util.*;
  * Demanded to the load/write of postings from/into the secondary memory.
  */
 public class PostingListImpl extends PostingList {
+
     private List<Integer> docIdsDecompressedList;
     private List<Integer> termFrequenciesDecompressedList;
     private int pointer = -1;
@@ -51,7 +48,7 @@ public class PostingListImpl extends PostingList {
 
 
     @Override
-    public boolean loadPosting(Path path) {
+    public boolean loadPosting() {
         return true;
         /*
         // Method that loads the posting list in memory if not present
@@ -101,7 +98,6 @@ public class PostingListImpl extends PostingList {
         return termFrequenciesDecompressedList;
     }
 
-
     public List<Integer> getDocIdsDecompressedList() {
         return docIdsDecompressedList;
     }
@@ -137,16 +133,12 @@ public class PostingListImpl extends PostingList {
 
     @Override
     public double score() {
-        loadPosting();
-
         int tf = termFrequenciesDecompressedList.get(pointer);
         return (1 + Math.log10(tf)) * getIdf();
     }
 
     @Override
-    public void next() throws EOFException{
-        loadPosting();
-
+    public void next() throws EOFException {
         if (!hasNext())
             throw new EOFException();
 
@@ -159,8 +151,7 @@ public class PostingListImpl extends PostingList {
 
     @Override
     public void nextGEQ(int docId) throws EOFException{
-        loadPosting();
-        do{
+        do {
             next();
         } while (this.docId() < docId);
 
@@ -190,8 +181,6 @@ public class PostingListImpl extends PostingList {
     public String toString() {
         return "DocIdList: " + docIdsDecompressedList + " TermFrequencyList: " + termFrequenciesDecompressedList;
     }
-
-
 
     @Override
     public int hashCode() {

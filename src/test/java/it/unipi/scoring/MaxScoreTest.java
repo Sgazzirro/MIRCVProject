@@ -31,7 +31,7 @@ public class MaxScoreTest {
     public void setup(){
         Dumper dumper = new DumperCompressed();
         Fetcher fetcher = new FetcherCompressed();
-        Constants.setCompression(true);
+        Constants.setCompression(CompressionType.COMPRESSED);
 
         vocDumped = new VocabularyImpl();
         vocDumped.addEntry("a", 1);
@@ -39,6 +39,7 @@ public class MaxScoreTest {
         vocDumped.addEntry("a", 2);
         vocDumped.addEntry("c",(int)Math.pow(2,30));
 
+        Constants.setPath(Constants.testPath);
         dumper.start(Constants.testPath);
         dumper.dumpVocabulary(vocDumped);
         dumper.end();

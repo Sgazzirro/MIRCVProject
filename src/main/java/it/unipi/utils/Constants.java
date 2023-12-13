@@ -4,7 +4,6 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 
 public class Constants {
-    private static boolean COMPRESSION = false;
 
     public static final String COLLECTION_FILE = "data/collection.tar.gz";
     public static final String TEST_COLLECTION_FILE = "data/test_collection.tsv";
@@ -27,12 +26,24 @@ public class Constants {
     public static final int VOCABULARY_ENTRY_BYTES_SIZE =
             BYTES_STORED_STRING + 3*Integer.BYTES + 2*Double.BYTES + 2*Long.BYTES;
 
-    public static void setCompression(boolean c) {
-        COMPRESSION = c;
+    private static Path currentPath;
+    private static CompressionType currentCompression;
+
+    public static void setCompression(CompressionType compression) {
+        currentCompression = compression;
     }
 
-    public static boolean getCompression(){
-        return COMPRESSION;
+    public static CompressionType getCompression() {
+        return currentCompression;
     }
+
+    public static void setPath(Path path) {
+        currentPath = path;
+    }
+
+    public static Path getPath() {
+        return currentPath;
+    }
+
 }
 

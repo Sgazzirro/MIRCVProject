@@ -73,6 +73,8 @@ public class SPIMICompleteTest {
 
     @Before
     public void setup() {
+        Constants.setPath(Constants.testPath);
+
         IOUtils.deleteDirectory(Constants.testPath);
         IOUtils.createDirectory(Constants.testPath);
 
@@ -83,7 +85,7 @@ public class SPIMICompleteTest {
                 new Document("3\trabbit recip"),
                 null
         );
-        Constants.setCompression(false);
+        Constants.setCompression(CompressionType.DEBUG);
         System.out.println("CORRENTE STATO DELLA COMPRESSIONE: " + Constants.getCompression());
     }
 
@@ -247,9 +249,9 @@ public class SPIMICompleteTest {
 
     @Test
     public void testBuildSingleBlock_COMPRESSED(){
-        Constants.setCompression(true);
 
         CompressionType compression = CompressionType.COMPRESSED;
+        Constants.setCompression(compression);
 
         // Dumping
         indexerSingleBlock = new InMemoryIndexing(new VocabularyImpl(), Dumper.getInstance(compression), new DocumentIndexImpl());
@@ -278,14 +280,13 @@ public class SPIMICompleteTest {
         System.out.println(fetchedIndex);
 
         Assert.assertEquals(correctDocumentIndex, fetchedIndex);
-        Constants.setCompression(false);
     }
 
     @Test
     public void testBuildManyBlocks_COMPRESSED(){
 
-        Constants.setCompression(true);
         CompressionType compression = CompressionType.COMPRESSED;
+        Constants.setCompression(compression);
 
         // Dumping
         indexerSingleBlock = new InMemoryIndexing(new VocabularyImpl(), Dumper.getInstance(compression), new DocumentIndexImpl());

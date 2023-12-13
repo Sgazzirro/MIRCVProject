@@ -100,7 +100,7 @@ public class EliasFano implements Encoder {
 
             int groupValue = 0;
             int lowBitsetIndex =0;
-            for(int i=0; i<nTotHighBits; i++){
+            for (int i=0; i<nTotHighBits; i++) {
                 if(highBitset.get(i)){
                     int shifted = groupValue;
                     for(int j=lowBitsetIndex*lowHalfLength; j<lowBitsetIndex*lowHalfLength+lowHalfLength; j++){
@@ -109,14 +109,15 @@ public class EliasFano implements Encoder {
                     }
                     lowBitsetIndex++;
                     decoded.add(shifted);
-                } else groupValue++;
+                } else
+                    groupValue++;
             }
 
-            return decoded;
         } catch (IOException ie){
             ie.printStackTrace();
-            return null;
         }
+
+        return decoded;
     }
 
     private static BitSet extractLowBitset(int number, int nLowBits) {

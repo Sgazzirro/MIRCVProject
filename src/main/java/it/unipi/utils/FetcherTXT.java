@@ -35,11 +35,8 @@ public class FetcherTXT implements Fetcher {
         return true;
     }
 
+    @Override
     public void loadPosting(PostingList list) {
-        loadPosting(list, path);
-    }
-
-    public void loadPosting(PostingList list, Path path) {
 
         // The loading of a posting list uses two inner buffers
 
@@ -93,7 +90,7 @@ public class FetcherTXT implements Fetcher {
 
                 if (params[0].equals(term)) {
                     result = VocabularyEntry.parseTXT(line);
-                    loadPosting(result.getPostingList(), path);
+                    loadPosting(result.getPostingList());
                     return result;
                 }
             }
@@ -119,7 +116,7 @@ public class FetcherTXT implements Fetcher {
             String[] params = line.split(",");
             term = params[0];
             result = VocabularyEntry.parseTXT(line);
-            loadPosting(result.getPostingList(), path);
+            loadPosting(result.getPostingList());
         } catch (IOException e) {
             throw new RuntimeException(e);
         }

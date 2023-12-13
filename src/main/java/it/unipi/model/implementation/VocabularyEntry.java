@@ -57,11 +57,7 @@ public class VocabularyEntry {
 
         int documentFrequency = Integer.parseInt(params[1]);
         double upperBound = Double.parseDouble(params[2]);
-        PostingList postingList;
-        if(!Constants.getCompression())
-            postingList = new PostingListImpl();
-        else
-            postingList = new PostingListCompressed();
+        PostingList postingList = new PostingListImpl();
         postingList.setIdf(Double.parseDouble(params[3]));
         postingList.setDocIdsOffset(Long.parseLong(params[4]));
         postingList.setTermFreqOffset(Long.parseLong(params[5]));

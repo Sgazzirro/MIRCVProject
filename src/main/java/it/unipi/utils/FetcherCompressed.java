@@ -108,23 +108,27 @@ public class FetcherCompressed extends FetcherBinary {
         return null;
     }
 
+
     @Override
-    public void loadPosting(PostingList list) {
-        list.loadPosting(this.path);
-        /*
-        long docIdsOffset = list.getDocIdsOffset(),
-                termFreqOffset = list.getTermFreqOffset();
-        int docIdsLength = list.getDocIdsLength(),
-                termFreqLength = list.getTermFreqLength();
+    public void loadPosting(PostingList postingList) {
+        if (!(postingList instanceof PostingListCompressed))
+            throw new RuntimeException("Unsupported operation");
+
+        PostingListCompressed pList = (PostingListCompressed) postingList;
 
         try {
-            byte[] compressedDocIds = fetchCompressedDocIds(docIdsOffset, docIdsLength);
-            byte[] termFreqBytes = fetchCompressedTermFrequencies(termFreqOffset, termFreqLength);
+            pList.setCompressedDocIds(
+                    fetchCompressedDocIds(postingList.getDocIdsOffset(), postingList.getDocIdsLength())
+            );
+            pList.setCompressedTermFrequencies(
+                    fetchCompressedTermFrequencies(postingList.getTermFreqOffset(), postingList.getTermFreqLength())
+            );
 
-        } catch (IOException ie) {
-            ie.printStackTrace();
+            pList.loadNextBlock();
+
+
+        } catch (IOException e) {
+            e.printStackTrace();
         }
-         */
     }
-
 }

@@ -77,19 +77,12 @@ public class FetcherBinary implements Fetcher {
         try {
             docIdsReader.getChannel().position(docIdsOffset);
             DataInputStream disDocId = new DataInputStream(docIdsReader);
-            /*System.out.println("OFFSET" + docIdsOffset);
-            if(disDocId.skip(docIdsOffset)!=docIdsOffset){
-                throw new IOException();
-            }*/
 
             termFreqReader.getChannel().position(termFreqOffset);
             DataInputStream disTermFreq = new DataInputStream(termFreqReader);
-            /* if(disTermFreq.skip(termFreqOffset)!=termFreqOffset){
-                throw new IOException();
-            }*/
+
 
             // load docIds and termFreq
-
             for (int len = 0; len < docIdsLength; len += Integer.BYTES) {
                 int docId = disDocId.readInt();
                 int termFreq = disTermFreq.readInt();
@@ -135,7 +128,7 @@ public class FetcherBinary implements Fetcher {
                     end = middle;
                 else {                      // This means term = entry
                     VocabularyEntry result = ByteUtils.bytesToVocabularyEntry(vocabularyEntryBytes, compression);
-                    result.getPostingList().loadPosting(path);
+                    loadPosting(result.getPostingList());
                     return result;
                 }
             }

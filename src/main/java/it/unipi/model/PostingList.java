@@ -3,6 +3,7 @@ package it.unipi.model;
 import it.unipi.model.implementation.PostingListCompressed;
 import it.unipi.model.implementation.PostingListImpl;
 import it.unipi.utils.CompressionType;
+import it.unipi.utils.Fetcher;
 
 import java.io.EOFException;
 import java.nio.file.Path;
@@ -73,12 +74,7 @@ public abstract class PostingList{
     public abstract boolean addPosting(int docId, int freq);
 
 
-    public boolean loadPosting() {
-        return loadPosting(Paths.get("./data/"));
-    }
-
-
-    public abstract boolean loadPosting(Path path);
+    public abstract boolean loadPosting();
 
     public long getDocIdsOffset() {
         return docIdsOffset;
