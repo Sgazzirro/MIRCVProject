@@ -22,7 +22,7 @@ public class SPIMIIndex {
      * The block_size is number of bytes allowed to be used before creating a new block
      * Notice that, even in case of going ahead this threshold, the current document is however processed
      */
-    private long block_size = 10000000;
+    private long block_size = 80;
 
     /**
      * The next number of block to write. Since the index of the blocks starts at 0, this is
@@ -145,9 +145,6 @@ public class SPIMIIndex {
         }
         // ---------------------
 
-        // TODO: SECONDO ME INVERTIRE DI NUOVO
-        // TODO: Se tu inverti i buffer si devono aprire dentro docIndex e chiudere dentro la merge
-
         globalIndexer.setup(path);
 
         // 3) Merge all document indexes
@@ -184,7 +181,7 @@ public class SPIMIIndex {
         // 1) Process documents until memory limit reached
         int docProcessed = 0;
         // ---------------------
-        while (availableMemory(usedMemory - startMemory)) {
+        while (availableMemory(usedMemory)) {
             // Write the block if we reached a certain (high) number of entries
             if (docProcessed++ == Constants.MAX_ENTRIES_PER_SPIMI_BLOCK) {
                 System.out.println("Max number of entries per block reached (" + Constants.MAX_ENTRIES_PER_SPIMI_BLOCK + ")");

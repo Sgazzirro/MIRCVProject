@@ -80,7 +80,7 @@ public class MaxScoreTest {
 
     @Test
     public void testMaxScore1(){
-        int numResults = 10;
+        int numResults = 2;
         PriorityQueue<DocumentScore> results = maxScore.score("a", numResults, "disjunctive");
         assertEquals(2, results.size());
 

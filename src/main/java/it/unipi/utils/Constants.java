@@ -19,7 +19,7 @@ public class Constants {
     public static final Path STOPWORDS_FILE = Paths.get("data/", "stopwords-en.txt");
 
     public static int BLOCK_SIZE = 100;
-    public static int MAX_ENTRIES_PER_SPIMI_BLOCK = 50_000;
+    public static int MAX_ENTRIES_PER_SPIMI_BLOCK = 1_000_000;
     public static final int BYTES_STORED_STRING = 32;
 
     public static int N = 8841823;

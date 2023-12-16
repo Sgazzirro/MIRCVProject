@@ -26,6 +26,10 @@ public class FetcherBinary implements Fetcher {
         compression = CompressionType.BINARY;
     }
 
+    public int getVocabularySize() {
+        return vocabularySize;
+    }
+
     @Override
     public boolean start(Path path) {
         this.path = path;

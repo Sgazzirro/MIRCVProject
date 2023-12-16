@@ -12,7 +12,7 @@ public class DocumentScore implements Comparable<DocumentScore>{
     @Override
     public int compareTo(DocumentScore o) {
         // Reverse order so documents with higher score are first
-        return Double.compare(o.score, score);
+        return Double.compare(score, o.score);
     }
 
     @Override

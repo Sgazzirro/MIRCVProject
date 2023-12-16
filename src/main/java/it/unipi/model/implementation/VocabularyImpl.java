@@ -46,7 +46,7 @@ public class VocabularyImpl implements Vocabulary, Serializable {
     @Override
     public VocabularyEntry getEntry(String token) {
         if(!isPresent(token)){
-            fetcher.start(Constants.testPath);
+            fetcher.start(Constants.getPath());
             VocabularyEntry entry = fetcher.loadVocEntry(token);
             fetcher.end();
             if(entry!=null){

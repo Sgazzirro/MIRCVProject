@@ -109,7 +109,7 @@ public class MaxScore{
             DocumentScore ds = new DocumentScore(current, score);
             if (scores.isEmpty() || scores.size() < K || scores.peek().score < score) {
                 scores.add(ds);
-                if (!(scores.size() < K)) scores.poll();
+                if (!(scores.size() <= K)) scores.poll();
                 theta = scores.peek().score;
                 while (pivot < p.size() && ub.get(pivot) < theta) {
                     pivot++;
