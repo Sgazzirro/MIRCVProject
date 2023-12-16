@@ -23,8 +23,6 @@ public class MaxScore{
     public PriorityQueue<DocumentScore> score(String query, int numResults, String mode){
         List<String> queryTokens = tokenizerImpl.tokenizeBySpace(query);
         TreeMap<Double, PostingList> treeMap = new TreeMap<>();
-        List<PostingList> postingLists = new ArrayList<>();
-        PriorityQueue<DocumentScore> scores;
 
         ////////////////// DISJUNCTIVE MODE ///////////////////////
         if(mode.equals("disjunctive")) {
@@ -36,22 +34,14 @@ public class MaxScore{
                 }
             }
             if(treeMap.isEmpty()) return null;
-            postingLists = new ArrayList<>(treeMap.values());    // needed for resetting lists
-            scores = maxScore(postingLists, new ArrayList<>(treeMap.keySet()), numResults);
+            return maxScore(new ArrayList<>(treeMap.values()), new ArrayList<>(treeMap.keySet()), numResults);
         }
         ////////////////// CONJUNCTIVE MODE ///////////////////////
         else {
+            List<PostingList> postingLists = new ArrayList<>();
             for (String token : queryTokens) postingLists.add(vocabularyImpl.getEntry(token).getPostingList());
-            scores = conjunctiveScore(postingLists, numResults);
+            return conjunctiveScore(postingLists, numResults);
         }
-
-        //////////////// POSTING LIST RESET ///////////////////////
-        for (PostingList postingList: postingLists){
-            postingList.resetPostingList();
-        }
-
-        return scores;
-
     }
 
     private PriorityQueue<DocumentScore> conjunctiveScore(List<PostingList> p, int K){
@@ -68,6 +58,7 @@ public class MaxScore{
                 scores.poll();
             }
         }
+        for (PostingList postingList: p) postingList.resetPostingList();    // RESET of the posting lists
         return scores;
     }
 
@@ -89,6 +80,7 @@ public class MaxScore{
                     try {
                         p.get(i).next();
                     } catch (EOFException e) {
+                        p.get(i).resetPostingList();    // RESET of the posting list
                         p.remove(i);
                         sigma.remove(i);
                         if (p.size() > 1) ub = computeUB(p, sigma);
@@ -104,6 +96,7 @@ public class MaxScore{
                 try {
                     p.get(i).nextGEQ(current);
                 } catch (EOFException e) {
+                    p.get(i).resetPostingList();    // RESET of the posting list
                     p.remove(i);
                     sigma.remove(i);
                     if (p.size() > 1) ub = computeUB(p, sigma);
