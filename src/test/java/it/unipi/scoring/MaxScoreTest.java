@@ -81,7 +81,7 @@ public class MaxScoreTest {
     @Test
     public void testMaxScore1(){
         int numResults = 10;
-        PriorityQueue<DocumentScore> results = maxScore.score("a", numResults);
+        PriorityQueue<DocumentScore> results = maxScore.score("a", numResults, "disjunctive");
         assertEquals(2, results.size());
 
         assert results.peek() != null;
@@ -94,7 +94,7 @@ public class MaxScoreTest {
     @Test
     public void testMaxScore2(){
         int numResults = 10;
-        PriorityQueue<DocumentScore> results = maxScore.score("b", numResults);
+        PriorityQueue<DocumentScore> results = maxScore.score("b", numResults, "disjunctive");
 
         assertEquals(1, results.size());
 
@@ -106,7 +106,7 @@ public class MaxScoreTest {
     @Test
     public void testMaxScore3(){
         int numResults = 10;
-        PriorityQueue<DocumentScore> results = maxScore.score("c", numResults);
+        PriorityQueue<DocumentScore> results = maxScore.score("c", numResults, "disjunctive");
 
         assertEquals(1, results.size());
 

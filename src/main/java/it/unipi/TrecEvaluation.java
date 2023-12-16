@@ -102,7 +102,7 @@ public class TrecEvaluation {
             while((queryLine = queries.readLine()) != null){
                 Query q = new Query(queryLine);
                 List<Result> results = new ArrayList<>();
-                scorer.score(q.getText(), 1000);
+                scorer.score(q.getText(), 1000, "disjunctive");
 
                 // TODO: Riempire la lista di risultati
 

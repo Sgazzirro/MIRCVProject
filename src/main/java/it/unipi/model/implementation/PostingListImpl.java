@@ -135,6 +135,11 @@ public class PostingListImpl extends PostingList {
     }
 
     @Override
+    public void resetPostingList() {
+        pointer=-1;
+    }
+
+    @Override
     public int hashCode() {
         return Objects.hash(docIdsDecompressedList, termFrequenciesDecompressedList);
     }

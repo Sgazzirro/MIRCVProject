@@ -195,8 +195,13 @@ public class PostingListCompressed extends PostingList {
         }
         return true;
     }
-
  */
+
+    public void resetPostingList(){
+        docIdsBlockPointer = termFrequenciesBlockPointer = 0;
+        blockPointer = -1;
+        loadNextBlock();
+    }
 
     public byte[] getCompressedDocIds() {
         return compressedDocIds;

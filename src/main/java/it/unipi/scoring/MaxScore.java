@@ -20,12 +20,11 @@ public class MaxScore{
         this.tokenizerImpl = tokenizerImpl;
     }
 
-    public PriorityQueue<DocumentScore> score(String query, int numResults){
+    public PriorityQueue<DocumentScore> score(String query, int numResults, String mode){
         List<String> queryTokens = tokenizerImpl.tokenizeBySpace(query);
         TreeMap<Double, PostingList> treeMap = new TreeMap<>();
-
-        // TO DO: PUT IT IN METHOD CALL
-        String mode = "disjunctive";
+        List<PostingList> postingLists = new ArrayList<>();
+        PriorityQueue<DocumentScore> scores;
 
         ////////////////// DISJUNCTIVE MODE ///////////////////////
         if(mode.equals("disjunctive")) {
@@ -37,14 +36,22 @@ public class MaxScore{
                 }
             }
             if(treeMap.isEmpty()) return null;
-            return maxScore(new ArrayList<>(treeMap.values()), new ArrayList<>(treeMap.keySet()), numResults);
+            postingLists = new ArrayList<>(treeMap.values());    // needed for resetting lists
+            scores = maxScore(postingLists, new ArrayList<>(treeMap.keySet()), numResults);
         }
         ////////////////// CONJUNCTIVE MODE ///////////////////////
         else {
-            List<PostingList> postingLists = new ArrayList<>();
             for (String token : queryTokens) postingLists.add(vocabularyImpl.getEntry(token).getPostingList());
-            return conjunctiveScore(postingLists, numResults);
+            scores = conjunctiveScore(postingLists, numResults);
         }
+
+        //////////////// POSTING LIST RESET ///////////////////////
+        for (PostingList postingList: postingLists){
+            postingList.resetPostingList();
+        }
+
+        return scores;
+
     }
 
     private PriorityQueue<DocumentScore> conjunctiveScore(List<PostingList> p, int K){

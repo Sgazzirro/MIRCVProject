@@ -167,4 +167,6 @@ public abstract class PostingList{
         }
         throw new RuntimeException("Unsupported compression type: " + compression);
     }
+
+    public abstract void resetPostingList();
 }

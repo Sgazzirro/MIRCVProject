@@ -58,7 +58,7 @@ public class CompleteTest {
         String query = "duck";
         MaxScore maxScore = new MaxScore(vocabulary, new TokenizerImpl());
 
-        PriorityQueue<DocumentScore> results = maxScore.score(query, 10);
+        PriorityQueue<DocumentScore> results = maxScore.score(query, 10, "disjunctive");
         Assert.assertEquals(results.size(), 4);
 
         for(int i=0; i<4; i++){
@@ -73,7 +73,7 @@ public class CompleteTest {
         String query = "rabbit";
         MaxScore maxScore = new MaxScore(vocabulary, new TokenizerImpl());
 
-        PriorityQueue<DocumentScore> results = maxScore.score(query, 10);
+        PriorityQueue<DocumentScore> results = maxScore.score(query, 10, "disjunctive");
         Assert.assertEquals(results.size(), 2);
 
         DocumentScore documentScore2 = results.poll();
@@ -90,7 +90,7 @@ public class CompleteTest {
         String query = "recip";
         MaxScore maxScore = new MaxScore(vocabulary, new TokenizerImpl());
 
-        PriorityQueue<DocumentScore> results = maxScore.score(query, 10);
+        PriorityQueue<DocumentScore> results = maxScore.score(query, 10, "disjunctive");
         Assert.assertEquals(results.size(), 2);
 
         DocumentScore documentScore1 = results.poll();
@@ -108,7 +108,7 @@ public class CompleteTest {
         String query = "cat";
         MaxScore maxScore = new MaxScore(vocabulary, new TokenizerImpl());
 
-        PriorityQueue<DocumentScore> results = maxScore.score(query, 10);
+        PriorityQueue<DocumentScore> results = maxScore.score(query, 10, "disjunctive");
         Assert.assertNull(results);
     }
 
@@ -117,7 +117,7 @@ public class CompleteTest {
         String query = "rabbit recip";
         MaxScore maxScore = new MaxScore(vocabulary, new TokenizerImpl());
 
-        PriorityQueue<DocumentScore> results = maxScore.score(query, 10);
+        PriorityQueue<DocumentScore> results = maxScore.score(query, 10, "disjunctive");
 
         DocumentScore documentScore2 = results.poll();
         DocumentScore documentScore1 = results.poll();
