@@ -93,7 +93,8 @@ public class PostingListCompressed extends PostingList {
 
     @Override
     public boolean hasNext() {
-        long docIdsEndOffset = getDocIdsOffset() + getDocIdsLength();
+        //long docIdsEndOffset = getDocIdsOffset() + getDocIdsLength();
+        long docIdsEndOffset = getDocIdsLength();
         return (blockPointer + 1 < docIdsDecompressedList.size()) || (docIdsBlockPointer < docIdsEndOffset);
     }
 
@@ -116,7 +117,7 @@ public class PostingListCompressed extends PostingList {
     public void nextGEQ(int docId) throws EOFException {
         while (true) {
             // If we are in the correct block advance the pointer to the right place
-            if (docIdsDecompressedList.get(docIdsDecompressedList.size() - 1) > docId) {
+            if (docIdsDecompressedList.get(docIdsDecompressedList.size() - 1) >= docId) {
                 for (int i = blockPointer!=-1?blockPointer:0; i < docIdsDecompressedList.size(); i++) {
                     if (docIdsDecompressedList.get(i) >= docId) {
                         blockPointer = i;
@@ -125,7 +126,8 @@ public class PostingListCompressed extends PostingList {
                 }
             }
             // if we're in the last block and it doesn't contain the docId
-            long docIdsEndOffset = getDocIdsOffset() + getDocIdsLength();
+            // long docIdsEndOffset = getDocIdsOffset() + getDocIdsLength();
+            long docIdsEndOffset = getDocIdsLength();
             if(docIdsBlockPointer==docIdsEndOffset && docIdsDecompressedList.get(docIdsDecompressedList.size()-1)<docId) throw new EOFException();
 
             // Else get the next block

@@ -22,9 +22,17 @@ public class IndexCreated {
         MaxScore max = new MaxScore(new VocabularyImpl(), new TokenizerImpl());
 
         for(int i = 0; i < 1; i++) {
-            PriorityQueue<DocumentScore> scoring = max.score("Average Rainfall In Costa Rica", 10, "disjunctive");
-            for (DocumentScore score : scoring) {
-                System.out.println(score.docId);
+            PriorityQueue<DocumentScore> scoring = max.score("Ho guardato dentro una bugia", 10, "disjunctive");
+            PriorityQueue<DocumentScore> reverseMode = new PriorityQueue<>(java.util.Collections.reverseOrder());
+
+            while(scoring.size() > 0) {
+                DocumentScore first = scoring.poll();
+                reverseMode.add(first);
+            }
+
+            while(reverseMode.size() > 0){
+                DocumentScore first = reverseMode.poll();
+                System.out.println("ID : " + first.docId + " SCORE : " + first.score);
             }
 
         }
