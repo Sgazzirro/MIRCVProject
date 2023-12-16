@@ -127,6 +127,27 @@ public class CompleteTest {
 
         Assert.assertNull(results.poll());
     }
+    @Test
+    public void testResetPostingList(){
+        String query = "rabbit recip";
+        MaxScore maxScore = new MaxScore(vocabulary, new TokenizerImpl());
+
+        for(int i=0; i<2; i++) {
+            double start = System.currentTimeMillis();
+
+            PriorityQueue<DocumentScore> results = maxScore.score(query, 10, "disjunctive");
+
+            DocumentScore documentScore2 = results.poll();
+            DocumentScore documentScore1 = results.poll();
+
+            Assert.assertEquals(documentScore1.score, Math.log10(2.0) + Math.pow(Math.log10(2.0), 2), 0.01);
+            Assert.assertEquals(documentScore2.score, 2 * Math.log10(2.0), 0.01);
+
+            Assert.assertNull(results.poll());
+
+            System.out.println("Iterazione: "+i+" Tempo impiegato: "+(System.currentTimeMillis()-start));
+        }
+    }
 
 
 

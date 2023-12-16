@@ -26,7 +26,6 @@ public class MaxScore{
 
         ////////////////// DISJUNCTIVE MODE ///////////////////////
         if(mode.equals("disjunctive")) {
-            System.out.println(query);
             for (String token : queryTokens) {
                 VocabularyEntry entry = vocabularyImpl.getEntry(token);
                 if(entry!=null) {
@@ -119,6 +118,7 @@ public class MaxScore{
             // NESSUNO HA MODIFICATO NEXT
             current = next;
         }
+        for(PostingList postingList: p) postingList.resetPostingList(); // RESET of the last posting lists
         return scores;
     }
 
