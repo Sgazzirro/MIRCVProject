@@ -73,7 +73,7 @@ public class MaxScore{
         while (pivot < p.size()) {
             double score = 0;
             int next = Integer.MAX_VALUE;
-            for (int i = pivot; i < n; i++) {
+            for (int i = pivot; i < p.size(); i++) {
                 if (p.get(i).docId() == current) {
                     score += p.get(i).score();
                     try {

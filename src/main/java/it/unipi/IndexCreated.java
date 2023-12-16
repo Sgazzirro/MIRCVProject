@@ -22,7 +22,7 @@ public class IndexCreated {
         MaxScore max = new MaxScore(new VocabularyImpl(), new TokenizerImpl());
 
         for(int i = 0; i < 1; i++) {
-            PriorityQueue<DocumentScore> scoring = max.score("Venice", 10, "disjunctive");
+            PriorityQueue<DocumentScore> scoring = max.score("Average Rainfall In Costa Rica", 10, "disjunctive");
             for (DocumentScore score : scoring) {
                 System.out.println(score.docId);
             }
