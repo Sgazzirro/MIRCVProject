@@ -1,12 +1,16 @@
-package it.unipi.utils;
+package it.unipi.io;
 
 
 
 
 import it.unipi.model.DocumentIndex;
 import it.unipi.model.Vocabulary;
-import it.unipi.model.implementation.DocumentIndexEntry;
-import it.unipi.model.implementation.VocabularyEntry;
+import it.unipi.model.DocumentIndexEntry;
+import it.unipi.model.VocabularyEntry;
+import it.unipi.encoding.CompressionType;
+import it.unipi.io.implementation.DumperBinary;
+import it.unipi.io.implementation.DumperCompressed;
+import it.unipi.io.implementation.DumperTXT;
 
 import java.io.IOException;
 import java.nio.file.Path;

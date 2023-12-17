@@ -1,11 +1,10 @@
 package it.unipi.model.implementation;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
+import it.unipi.model.DocumentIndexEntry;
 
-import java.io.Serializable;
 import java.util.Objects;
 
-public class DocumentIndexEntry implements Serializable {
+public class DocumentIndexEntryImpl implements DocumentIndexEntry {
 
     // maybe there will be something to add inside here
     private int documentLength;
@@ -28,7 +27,7 @@ public class DocumentIndexEntry implements Serializable {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         DocumentIndexEntry that = (DocumentIndexEntry) o;
-        return documentLength == that.documentLength;
+        return documentLength == that.getDocumentLength();
     }
 
     @Override

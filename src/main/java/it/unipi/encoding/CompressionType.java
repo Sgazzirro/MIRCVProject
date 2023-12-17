@@ -1,4 +1,4 @@
-package it.unipi.utils;
+package it.unipi.encoding;
 
 public enum CompressionType {
 

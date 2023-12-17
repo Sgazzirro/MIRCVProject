@@ -1,11 +1,15 @@
 package it.unipi.index;
 
+import it.unipi.encoding.CompressionType;
+import it.unipi.io.Dumper;
+import it.unipi.io.Fetcher;
+import it.unipi.io.implementation.DumperTXT;
 import it.unipi.model.DocumentIndex;
-import it.unipi.model.DocumentStream;
+import it.unipi.io.DocumentStream;
 import it.unipi.model.Vocabulary;
-import it.unipi.model.implementation.VocabularyEntry;
-import it.unipi.model.implementation.Document;
-import it.unipi.model.implementation.DocumentIndexEntry;
+import it.unipi.model.VocabularyEntry;
+import it.unipi.model.Document;
+import it.unipi.model.DocumentIndexEntry;
 import it.unipi.model.implementation.DocumentIndexImpl;
 import it.unipi.model.implementation.VocabularyImpl;
 import it.unipi.utils.*;

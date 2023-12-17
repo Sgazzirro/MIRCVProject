@@ -1,17 +1,16 @@
 package it.unipi.model.implementation;
 
-import it.unipi.model.Encoder;
+import it.unipi.encoding.Encoder;
+import it.unipi.encoding.implementation.EliasFano;
+import it.unipi.encoding.implementation.Simple9;
 import it.unipi.model.PostingList;
 import it.unipi.utils.*;
 
 import java.io.EOFException;
-import java.io.IOException;
-import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 
-public class PostingListCompressed extends PostingList {
+public class PostingListCompressedImpl extends PostingList {
 
     public static class ByteBlock {
 
@@ -45,7 +44,7 @@ public class PostingListCompressed extends PostingList {
     private final Encoder termFrequenciesEncoder = new Simple9(true);
 
 
-    public PostingListCompressed(long docIdsOffset, long termFreqOffset, int docIdsLength, int termFreqLength, double idf) {
+    public PostingListCompressedImpl(long docIdsOffset, long termFreqOffset, int docIdsLength, int termFreqLength, double idf) {
         super(docIdsOffset, termFreqOffset, docIdsLength, termFreqLength, idf);
         docIdsDecompressedList = new ArrayList<>();
         termFrequenciesDecompressedList = new ArrayList<>();
@@ -66,7 +65,7 @@ public class PostingListCompressed extends PostingList {
 
     }
 
-    public PostingListCompressed() {
+    public PostingListCompressedImpl() {
         docIdsDecompressedList = new ArrayList<>();
         termFrequenciesDecompressedList = new ArrayList<>();
 
@@ -137,6 +136,14 @@ public class PostingListCompressed extends PostingList {
     }
 
     @Override
+    public void reset() {
+        docIdsBlockPointer = termFrequenciesBlockPointer = 0;
+        blockPointer = -1;
+
+        loadNextBlock();
+    }
+
+    @Override
     public boolean addPosting(int docId, int termFreq) {
         if (docIdsDecompressedList.isEmpty() || docIdsDecompressedList.get(docIdsDecompressedList.size()-1)!=docId){
             docIdsDecompressedList.add(docId);
@@ -157,7 +164,6 @@ public class PostingListCompressed extends PostingList {
         ByteBlock termFrequenciesBlock = ByteUtils.fetchNextTermFrequenciesBlock(compressedTermFrequencies, termFrequenciesBlockPointer);
         termFrequenciesBlockPointer = termFrequenciesBlock.getOffset();
         termFrequenciesDecompressedList = termFrequenciesEncoder.decode(termFrequenciesBlock.getBytes());
-
     }
 
     @Override
@@ -198,12 +204,6 @@ public class PostingListCompressed extends PostingList {
         return true;
     }
  */
-
-    public void resetPostingList(){
-        docIdsBlockPointer = termFrequenciesBlockPointer = 0;
-        blockPointer = -1;
-        loadNextBlock();
-    }
 
     public byte[] getCompressedDocIds() {
         return compressedDocIds;

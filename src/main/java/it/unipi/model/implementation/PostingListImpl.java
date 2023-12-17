@@ -1,7 +1,6 @@
 package it.unipi.model.implementation;
 
 import it.unipi.model.PostingList;
-import it.unipi.utils.Fetcher;
 
 import java.io.*;
 import java.util.*;
@@ -110,6 +109,11 @@ public class PostingListImpl extends PostingList {
     }
 
     @Override
+    public void reset() {
+        pointer = -1;
+    }
+
+    @Override
     public boolean addPosting(int docId, int termFrequency) {
         // Documents are supposed to be read sequentially with respect to docId
         if (docIdsDecompressedList == null)
@@ -132,11 +136,6 @@ public class PostingListImpl extends PostingList {
     @Override
     public String toString() {
         return "DocIdList: " + docIdsDecompressedList + " TermFrequencyList: " + termFrequenciesDecompressedList;
-    }
-
-    @Override
-    public void resetPostingList() {
-        pointer=-1;
     }
 
     @Override

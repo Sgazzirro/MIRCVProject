@@ -1,7 +1,5 @@
 package it.unipi.model;
 
-import it.unipi.model.implementation.DocumentIndexEntry;
-
 import java.util.Map;
 
 public interface DocumentIndex {

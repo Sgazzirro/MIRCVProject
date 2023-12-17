@@ -1,9 +1,13 @@
-package it.unipi.utils;
+package it.unipi.io;
 
 
 import it.unipi.model.PostingList;
-import it.unipi.model.implementation.DocumentIndexEntry;
-import it.unipi.model.implementation.VocabularyEntry;
+import it.unipi.model.DocumentIndexEntry;
+import it.unipi.model.VocabularyEntry;
+import it.unipi.encoding.CompressionType;
+import it.unipi.io.implementation.FetcherBinary;
+import it.unipi.io.implementation.FetcherCompressed;
+import it.unipi.io.implementation.FetcherTXT;
 
 import java.nio.file.Path;
 import java.util.Map;

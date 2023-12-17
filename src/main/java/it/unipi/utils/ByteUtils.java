@@ -1,8 +1,10 @@
 package it.unipi.utils;
 
+import it.unipi.encoding.CompressionType;
 import it.unipi.model.PostingList;
-import it.unipi.model.implementation.VocabularyEntry;
-import it.unipi.model.implementation.PostingListCompressed;
+import it.unipi.model.VocabularyEntry;
+import it.unipi.model.implementation.PostingListCompressedImpl;
+import it.unipi.model.implementation.VocabularyEntryImpl;
 
 import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
@@ -73,7 +75,7 @@ public class ByteUtils {
         long termFreqOffset = bytes.getLong();
         int termFreqLength = bytes.getInt();
 
-        VocabularyEntry entry = new VocabularyEntry();
+        VocabularyEntry entry = new VocabularyEntryImpl();
         entry.setDocumentFrequency(documentFrequency);
         entry.setUpperBound(upperBound);
 
@@ -120,7 +122,7 @@ public class ByteUtils {
         return byteArray;
     }
 
-    public static PostingListCompressed.ByteBlock fetchDocIdsBlock(byte[] compressedDocIds, int docId, long docIdsBlockOffset) {
+    public static PostingListCompressedImpl.ByteBlock fetchDocIdsBlock(byte[] compressedDocIds, int docId, long docIdsBlockOffset) {
         // skips unnecessary lists
         try (
                 ByteArrayInputStream bais = new ByteArrayInputStream(compressedDocIds);
@@ -156,7 +158,7 @@ public class ByteUtils {
                     if (numLowBytes!=0) docIdsBlockOffset += dis.read(byteArray, 8+numHighBytes, numLowBytes);
                     dis.close();
 
-                    return new PostingListCompressed.ByteBlock(byteArray, docIdsBlockOffset);
+                    return new PostingListCompressedImpl.ByteBlock(byteArray, docIdsBlockOffset);
                 }
             }
         } catch (EOFException e) {
@@ -168,7 +170,7 @@ public class ByteUtils {
         return null;
     }
 
-    public static PostingListCompressed.ByteBlock fetchNextTermFrequenciesBlock(byte[] compressedTermFrequencies, long termFrequenciesBlockOffset) {
+    public static PostingListCompressedImpl.ByteBlock fetchNextTermFrequenciesBlock(byte[] compressedTermFrequencies, long termFrequenciesBlockOffset) {
         try (
                 ByteArrayInputStream bais = new ByteArrayInputStream(compressedTermFrequencies);
                 DataInputStream dis = new DataInputStream(bais)
@@ -185,7 +187,7 @@ public class ByteUtils {
             termFrequenciesBlockOffset += 4;            // Consider also the first 4 bytes describing the block length
             dis.close();
 
-            return new PostingListCompressed.ByteBlock(byteArray, termFrequenciesBlockOffset);
+            return new PostingListCompressedImpl.ByteBlock(byteArray, termFrequenciesBlockOffset);
 
         } catch (EOFException e) {
             // end of file reached

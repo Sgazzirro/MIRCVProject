@@ -1,14 +1,15 @@
 package it.unipi;
 
+import it.unipi.encoding.CompressionType;
 import it.unipi.index.InMemoryIndexing;
 import it.unipi.index.SPIMIIndex;
-import it.unipi.model.DocumentIndex;
-import it.unipi.model.DocumentStream;
-import it.unipi.model.Vocabulary;
-import it.unipi.model.implementation.Document;
+import it.unipi.io.Dumper;
+import it.unipi.io.DocumentStream;
+import it.unipi.model.Document;
 import it.unipi.model.implementation.DocumentIndexImpl;
-import it.unipi.model.implementation.TokenizerImpl;
+import it.unipi.encoding.implementation.TokenizerImpl;
 import it.unipi.model.implementation.VocabularyImpl;
+import it.unipi.scoring.DocumentScore;
 import it.unipi.scoring.MaxScore;
 import it.unipi.utils.*;
 import org.junit.*;
@@ -17,10 +18,10 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
-import javax.print.Doc;
 import java.util.PriorityQueue;
 
 import static org.mockito.Mockito.when;
+
 @RunWith(MockitoJUnitRunner.class)
 public class CompleteTest {
     @Mock
@@ -127,6 +128,7 @@ public class CompleteTest {
 
         Assert.assertNull(results.poll());
     }
+
     @Test
     public void testResetPostingList(){
         String query = "rabbit recip";

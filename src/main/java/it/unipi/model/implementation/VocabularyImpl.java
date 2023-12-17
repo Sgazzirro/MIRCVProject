@@ -1,9 +1,8 @@
 package it.unipi.model.implementation;
 import it.unipi.model.Vocabulary;
+import it.unipi.model.VocabularyEntry;
 import it.unipi.utils.Constants;
-import it.unipi.utils.Fetcher;
-import it.unipi.utils.FetcherBinary;
-import opennlp.tools.parser.Cons;
+import it.unipi.io.Fetcher;
 
 import java.io.Serializable;
 import java.util.*;
@@ -28,7 +27,7 @@ public class VocabularyImpl implements Vocabulary, Serializable {
         // TODO: add entry to the posting list
         VocabularyEntry ve;
         if (!isPresent(token)) {
-            ve = new VocabularyEntry();
+            ve = new VocabularyEntryImpl();
             ve.setDocumentFrequency(0);
             //if(!Constants.getCompression())
                 ve.setPostingList(new PostingListImpl());

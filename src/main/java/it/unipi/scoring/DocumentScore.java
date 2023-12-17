@@ -1,4 +1,4 @@
-package it.unipi.utils;
+package it.unipi.scoring;
 
 public class DocumentScore implements Comparable<DocumentScore>{
     public int docId;

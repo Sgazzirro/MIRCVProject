@@ -1,8 +1,13 @@
-package it.unipi.utils;
+package it.unipi.io.implementation;
 
+import it.unipi.io.Fetcher;
+import it.unipi.model.DocumentIndexEntry;
 import it.unipi.model.PostingList;
-import it.unipi.model.implementation.VocabularyEntry;
-import it.unipi.model.implementation.DocumentIndexEntry;
+import it.unipi.model.VocabularyEntry;
+import it.unipi.model.implementation.DocumentIndexEntryImpl;
+import it.unipi.utils.ByteUtils;
+import it.unipi.encoding.CompressionType;
+import it.unipi.utils.Constants;
 
 import java.io.*;
 import java.nio.file.Files;
@@ -195,7 +200,7 @@ public class FetcherBinary implements Fetcher {
             if (documentIndexReader.read(length) != Integer.BYTES)
                 return null;
 
-            documentIndexEntry = new DocumentIndexEntry();
+            documentIndexEntry = new DocumentIndexEntryImpl();
             documentIndexEntry.setDocumentLength(ByteUtils.bytesToInt(length));
 
         } catch(IOException ie) {

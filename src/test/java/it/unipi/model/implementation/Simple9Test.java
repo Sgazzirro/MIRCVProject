@@ -1,5 +1,6 @@
 package it.unipi.model.implementation;
 
+import it.unipi.encoding.implementation.Simple9;
 import it.unipi.utils.ByteUtils;
 import junit.framework.TestCase;
 

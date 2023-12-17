@@ -1,5 +1,9 @@
 package it.unipi.index;
 
+import it.unipi.encoding.CompressionType;
+import it.unipi.io.DocumentStream;
+import it.unipi.io.Dumper;
+import it.unipi.io.Fetcher;
 import it.unipi.model.*;
 import it.unipi.model.implementation.*;
 import it.unipi.utils.*;
@@ -354,7 +358,7 @@ public class SPIMIIndex {
         // final term upper bound computation
         Double to_multiply = Math.log10( ((double) numDocuments/ mergedList.getDocIdsDecompressedList().size()));
         upperBound *= to_multiply;
-        VocabularyEntry result = new VocabularyEntry(frequency, upperBound, mergedList);
+        VocabularyEntry result = new VocabularyEntryImpl(frequency, upperBound, mergedList);
 
         return result;
     }

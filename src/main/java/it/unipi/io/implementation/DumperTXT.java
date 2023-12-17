@@ -1,12 +1,15 @@
-package it.unipi.utils;
+package it.unipi.io.implementation;
 
 
+import it.unipi.io.Dumper;
 import it.unipi.model.DocumentIndex;
 import it.unipi.model.PostingList;
 import it.unipi.model.Vocabulary;
-import it.unipi.model.implementation.DocumentIndexEntry;
-import it.unipi.model.implementation.VocabularyEntry;
+import it.unipi.model.DocumentIndexEntry;
+import it.unipi.model.VocabularyEntry;
 import it.unipi.model.implementation.PostingListImpl;
+import it.unipi.utils.Constants;
+import it.unipi.utils.IOUtils;
 
 import java.io.BufferedWriter;
 import java.io.FileWriter;
@@ -105,8 +108,8 @@ public class DumperTXT implements Dumper {
         try{
             System.out.println("DOC INDEX L : " + docIndex.getTotalLength());
             System.out.println("DOC INDEX N : " + docIndex.getNumDocuments());
-            writerDIX.write(Integer.toString(docIndex.getTotalLength()) + "\n");
-            writerDIX.write(Integer.toString(docIndex.getNumDocuments()) + "\n");
+            writerDIX.write(docIndex.getTotalLength() + "\n");
+            writerDIX.write(docIndex.getNumDocuments() + "\n");
         } catch (IOException ie){
             ie.printStackTrace();
         }

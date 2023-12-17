@@ -2,20 +2,21 @@ package it.unipi.model.implementation;
 
 
 import it.unipi.model.PostingList;
-import it.unipi.utils.Constants;
+import it.unipi.model.VocabularyEntry;
+import it.unipi.model.implementation.PostingListImpl;
 
 import java.util.Objects;
 
-public class VocabularyEntry {
+public class VocabularyEntryImpl implements VocabularyEntry {
 
-    private Integer documentFrequency;
-    private Double upperBound;
+    private int documentFrequency;
+    private double upperBound;
     private PostingList postingList;
 
-    public VocabularyEntry() {
+    public VocabularyEntryImpl() {
     }
 
-    public VocabularyEntry(Integer documentFrequency, Double upperBound, PostingList postingList) {
+    public VocabularyEntryImpl(int documentFrequency, double upperBound, PostingList postingList) {
         this.documentFrequency = documentFrequency;
         this.upperBound = upperBound;
         this.postingList = postingList;
@@ -28,19 +29,19 @@ public class VocabularyEntry {
             documentFrequency++;
     }
 
-    public Integer getDocumentFrequency() {
+    public int getDocumentFrequency() {
         return documentFrequency;
     }
 
-    public void setDocumentFrequency(Integer documentFrequency) {
+    public void setDocumentFrequency(int documentFrequency) {
         this.documentFrequency = documentFrequency;
     }
 
-    public Double getUpperBound() {
+    public double getUpperBound() {
         return upperBound;
     }
 
-    public void setUpperBound(Double upperBound) {
+    public void setUpperBound(double upperBound) {
         this.upperBound = upperBound;
     }
 
@@ -50,22 +51,6 @@ public class VocabularyEntry {
 
     public void setPostingList(PostingList postingList) {
         this.postingList = postingList;
-    }
-
-    public static VocabularyEntry parseTXT(String line) {
-        String[] params = line.split(",");
-
-        int documentFrequency = Integer.parseInt(params[1]);
-        double upperBound = Double.parseDouble(params[2]);
-        PostingList postingList = new PostingListImpl();
-        postingList.setIdf(Double.parseDouble(params[3]));
-        postingList.setDocIdsOffset(Long.parseLong(params[4]));
-        postingList.setTermFreqOffset(Long.parseLong(params[5]));
-        int length = Integer.parseInt(params[6]);
-        postingList.setDocIdsLength(length);
-        postingList.setTermFreqLength(length);
-
-        return new VocabularyEntry(documentFrequency, upperBound, postingList);
     }
 
     @Override
@@ -82,9 +67,9 @@ public class VocabularyEntry {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         VocabularyEntry that = (VocabularyEntry) o;
-        return Objects.equals(documentFrequency, that.documentFrequency) &&
+        return Objects.equals(documentFrequency, that.getDocumentFrequency()) &&
                 //Objects.equals(upperBound, that.upperBound) &&
-                Objects.equals(postingList, that.postingList);
+                Objects.equals(postingList, that.getPostingList());
                 //Objects.equals(postingList.getDocIdsDecompressedList(), that.postingList.getDocIdsDecompressedList()) &&
                 //Objects.equals(postingList.getTermFrequenciesDecompressedList().subList(0, postingList.getDocIdsDecompressedList().size()),
                 //        that.postingList.getTermFrequenciesDecompressedList().subList(0, that.postingList.getDocIdsDecompressedList().size()));

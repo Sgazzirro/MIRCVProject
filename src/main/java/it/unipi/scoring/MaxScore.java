@@ -1,8 +1,10 @@
 package it.unipi.scoring;
 
+import it.unipi.encoding.implementation.TokenizerImpl;
 import it.unipi.model.PostingList;
+import it.unipi.model.VocabularyEntry;
 import it.unipi.model.implementation.*;
-import it.unipi.utils.DocumentScore;
+import it.unipi.utils.Constants;
 
 import java.io.EOFException;
 import java.util.*;
@@ -21,6 +23,9 @@ public class MaxScore{
     }
 
     public PriorityQueue<DocumentScore> score(String query, int numResults, String mode){
+        // Stupid check but better safe than sorry
+        numResults = Math.min(numResults, Constants.N);
+
         List<String> queryTokens = tokenizerImpl.tokenizeBySpace(query);
         TreeMap<Double, PostingList> treeMap = new TreeMap<>();
 
@@ -57,7 +62,7 @@ public class MaxScore{
                 scores.poll();
             }
         }
-        for (PostingList postingList: p) postingList.resetPostingList();    // RESET of the posting lists
+        for (PostingList postingList: p) postingList.reset();    // RESET of the posting lists
         return scores;
     }
 
@@ -79,7 +84,7 @@ public class MaxScore{
                     try {
                         p.get(i).next();
                     } catch (EOFException e) {
-                        p.get(i).resetPostingList();    // RESET of the posting list
+                        p.get(i).reset();    // RESET of the posting list
                         p.remove(i);
                         sigma.remove(i);
                         if (p.size() > 1) ub = computeUB(p, sigma);
@@ -95,7 +100,7 @@ public class MaxScore{
                 try {
                     p.get(i).nextGEQ(current);
                 } catch (EOFException e) {
-                    p.get(i).resetPostingList();    // RESET of the posting list
+                    p.get(i).reset();    // RESET of the posting list
                     p.remove(i);
                     sigma.remove(i);
                     if (p.size() > 1) ub = computeUB(p, sigma);
@@ -118,7 +123,9 @@ public class MaxScore{
             // NESSUNO HA MODIFICATO NEXT
             current = next;
         }
-        for(PostingList postingList: p) postingList.resetPostingList(); // RESET of the last posting lists
+        for (PostingList postingList : p)
+            postingList.reset(); // RESET of the last posting lists
+
         return scores;
     }
 

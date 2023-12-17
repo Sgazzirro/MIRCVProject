@@ -1,7 +1,10 @@
 package it.unipi.utils;
 
+import it.unipi.encoding.CompressionType;
+
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.List;
 
 public class Constants {
 
@@ -17,6 +20,7 @@ public class Constants {
 
     // Stopwords downloaded from https://raw.githubusercontent.com/stopwords-iso/stopwords-en/master/stopwords-en.txt
     public static final Path STOPWORDS_FILE = Paths.get("data/", "stopwords-en.txt");
+    public static final List<String> STOPWORDS = IOUtils.loadStopwords();
 
     public static int BLOCK_SIZE = 100;
     public static int MAX_ENTRIES_PER_SPIMI_BLOCK = 1_000_000;

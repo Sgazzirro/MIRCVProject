@@ -1,13 +1,12 @@
 package it.unipi;
 
-import it.unipi.model.implementation.TokenizerImpl;
+import it.unipi.encoding.implementation.TokenizerImpl;
 import it.unipi.model.implementation.VocabularyImpl;
 import it.unipi.scoring.MaxScore;
 
 import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.PriorityQueue;
 
 /**
  * A class demanded to perform a trec_eval onto our index

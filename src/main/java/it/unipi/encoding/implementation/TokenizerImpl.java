@@ -1,6 +1,7 @@
-package it.unipi.model.implementation;
+package it.unipi.encoding.implementation;
 
-import it.unipi.model.Tokenizer;
+import it.unipi.encoding.Tokenizer;
+import it.unipi.utils.Constants;
 import it.unipi.utils.IOUtils;
 import opennlp.tools.stemmer.PorterStemmer;
 
@@ -11,9 +12,8 @@ import java.util.stream.Stream;
 
 public class TokenizerImpl implements Tokenizer {
 
-    List<String> stopwords = IOUtils.loadStopwords();
     // Use Porter stemmer
-    PorterStemmer stemmer = new PorterStemmer();
+    PorterStemmer stemmer;
 
     private final boolean applyStemming;
     private final boolean removeStopwords;
@@ -25,6 +25,9 @@ public class TokenizerImpl implements Tokenizer {
     public TokenizerImpl(boolean applyStemming, boolean removeStopwords) {
         this.applyStemming = applyStemming;
         this.removeStopwords = removeStopwords;
+
+        if (applyStemming)
+            this.stemmer = new PorterStemmer();
     }
 
     @Override
@@ -37,7 +40,7 @@ public class TokenizerImpl implements Tokenizer {
 
         Stream<String> stream = Arrays.stream(removedPunctuation.toLowerCase().split("\\s+"));
         if (removeStopwords)
-            stream = stream.filter(s -> !stopwords.contains(s));
+            stream = stream.filter(s -> !Constants.STOPWORDS.contains(s));
         if (applyStemming)
             stream = stream.map(s -> stemmer.stem(s));
 

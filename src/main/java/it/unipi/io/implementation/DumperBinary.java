@@ -1,17 +1,15 @@
-package it.unipi.utils;
+package it.unipi.io.implementation;
 
-import it.unipi.model.DocumentIndex;
-import it.unipi.model.PostingList;
-import it.unipi.model.Vocabulary;
-import it.unipi.model.implementation.VocabularyEntry;
-import it.unipi.model.implementation.DocumentIndexEntry;
+import it.unipi.io.Dumper;
+import it.unipi.model.*;
+import it.unipi.utils.Constants;
+import it.unipi.utils.IOUtils;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.util.List;
 import java.util.Map;

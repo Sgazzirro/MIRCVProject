@@ -1,7 +1,8 @@
-package it.unipi.utils;
+package it.unipi.io.implementation;
 
 import it.unipi.model.PostingList;
-import it.unipi.model.implementation.PostingListCompressed;
+import it.unipi.model.implementation.PostingListCompressedImpl;
+import it.unipi.encoding.CompressionType;
 
 import java.io.*;
 
@@ -33,14 +34,12 @@ public class FetcherCompressed extends FetcherBinary {
     }
 
 
-
-
     @Override
     public void loadPosting(PostingList postingList) {
-        if (!(postingList instanceof PostingListCompressed))
+        if (!(postingList instanceof PostingListCompressedImpl))
             throw new RuntimeException("Unsupported operation");
 
-        PostingListCompressed pList = (PostingListCompressed) postingList;
+        PostingListCompressedImpl pList = (PostingListCompressedImpl) postingList;
 
         try {
             pList.setCompressedDocIds(

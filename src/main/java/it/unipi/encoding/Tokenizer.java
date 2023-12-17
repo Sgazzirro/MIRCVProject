@@ -1,4 +1,4 @@
-package it.unipi.model;
+package it.unipi.encoding;
 
 import java.util.List;
 

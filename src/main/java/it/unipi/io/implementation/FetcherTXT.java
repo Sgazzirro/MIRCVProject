@@ -1,8 +1,11 @@
-package it.unipi.utils;
+package it.unipi.io.implementation;
 
+import it.unipi.io.Fetcher;
+import it.unipi.model.DocumentIndexEntry;
 import it.unipi.model.PostingList;
-import it.unipi.model.implementation.DocumentIndexEntry;
-import it.unipi.model.implementation.VocabularyEntry;
+import it.unipi.model.implementation.DocumentIndexEntryImpl;
+import it.unipi.model.VocabularyEntry;
+import it.unipi.utils.Constants;
 
 import java.io.*;
 import java.nio.file.Path;
@@ -131,7 +134,7 @@ public class FetcherTXT implements Fetcher {
     @Override
     public Map.Entry<Integer, DocumentIndexEntry> loadDocEntry() {
         // The loading of an entry without arguments uses the global reader
-        DocumentIndexEntry result = new DocumentIndexEntry();
+        DocumentIndexEntry result = new DocumentIndexEntryImpl();
         int docId;
         if (!opened)
             if (!start(path))

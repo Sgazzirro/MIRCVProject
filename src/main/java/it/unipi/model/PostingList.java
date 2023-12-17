@@ -1,13 +1,10 @@
 package it.unipi.model;
 
-import it.unipi.model.implementation.PostingListCompressed;
+import it.unipi.model.implementation.PostingListCompressedImpl;
 import it.unipi.model.implementation.PostingListImpl;
-import it.unipi.utils.CompressionType;
-import it.unipi.utils.Fetcher;
+import it.unipi.encoding.CompressionType;
 
 import java.io.EOFException;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.List;
 
 public abstract class PostingList{
@@ -79,6 +76,11 @@ public abstract class PostingList{
     public boolean addPosting(int docId) {
         return addPosting(docId, 1);
     }
+
+    /**
+     * Reset the iterator on the posting list to the beginning
+     */
+    public abstract void reset();
 
     public abstract boolean addPosting(int docId, int freq);
 
@@ -163,10 +165,8 @@ public abstract class PostingList{
             case DEBUG:
             case BINARY: return new PostingListImpl();
 
-            case COMPRESSED: return new PostingListCompressed();
+            case COMPRESSED: return new PostingListCompressedImpl();
         }
         throw new RuntimeException("Unsupported compression type: " + compression);
     }
-
-    public abstract void resetPostingList();
 }

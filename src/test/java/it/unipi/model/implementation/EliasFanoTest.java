@@ -1,13 +1,11 @@
 package it.unipi.model.implementation;
 
-import it.unipi.model.Encoder;
+import it.unipi.encoding.Encoder;
+import it.unipi.encoding.implementation.EliasFano;
 import junit.framework.TestCase;
 import org.junit.Test;
 
 import java.util.*;
-
-import static it.unipi.utils.ByteUtils.binaryStringToByteArray;
-import static it.unipi.utils.ByteUtils.byteArrayToBinaryString;
 
 public class EliasFanoTest extends TestCase {
 

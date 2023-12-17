@@ -1,12 +1,14 @@
 package it.unipi;
 
+import it.unipi.encoding.CompressionType;
 import it.unipi.index.InMemoryIndexing;
 import it.unipi.index.SPIMIIndex;
+import it.unipi.io.Dumper;
 import it.unipi.model.DocumentIndex;
-import it.unipi.model.DocumentStream;
+import it.unipi.io.DocumentStream;
 import it.unipi.model.Vocabulary;
 import it.unipi.model.implementation.DocumentIndexImpl;
-import it.unipi.model.implementation.DocumentStreamImpl;
+import it.unipi.io.implementation.DocumentStreamImpl;
 import it.unipi.model.implementation.VocabularyImpl;
 import it.unipi.utils.*;
 
@@ -50,7 +52,7 @@ public class App
 
 */
 
-        DocumentStream ds = new DocumentStreamImpl(Constants.COLLECTION_FILE);
+        DocumentStream ds = DocumentStream.getInstance();
         DocumentIndex di = new DocumentIndexImpl();
         Vocabulary v = new VocabularyImpl();
         Dumper d = Dumper.getInstance(CompressionType.COMPRESSED);

@@ -1,11 +1,8 @@
-package it.unipi.model.implementation;
+package it.unipi.encoding.implementation;
 
-import it.unipi.model.Encoder;
-import it.unipi.utils.ByteUtils;
-import it.unipi.utils.Constants;
+import it.unipi.encoding.Encoder;
 
 import java.io.*;
-import java.nio.ByteBuffer;
 import java.util.*;
 
 public class EliasFano implements Encoder {

@@ -1,6 +1,7 @@
 package it.unipi.model.implementation;
 
 import it.unipi.model.DocumentIndex;
+import it.unipi.model.DocumentIndexEntry;
 
 import java.io.Serializable;
 import java.util.*;
@@ -55,7 +56,7 @@ public class DocumentIndexImpl implements DocumentIndex, Serializable {
             return false;
         }
         else{
-            DocumentIndexEntry die = new DocumentIndexEntry();
+            DocumentIndexEntry die = new DocumentIndexEntryImpl();
             die.setDocumentLength(docLength);
             table.put(docId, die);
             numDocuments +=1;

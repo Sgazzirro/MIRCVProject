@@ -1,8 +1,11 @@
 package it.unipi.index;
 
+import it.unipi.encoding.Tokenizer;
+import it.unipi.encoding.implementation.TokenizerImpl;
+import it.unipi.io.DocumentStream;
 import it.unipi.model.*;
 import it.unipi.model.implementation.*;
-import it.unipi.utils.Dumper;
+import it.unipi.io.Dumper;
 
 import java.io.*;
 import java.nio.file.Path;
@@ -274,7 +277,7 @@ public class InMemoryIndexing {
         docIndex = new DocumentIndexImpl();
     }
 
-    void dumpDocumentIndexLine(Map.Entry<Integer,DocumentIndexEntry> entry){
+    void dumpDocumentIndexLine(Map.Entry<Integer, DocumentIndexEntry> entry){
         dumper.dumpDocumentIndexEntry(entry);
     }
 
@@ -286,7 +289,7 @@ public class InMemoryIndexing {
         return docIndex;
     }
 
-    public void computePartialTermUB(){
+    public void computePartialTermUB() {
         // TODO: With BM25 serve l'average length, quindi stiamo attenti a come calcolare questo partial score perché forse in realtà non si può
         for(Map.Entry<String, VocabularyEntry> entry: vocabulary.getEntries()){
             VocabularyEntry vocabularyEntry = entry.getValue();

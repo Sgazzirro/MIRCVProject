@@ -1,9 +1,13 @@
 package it.unipi.scoring;
 
-import it.unipi.model.Tokenizer;
+import it.unipi.encoding.CompressionType;
+import it.unipi.io.Dumper;
+import it.unipi.io.Fetcher;
+import it.unipi.io.implementation.DumperCompressed;
+import it.unipi.io.implementation.FetcherCompressed;
 import it.unipi.model.Vocabulary;
-import it.unipi.model.implementation.TokenizerImpl;
-import it.unipi.model.implementation.VocabularyEntry;
+import it.unipi.encoding.implementation.TokenizerImpl;
+import it.unipi.model.VocabularyEntry;
 import it.unipi.model.implementation.VocabularyImpl;
 import it.unipi.utils.*;
 import org.apache.commons.io.FileUtils;
@@ -13,7 +17,6 @@ import org.junit.Test;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.BitSet;
 import java.util.Map;
 import java.util.Objects;
 import java.util.PriorityQueue;

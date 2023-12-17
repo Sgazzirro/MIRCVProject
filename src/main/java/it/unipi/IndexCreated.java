@@ -1,15 +1,17 @@
 package it.unipi;
 
-import it.unipi.model.implementation.Document;
-import it.unipi.model.implementation.TokenizerImpl;
+import it.unipi.encoding.implementation.TokenizerImpl;
+import it.unipi.io.DocumentStream;
+import it.unipi.model.Document;
 import it.unipi.model.implementation.VocabularyImpl;
 import it.unipi.scoring.MaxScore;
-import it.unipi.utils.CompressionType;
+import it.unipi.encoding.CompressionType;
 import it.unipi.utils.Constants;
-import it.unipi.utils.DocumentScore;
-import it.unipi.utils.FetcherCompressed;
+import it.unipi.scoring.DocumentScore;
 
 import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.PriorityQueue;
 
 public class IndexCreated {
@@ -21,18 +23,34 @@ public class IndexCreated {
         Constants.setPath(Path.of("./data"));
         MaxScore max = new MaxScore(new VocabularyImpl(), new TokenizerImpl());
 
-        for(int i = 0; i < 1; i++) {
-            PriorityQueue<DocumentScore> scoring = max.score("Ho guardato dentro una bugia", 10, "disjunctive");
-            PriorityQueue<DocumentScore> reverseMode = new PriorityQueue<>(java.util.Collections.reverseOrder());
+        DocumentStream stream = DocumentStream.getInstance();
 
-            while(scoring.size() > 0) {
+        for(int i = 0; i < 1; i++) {
+            // TODO - with numResults = 10 or 100 we get different results
+            int numResults = 1000;
+            boolean printFirstText = true;
+
+            PriorityQueue<DocumentScore> scoring = max.score("top 10 cities in Europe", numResults, "disjunctive");
+            List<DocumentScore> reverseMode = new ArrayList<>();
+
+            while (!scoring.isEmpty()) {
                 DocumentScore first = scoring.poll();
-                reverseMode.add(first);
+                reverseMode.add(0, first);
             }
 
-            while(reverseMode.size() > 0){
-                DocumentScore first = reverseMode.poll();
+            // Print how many different documents we got (for testing purposes)
+            System.out.println("Results asked: " + numResults);
+            System.out.println("Results obtained: " +
+                    reverseMode.stream().mapToInt(score -> score.docId).distinct().count());
+            System.out.println();
+
+            for (DocumentScore first : reverseMode) {
                 System.out.println("ID : " + first.docId + " SCORE : " + first.score);
+
+                if (printFirstText) {
+                    System.out.println(stream.getDoc(first.docId).getText() + "\n");
+                    printFirstText = false;
+                }
             }
 
         }

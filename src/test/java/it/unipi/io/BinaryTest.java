@@ -1,19 +1,19 @@
 package it.unipi.io;
-import org.apache.commons.io.FileUtils;
+import it.unipi.encoding.CompressionType;
+import it.unipi.io.implementation.DumperCompressed;
+import it.unipi.io.implementation.FetcherCompressed;
 import it.unipi.model.PostingList;
 import it.unipi.model.Vocabulary;
-import it.unipi.model.implementation.VocabularyEntry;
-import it.unipi.model.implementation.PostingListCompressed;
+import it.unipi.model.VocabularyEntry;
+import it.unipi.model.implementation.PostingListCompressedImpl;
 import it.unipi.model.implementation.PostingListImpl;
+import it.unipi.model.implementation.VocabularyEntryImpl;
 import it.unipi.model.implementation.VocabularyImpl;
 import it.unipi.utils.*;
 import org.junit.*;
 
 import java.io.EOFException;
-import java.io.File;
 import java.io.IOException;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.*;
 
 import static org.junit.Assert.assertEquals;
@@ -68,11 +68,11 @@ public class BinaryTest {
         if (!(Constants.getCompression() == CompressionType.COMPRESSED))
             p = new PostingListImpl();
         else
-            p = new PostingListCompressed();
+            p = new PostingListCompressedImpl();
 
         p.addPosting(1, 1);
         p.addPosting(2, 2);
-        VocabularyEntry i = new VocabularyEntry(2, 2.2, p);
+        VocabularyEntry i = new VocabularyEntryImpl(2, 2.2, p);
 
         NavigableMap<String, VocabularyEntry> tree = new TreeMap<>();
         tree.put(testTerm, i);

@@ -1,15 +1,24 @@
-package it.unipi.model.implementation;
-import it.unipi.model.DocumentStream;
+package it.unipi.io.implementation;
+import it.unipi.io.DocumentStream;
+import it.unipi.model.Document;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.util.zip.GZIPInputStream;
 
 public class DocumentStreamImpl implements DocumentStream {
+
     private BufferedReader br;
-    boolean firstLine=true;
+    private boolean firstLine = true;
+
+    private String filename;
 
     public DocumentStreamImpl(String filename) {
+        this.filename = filename;
+        reset();
+    }
+
+    private void reset() {
         try {
             FileInputStream fileInput = new FileInputStream(filename);
 
@@ -52,6 +61,18 @@ public class DocumentStreamImpl implements DocumentStream {
         } catch (IOException e) {
             e.printStackTrace();
             return null;
+        }
+        return doc;
+    }
+
+    @Override
+    public Document getDoc(int docId) {
+        reset();
+
+        Document doc = null;
+        while (docId >= 0) {
+            doc = nextDoc();
+            docId--;
         }
         return doc;
     }

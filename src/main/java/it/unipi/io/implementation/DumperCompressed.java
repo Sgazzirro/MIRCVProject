@@ -1,7 +1,9 @@
-package it.unipi.utils;
+package it.unipi.io.implementation;
 
-import it.unipi.model.Encoder;
-import it.unipi.model.implementation.*;
+import it.unipi.encoding.Encoder;
+import it.unipi.encoding.implementation.EliasFano;
+import it.unipi.encoding.implementation.Simple9;
+import it.unipi.utils.Constants;
 
 import java.io.*;
 import java.nio.ByteBuffer;
