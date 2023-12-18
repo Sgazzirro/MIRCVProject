@@ -131,7 +131,8 @@ public class FetcherBinary implements Fetcher {
                 if (vocabularyReader.read(vocabularyEntryBytes, 0, Constants.VOCABULARY_ENTRY_BYTES_SIZE) != Constants.VOCABULARY_ENTRY_BYTES_SIZE)
                     throw new IOException("Could not read vocabulary entry");
 
-                int comparison = truncatedTerm.compareTo(ByteUtils.bytesToString(vocabularyEntryBytes, 0, Constants.BYTES_STORED_STRING));
+                String currentTerm = ByteUtils.bytesToString(vocabularyEntryBytes, 0, Constants.BYTES_STORED_STRING);
+                int comparison = truncatedTerm.compareTo(currentTerm);
 
                 // condizione di stop
                 if(comparison!=0 && end-start==1){

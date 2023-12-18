@@ -1,14 +1,14 @@
 package it.unipi;
 
 import it.unipi.encoding.CompressionType;
+import it.unipi.encoding.Tokenizer;
 import it.unipi.index.InMemoryIndexing;
 import it.unipi.index.SPIMIIndex;
 import it.unipi.io.Dumper;
 import it.unipi.io.DocumentStream;
 import it.unipi.model.Document;
+import it.unipi.model.Vocabulary;
 import it.unipi.model.implementation.DocumentIndexImpl;
-import it.unipi.encoding.implementation.TokenizerImpl;
-import it.unipi.model.implementation.VocabularyImpl;
 import it.unipi.scoring.DocumentScore;
 import it.unipi.scoring.MaxScore;
 import it.unipi.utils.*;
@@ -30,7 +30,7 @@ public class CompleteTest {
     @InjectMocks
     InMemoryIndexing indexerSingleBlock;
 
-    VocabularyImpl vocabulary;
+    Vocabulary vocabulary;
 
     @Before
     public void setup() {
@@ -49,15 +49,15 @@ public class CompleteTest {
         CompressionType compression = CompressionType.COMPRESSED;
         Constants.setCompression(compression);
         // Dumping
-        indexerSingleBlock = new InMemoryIndexing(new VocabularyImpl(), Dumper.getInstance(compression), new DocumentIndexImpl());
+        indexerSingleBlock = new InMemoryIndexing(Vocabulary.getInstance(), Dumper.getInstance(compression), new DocumentIndexImpl());
         new SPIMIIndex(compression, ds, indexerSingleBlock).buildIndexSPIMI(Constants.testPath);
-        vocabulary = new VocabularyImpl();
+        vocabulary = Vocabulary.getInstance();
     }
 
     @Test
     public void testQueryDuck(){
         String query = "duck";
-        MaxScore maxScore = new MaxScore(vocabulary, new TokenizerImpl());
+        MaxScore maxScore = new MaxScore(vocabulary, Tokenizer.getInstance());
 
         PriorityQueue<DocumentScore> results = maxScore.score(query, 10, "disjunctive");
         Assert.assertEquals(results.size(), 4);
@@ -72,7 +72,7 @@ public class CompleteTest {
     @Test
     public void testQueryRabbit(){
         String query = "rabbit";
-        MaxScore maxScore = new MaxScore(vocabulary, new TokenizerImpl());
+        MaxScore maxScore = new MaxScore(vocabulary, Tokenizer.getInstance());
 
         PriorityQueue<DocumentScore> results = maxScore.score(query, 10, "disjunctive");
         Assert.assertEquals(results.size(), 2);
@@ -89,7 +89,7 @@ public class CompleteTest {
     @Test
     public void testQueryRecip(){
         String query = "recip";
-        MaxScore maxScore = new MaxScore(vocabulary, new TokenizerImpl());
+        MaxScore maxScore = new MaxScore(vocabulary, Tokenizer.getInstance());
 
         PriorityQueue<DocumentScore> results = maxScore.score(query, 10, "disjunctive");
         Assert.assertEquals(results.size(), 2);
@@ -107,7 +107,7 @@ public class CompleteTest {
     public void testQueryEmpty(){
         // fetching
         String query = "cat";
-        MaxScore maxScore = new MaxScore(vocabulary, new TokenizerImpl());
+        MaxScore maxScore = new MaxScore(vocabulary, Tokenizer.getInstance());
 
         PriorityQueue<DocumentScore> results = maxScore.score(query, 10, "disjunctive");
         Assert.assertNull(results);
@@ -116,7 +116,7 @@ public class CompleteTest {
     @Test
     public void testQueryRabbitRecip(){
         String query = "rabbit recip";
-        MaxScore maxScore = new MaxScore(vocabulary, new TokenizerImpl());
+        MaxScore maxScore = new MaxScore(vocabulary, Tokenizer.getInstance());
 
         PriorityQueue<DocumentScore> results = maxScore.score(query, 10, "disjunctive");
 
@@ -132,7 +132,7 @@ public class CompleteTest {
     @Test
     public void testResetPostingList(){
         String query = "rabbit recip";
-        MaxScore maxScore = new MaxScore(vocabulary, new TokenizerImpl());
+        MaxScore maxScore = new MaxScore(vocabulary, Tokenizer.getInstance());
 
         for(int i=0; i<2; i++) {
             double start = System.currentTimeMillis();
@@ -153,7 +153,7 @@ public class CompleteTest {
     @Test
     public void testConjunctiveRabbitRecip(){
         String query = "rabbit recip";
-        MaxScore maxScore = new MaxScore(vocabulary, new TokenizerImpl());
+        MaxScore maxScore = new MaxScore(vocabulary, Tokenizer.getInstance());
 
         PriorityQueue<DocumentScore> results = maxScore.score(query, 10, "conjunctive");
 
@@ -169,7 +169,7 @@ public class CompleteTest {
     @Test
     public void testConjunctiveEmpty(){
         String query = "rabbit cat";
-        MaxScore maxScore = new MaxScore(vocabulary, new TokenizerImpl());
+        MaxScore maxScore = new MaxScore(vocabulary, Tokenizer.getInstance());
 
         PriorityQueue<DocumentScore> results = maxScore.score(query, 10, "conjunctive");
 
@@ -179,7 +179,7 @@ public class CompleteTest {
     @Test
     public void testResetConjunctive(){
         String query = "duck rabbit";
-        MaxScore maxScore = new MaxScore(vocabulary, new TokenizerImpl());
+        MaxScore maxScore = new MaxScore(vocabulary, Tokenizer.getInstance());
 
         for(int i=0; i<2; i++) {
             double start = System.currentTimeMillis();
@@ -201,7 +201,7 @@ public class CompleteTest {
     @Test
     public void testConjunctiveBeij(){
         String query = "beij";
-        MaxScore maxScore = new MaxScore(vocabulary, new TokenizerImpl());
+        MaxScore maxScore = new MaxScore(vocabulary, Tokenizer.getInstance());
 
         PriorityQueue<DocumentScore> results = maxScore.score(query, 10, "conjunctive");
 
@@ -213,7 +213,7 @@ public class CompleteTest {
     @Test
     public void testConjunctiveRabbitDishCatBeij(){
         String query = "rabbit dish duck beij";
-        MaxScore maxScore = new MaxScore(vocabulary, new TokenizerImpl());
+        MaxScore maxScore = new MaxScore(vocabulary, Tokenizer.getInstance());
 
         PriorityQueue<DocumentScore> results = maxScore.score(query, 10, "conjunctive");
 

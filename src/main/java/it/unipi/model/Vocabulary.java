@@ -1,11 +1,13 @@
 package it.unipi.model;
 
+import it.unipi.model.implementation.VocabularyImpl;
+
 import java.util.Map;
 
 public interface Vocabulary {
     
     // Returns whether the vocabulary has the term inside
-    public boolean isPresent(String term);
+    boolean isPresent(String term);
 
     // Add the posting docid and create the entry in the vocabulary if never-seen token
     void addEntry(String token, int docid);
@@ -14,7 +16,9 @@ public interface Vocabulary {
     VocabularyEntry getEntry(String token);
 
     // Returns an iterator over term, entry pairs
-    public Iterable<Map.Entry<String, VocabularyEntry>> getEntries();
+    Iterable<Map.Entry<String, VocabularyEntry>> getEntries();
 
-    // public TreeMap<String, VocabularyEntry> sortByTerm();
+    static Vocabulary getInstance() {
+        return new VocabularyImpl();
+    }
 }

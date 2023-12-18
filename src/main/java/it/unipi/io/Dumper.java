@@ -11,12 +11,17 @@ import it.unipi.encoding.CompressionType;
 import it.unipi.io.implementation.DumperBinary;
 import it.unipi.io.implementation.DumperCompressed;
 import it.unipi.io.implementation.DumperTXT;
+import it.unipi.utils.Constants;
 
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.Map;
 
 public interface Dumper {
+
+    default boolean start() {
+        return start(Constants.getPath());
+    }
 
     /**
      * Open the stream

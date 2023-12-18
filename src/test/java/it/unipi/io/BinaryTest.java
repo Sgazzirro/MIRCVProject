@@ -8,7 +8,6 @@ import it.unipi.model.VocabularyEntry;
 import it.unipi.model.implementation.PostingListCompressedImpl;
 import it.unipi.model.implementation.PostingListImpl;
 import it.unipi.model.implementation.VocabularyEntryImpl;
-import it.unipi.model.implementation.VocabularyImpl;
 import it.unipi.utils.*;
 import org.junit.*;
 
@@ -17,15 +16,14 @@ import java.io.IOException;
 import java.util.*;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 
 public class BinaryTest {
 
-    Dumper dumper;
-    Fetcher fetcher;
+    private static Dumper dumper;
+    private static Fetcher fetcher;
 
-    @Before
-    public void setup() {
+    @BeforeClass
+    public static void setup() {
         dumper = new DumperCompressed();
         fetcher = new FetcherCompressed();
 
@@ -34,8 +32,8 @@ public class BinaryTest {
     }
 
     @Test
-    public void testFirstEntry() throws IOException {
-        Vocabulary voc = new VocabularyImpl();
+    public void testFirstEntry() {
+        Vocabulary voc = Vocabulary.getInstance();
         String testTerm = "test";
 
         voc.addEntry(testTerm, 1);
@@ -44,14 +42,15 @@ public class BinaryTest {
         voc.addEntry(testTerm, 2);
 
         VocabularyEntry entry = voc.getEntry(testTerm);
-        dumper.start(Constants.testPath);
+        dumper.start();
         dumper.dumpVocabulary(voc);
         dumper.end();
 
-        fetcher.start(Constants.testPath);
+        fetcher.start();
         Map.Entry<String, VocabularyEntry> output = fetcher.loadVocEntry();
         VocabularyEntry testEntry = output.getValue();
         fetcher.end();
+
         assertEquals(testTerm, output.getKey());
         assertEquals(entry, testEntry);
         //assertEquals(entry.getDocumentFrequency(), testEntry.getDocumentFrequency());
@@ -62,13 +61,7 @@ public class BinaryTest {
     @Test
     public void testGenericEntry() throws IOException {
         String testTerm = "teseo";
-        PostingList p;
-        p = new PostingListImpl();
-
-        if (!(Constants.getCompression() == CompressionType.COMPRESSED))
-            p = new PostingListImpl();
-        else
-            p = new PostingListCompressedImpl();
+        PostingList p = PostingList.getInstance(Constants.getCompression());
 
         p.addPosting(1, 1);
         p.addPosting(2, 2);
@@ -77,11 +70,11 @@ public class BinaryTest {
         NavigableMap<String, VocabularyEntry> tree = new TreeMap<>();
         tree.put(testTerm, i);
         Map.Entry<String, VocabularyEntry> input = tree.entrySet().iterator().next();
-        dumper.start(Constants.testPath);
+        dumper.start();
         dumper.dumpVocabularyEntry(input);
         dumper.end();
 
-        fetcher.start(Constants.testPath);
+        fetcher.start();
         Map.Entry<String, VocabularyEntry> output = fetcher.loadVocEntry();
         fetcher.end();
 
@@ -91,7 +84,7 @@ public class BinaryTest {
 
     @Test
     public void testSpecificEntry() {
-        Vocabulary voc = new VocabularyImpl();
+        Vocabulary voc = Vocabulary.getInstance();
         String testTerm = "test";
         String testTerm2 = "dog";
 
@@ -102,11 +95,11 @@ public class BinaryTest {
 
         VocabularyEntry entry = voc.getEntry(testTerm2);
         Map.Entry<String, VocabularyEntry> input = new AbstractMap.SimpleEntry<>(testTerm2, entry);
-        dumper.start(Constants.testPath);
+        dumper.start();
         dumper.dumpVocabulary(voc);
         dumper.end();
 
-        fetcher.start(Constants.testPath);
+        fetcher.start();
         VocabularyEntry output = fetcher.loadVocEntry("dog");
         fetcher.end();
 
@@ -116,7 +109,7 @@ public class BinaryTest {
     @Test
     public void testNext2dot5Blocks() {
         Constants.BLOCK_SIZE=2;
-        Vocabulary voc = new VocabularyImpl();
+        Vocabulary voc = Vocabulary.getInstance();
         String test = "test";
         voc.addEntry(test, 1);
         voc.addEntry(test, 1);
@@ -128,11 +121,11 @@ public class BinaryTest {
         VocabularyEntry entry = voc.getEntry(test);
         Map.Entry<String, VocabularyEntry> input = new AbstractMap.SimpleEntry<>(test, entry);
 
-        dumper.start(Constants.testPath);
+        dumper.start();
         dumper.dumpVocabulary(voc);
         dumper.end();
 
-        fetcher.start(Constants.testPath);
+        fetcher.start();
         Map.Entry<String, VocabularyEntry> output = fetcher.loadVocEntry();
         fetcher.end();
 
@@ -143,7 +136,7 @@ public class BinaryTest {
     @Test
     public void testNextNotPresent() {
         Constants.BLOCK_SIZE=3;
-        Vocabulary voc = new VocabularyImpl();
+        Vocabulary voc = Vocabulary.getInstance();
         String test = "test";
         voc.addEntry(test, 1);
         voc.addEntry(test, 1);
@@ -152,11 +145,11 @@ public class BinaryTest {
         VocabularyEntry entry = voc.getEntry(test);
         Map.Entry<String, VocabularyEntry> input = new AbstractMap.SimpleEntry<>(test, entry);
 
-        dumper.start(Constants.testPath);
+        dumper.start();
         dumper.dumpVocabulary(voc);
         dumper.end();
 
-        fetcher.start(Constants.testPath);
+        fetcher.start();
         Map.Entry<String, VocabularyEntry> output = fetcher.loadVocEntry();
         fetcher.end();
 
@@ -180,7 +173,7 @@ public class BinaryTest {
     @Test
     public void testNextNotPresentOffsets() {
         Constants.BLOCK_SIZE=3;
-        Vocabulary voc = new VocabularyImpl();
+        Vocabulary voc = Vocabulary.getInstance();
         String test = "test";
         String test2= "test2";
         voc.addEntry(test2, 1);
@@ -191,11 +184,11 @@ public class BinaryTest {
         VocabularyEntry entry = voc.getEntry(test2);
         Map.Entry<String, VocabularyEntry> input = new AbstractMap.SimpleEntry<>(test2, entry);
 
-        dumper.start(Constants.testPath);
+        dumper.start();
         dumper.dumpVocabulary(voc);
         dumper.end();
 
-        fetcher.start(Constants.testPath);
+        fetcher.start();
         Map.Entry<String, VocabularyEntry> output = fetcher.loadVocEntry(); // carica test2
         output = fetcher.loadVocEntry();                                    // carica test
         fetcher.end();
@@ -218,7 +211,7 @@ public class BinaryTest {
     @Test
     public void testNextGEQSameBlock(){
         Constants.BLOCK_SIZE=3;
-        Vocabulary voc = new VocabularyImpl();
+        Vocabulary voc = Vocabulary.getInstance();
         String test = "test";
         voc.addEntry(test, 1);
         voc.addEntry(test, 1);
@@ -235,11 +228,11 @@ public class BinaryTest {
         VocabularyEntry entry = voc.getEntry(test);
         Map.Entry<String, VocabularyEntry> input = new AbstractMap.SimpleEntry<>(test, entry);
 
-        dumper.start(Constants.testPath);
+        dumper.start();
         dumper.dumpVocabulary(voc);
         dumper.end();
 
-        fetcher.start(Constants.testPath);
+        fetcher.start();
         Map.Entry<String, VocabularyEntry> output = fetcher.loadVocEntry();
         fetcher.end();
 
@@ -251,7 +244,7 @@ public class BinaryTest {
         try {
             plInput.nextGEQ(2);
             plOutput.nextGEQ(2);
-        } catch (EOFException eofException){
+        } catch (EOFException eofException) {
             eofException.printStackTrace();
         }
         assertEquals(2,plOutput.docId());
@@ -260,7 +253,7 @@ public class BinaryTest {
     @Test
     public void testNextGEQDiffBlock(){
         Constants.BLOCK_SIZE=3;
-        Vocabulary voc = new VocabularyImpl();
+        Vocabulary voc = Vocabulary.getInstance();
         String test = "test";
         voc.addEntry(test, 1);
         voc.addEntry(test, 1);
@@ -277,11 +270,11 @@ public class BinaryTest {
         VocabularyEntry entry = voc.getEntry(test);
         Map.Entry<String, VocabularyEntry> input = new AbstractMap.SimpleEntry<>(test, entry);
 
-        dumper.start(Constants.testPath);
+        dumper.start();
         dumper.dumpVocabulary(voc);
         dumper.end();
 
-        fetcher.start(Constants.testPath);
+        fetcher.start();
         Map.Entry<String, VocabularyEntry> output = fetcher.loadVocEntry();
         fetcher.end();
 
@@ -302,7 +295,7 @@ public class BinaryTest {
     @Test
     public void testNextGEQLast(){
         Constants.BLOCK_SIZE=3;
-        Vocabulary voc = new VocabularyImpl();
+        Vocabulary voc = Vocabulary.getInstance();
         String test = "test";
         voc.addEntry(test, 1);
         voc.addEntry(test, 1);
@@ -319,11 +312,11 @@ public class BinaryTest {
         VocabularyEntry entry = voc.getEntry(test);
         Map.Entry<String, VocabularyEntry> input = new AbstractMap.SimpleEntry<>(test, entry);
 
-        dumper.start(Constants.testPath);
+        dumper.start();
         dumper.dumpVocabulary(voc);
         dumper.end();
 
-        fetcher.start(Constants.testPath);
+        fetcher.start();
         Map.Entry<String, VocabularyEntry> output = fetcher.loadVocEntry();
         fetcher.end();
 
@@ -344,7 +337,7 @@ public class BinaryTest {
     @Test
     public void testNextGEQNotPresent(){
         Constants.BLOCK_SIZE=3;
-        Vocabulary voc = new VocabularyImpl();
+        Vocabulary voc = Vocabulary.getInstance();
         String test = "test";
         voc.addEntry(test, 1);
         voc.addEntry(test, 1);
@@ -361,11 +354,11 @@ public class BinaryTest {
         VocabularyEntry entry = voc.getEntry(test);
         Map.Entry<String, VocabularyEntry> input = new AbstractMap.SimpleEntry<>(test, entry);
 
-        dumper.start(Constants.testPath);
+        dumper.start();
         dumper.dumpVocabulary(voc);
         dumper.end();
 
-        fetcher.start(Constants.testPath);
+        fetcher.start();
         Map.Entry<String, VocabularyEntry> output = fetcher.loadVocEntry();
         fetcher.end();
 
@@ -402,14 +395,9 @@ public class BinaryTest {
             Collections.sort(list);
 
             // posting list creation
-            PostingList p;
-            if (!(Constants.getCompression() == CompressionType.COMPRESSED))
-                p = new PostingListImpl();
-            else
-                p = new PostingListCompressedImpl();
-            for (int num: list){
+            PostingList p = PostingList.getInstance(Constants.getCompression());
+            for (int num: list)
                 p.addPosting(num, num);
-            }
 
             // vocabulary entry creation
             VocabularyEntry entry = new VocabularyEntryImpl(0, 0, p);

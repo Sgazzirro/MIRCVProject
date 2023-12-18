@@ -34,6 +34,7 @@ public class DumperBinary implements Dumper {
 
     @Override
     public boolean start(Path path) {
+
         try {
             if (opened)
                 throw new IOException();

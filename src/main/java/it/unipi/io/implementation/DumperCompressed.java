@@ -37,10 +37,11 @@ public class DumperCompressed extends DumperBinary {
 
             buffers.add(ByteBuffer.wrap(byteList));
         }
+
         int written_size = 0;
-        while(written_size != size){
-            written_size += writer.write(buffers.toArray(new ByteBuffer[0]));
-        }
+        while (written_size != size)
+            written_size += (int) writer.write(buffers.toArray(new ByteBuffer[0]));
+
         return written_size;
     }
 }

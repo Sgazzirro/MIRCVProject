@@ -18,10 +18,6 @@ public class TokenizerImpl implements Tokenizer {
     private final boolean applyStemming;
     private final boolean removeStopwords;
 
-    public TokenizerImpl() {
-        this(true, true);
-    }
-
     public TokenizerImpl(boolean applyStemming, boolean removeStopwords) {
         this.applyStemming = applyStemming;
         this.removeStopwords = removeStopwords;

@@ -1,7 +1,8 @@
 package it.unipi.scoring;
 
-import it.unipi.encoding.implementation.TokenizerImpl;
+import it.unipi.encoding.Tokenizer;
 import it.unipi.model.PostingList;
+import it.unipi.model.Vocabulary;
 import it.unipi.model.VocabularyEntry;
 import it.unipi.model.implementation.*;
 
@@ -35,15 +36,12 @@ public class Scorer {
         }
     }
 
-    private final VocabularyImpl vocabularyImpl;
-    private final DocumentIndexImpl documentIndexImpl;
+    private final Vocabulary vocabulary;
+    private final Tokenizer tokenizer;
 
-    private final TokenizerImpl tokenizerImpl;
-
-    public Scorer(VocabularyImpl vocabularyImpl, DocumentIndexImpl documentIndexImpl, TokenizerImpl tokenizerImpl) {
-        this.vocabularyImpl = vocabularyImpl;
-        this.documentIndexImpl = documentIndexImpl;
-        this.tokenizerImpl = tokenizerImpl;
+    public Scorer(Vocabulary vocabulary, Tokenizer tokenizer) {
+        this.vocabulary = vocabulary;
+        this.tokenizer = tokenizer;
     }
 
     public DocumentScore[] score(String query, int numResults) {
@@ -51,13 +49,13 @@ public class Scorer {
 
         PriorityQueue<DocumentScore> scores = new PriorityQueue<>();
 
-        List<String> tokens = tokenizerImpl.tokenizeBySpace(query);
+        List<String> tokens = tokenizer.tokenizeBySpace(query);
         int numTokens = tokens.size();
 
         // Get the posting lists of all the terms in the query
         List<PostingList> postingList = new ArrayList<>(numTokens);
         for (int i = 0; i < numTokens; i++) {
-            VocabularyEntry entry = vocabularyImpl.getEntry(tokens.get(i));
+            VocabularyEntry entry = vocabulary.getEntry(tokens.get(i));
 
             // If the entry is null (this means that the term of the query was not present in any document)
             // discard the term and decrease the num of Tokens

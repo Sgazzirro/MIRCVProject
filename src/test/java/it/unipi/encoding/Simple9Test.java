@@ -1,4 +1,4 @@
-package it.unipi.model.implementation;
+package it.unipi.encoding;
 
 import it.unipi.encoding.implementation.Simple9;
 import it.unipi.utils.ByteUtils;

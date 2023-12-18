@@ -11,6 +11,7 @@ public class Constants {
     public static final String COLLECTION_FILE = "data/collection.tar.gz";
     public static final String TEST_COLLECTION_FILE = "data/test_collection.tsv";
 
+    public static final Path dataPath = Paths.get("./data/");
     public static final Path testPath = Paths.get("./data/", "test/");
 
     public static final String VOCABULARY_FILENAME = "vocabulary.bin";

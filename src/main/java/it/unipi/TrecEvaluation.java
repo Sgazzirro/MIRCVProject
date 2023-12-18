@@ -1,7 +1,7 @@
 package it.unipi;
 
-import it.unipi.encoding.implementation.TokenizerImpl;
-import it.unipi.model.implementation.VocabularyImpl;
+import it.unipi.encoding.Tokenizer;
+import it.unipi.model.Vocabulary;
 import it.unipi.scoring.MaxScore;
 
 import java.io.*;
@@ -97,7 +97,7 @@ public class TrecEvaluation {
                 ) {
             String queryLine;
 
-            MaxScore scorer = new MaxScore(new VocabularyImpl(), new TokenizerImpl());
+            MaxScore scorer = new MaxScore(Vocabulary.getInstance(), Tokenizer.getInstance());
             while((queryLine = queries.readLine()) != null){
                 Query q = new Query(queryLine);
                 List<Result> results = new ArrayList<>();

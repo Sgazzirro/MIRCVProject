@@ -1,6 +1,8 @@
 package it.unipi.utils;
 
 import it.unipi.encoding.CompressionType;
+import it.unipi.encoding.Encoder;
+import it.unipi.encoding.implementation.EliasFano;
 import it.unipi.model.PostingList;
 import it.unipi.model.VocabularyEntry;
 import it.unipi.model.implementation.PostingListCompressedImpl;
@@ -12,6 +14,9 @@ import java.io.EOFException;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 public class ByteUtils {
 
@@ -36,9 +41,8 @@ public class ByteUtils {
         int continuationBytes = 0;      // They start with 10xxxxxx
 
         for (int i=offset+len-1; i >= offset; i--) {
-            if ( (bytes[i] >>> 7 & 0b1) == 0) {
+            if ( (bytes[i] >>> 7 & 0b1) == 0)
                 break;
-            }
 
             // Count the continuation bytes
             if ( ( (bytes[i] >> 6) & 0b11 ) == 0b10)
@@ -48,10 +52,9 @@ public class ByteUtils {
                 // 1 continuation byte  -> first byte is 110xxxxx
                 // 2 continuation bytes -> first byte is 1110xxxx
                 if ( ((bytes[i] & 0xFF) >>> (6 - continuationBytes)) != ((1 << (continuationBytes+2)) - 2) ) {
-                    // There is not a correct number of continuation bytes, set to 0 all trailing bytes
-                    for (int j = i; j < bytes.length; j++) {
-                        bytes[j] = '\0';
-                    }
+                    // There is not a correct number of continuation bytes, remove all trailing bytes
+                    bytes[i] = '\0';
+                    len = i+1;
                 }
 
                 // Everything is okay
@@ -59,9 +62,8 @@ public class ByteUtils {
             }
         }
 
-        byte[] marcoIdea = new byte[32];
-        System.arraycopy(bytes, 0, marcoIdea, 0, 32);
-        return new String(marcoIdea, StandardCharsets.UTF_8).trim();
+        bytes = Arrays.copyOfRange(bytes, offset, offset + len);
+        return new String(bytes, StandardCharsets.UTF_8).trim();
     }
 
     public static VocabularyEntry bytesToVocabularyEntry(byte[] byteList, CompressionType compression) {
@@ -122,20 +124,37 @@ public class ByteUtils {
         return byteArray;
     }
 
-    public static PostingListCompressedImpl.ByteBlock fetchDocIdsBlock(byte[] compressedDocIds, int docId, long docIdsBlockOffset) {
+    public static List<Integer> decodeFullList(byte[] bytes) {
+        List<Integer> fullList = new ArrayList<>();
+        long offset = 0;
+
+        Encoder eliasFano = new EliasFano();
+
+        while (true) {
+            ByteBlock block = fetchDocIdsBlock(bytes, 0, offset);
+            if (block == null)
+                return fullList;
+
+            fullList.addAll(eliasFano.decode(block.getBytes()));
+            offset = block.getOffset();
+        }
+    }
+    public static ByteBlock fetchDocIdsBlock(byte[] compressedDocIds, int docId, long docIdsBlockOffset) {
         // skips unnecessary lists
         try (
                 ByteArrayInputStream bais = new ByteArrayInputStream(compressedDocIds);
                 DataInputStream dis = new DataInputStream(bais)
         ) {
             if (docIdsBlockOffset != dis.skip(docIdsBlockOffset))
-                throw new IOException();
+                throw new IOException("Offset is greater than block length");
+
             while (true) {
                 // Read integers from the byte array
                 int U = dis.readInt();
                 U = (U == 0) ? 1 : U;
                 int n = dis.readInt();
-                docIdsBlockOffset += (2*Integer.BYTES);
+                docIdsBlockOffset += 2*Integer.BYTES;
+
                 // computing number of bytes to skip
                 int lowHalfLength = (int) Math.ceil(Math.log((float) U / n) / Math.log(2));
                 int highHalfLength = (int) Math.ceil(Math.log(U) / Math.log(2)) - lowHalfLength;
@@ -158,7 +177,7 @@ public class ByteUtils {
                     if (numLowBytes!=0) docIdsBlockOffset += dis.read(byteArray, 8+numHighBytes, numLowBytes);
                     dis.close();
 
-                    return new PostingListCompressedImpl.ByteBlock(byteArray, docIdsBlockOffset);
+                    return new ByteBlock(byteArray, docIdsBlockOffset);
                 }
             }
         } catch (EOFException e) {
@@ -170,7 +189,7 @@ public class ByteUtils {
         return null;
     }
 
-    public static PostingListCompressedImpl.ByteBlock fetchNextTermFrequenciesBlock(byte[] compressedTermFrequencies, long termFrequenciesBlockOffset) {
+    public static ByteBlock fetchNextTermFrequenciesBlock(byte[] compressedTermFrequencies, long termFrequenciesBlockOffset) {
         try (
                 ByteArrayInputStream bais = new ByteArrayInputStream(compressedTermFrequencies);
                 DataInputStream dis = new DataInputStream(bais)
@@ -187,7 +206,7 @@ public class ByteUtils {
             termFrequenciesBlockOffset += 4;            // Consider also the first 4 bytes describing the block length
             dis.close();
 
-            return new PostingListCompressedImpl.ByteBlock(byteArray, termFrequenciesBlockOffset);
+            return new ByteBlock(byteArray, termFrequenciesBlockOffset);
 
         } catch (EOFException e) {
             // end of file reached

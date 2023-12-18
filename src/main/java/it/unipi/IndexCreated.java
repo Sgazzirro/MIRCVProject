@@ -1,9 +1,8 @@
 package it.unipi;
 
-import it.unipi.encoding.implementation.TokenizerImpl;
+import it.unipi.encoding.Tokenizer;
 import it.unipi.io.DocumentStream;
-import it.unipi.model.Document;
-import it.unipi.model.implementation.VocabularyImpl;
+import it.unipi.model.Vocabulary;
 import it.unipi.scoring.MaxScore;
 import it.unipi.encoding.CompressionType;
 import it.unipi.utils.Constants;
@@ -21,7 +20,7 @@ public class IndexCreated {
         int numWords;
         Constants.setCompression(CompressionType.COMPRESSED);
         Constants.setPath(Path.of("./data"));
-        MaxScore max = new MaxScore(new VocabularyImpl(), new TokenizerImpl());
+        MaxScore max = new MaxScore(Vocabulary.getInstance(), Tokenizer.getInstance());
 
         DocumentStream stream = DocumentStream.getInstance();
 

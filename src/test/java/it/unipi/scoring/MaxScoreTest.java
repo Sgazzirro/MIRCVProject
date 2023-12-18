@@ -1,14 +1,8 @@
 package it.unipi.scoring;
 
 import it.unipi.encoding.CompressionType;
-import it.unipi.io.Dumper;
-import it.unipi.io.Fetcher;
-import it.unipi.io.implementation.DumperCompressed;
-import it.unipi.io.implementation.FetcherCompressed;
+import it.unipi.encoding.Tokenizer;
 import it.unipi.model.Vocabulary;
-import it.unipi.encoding.implementation.TokenizerImpl;
-import it.unipi.model.VocabularyEntry;
-import it.unipi.model.implementation.VocabularyImpl;
 import it.unipi.utils.*;
 import org.apache.commons.io.FileUtils;
 import org.junit.After;
@@ -17,68 +11,39 @@ import org.junit.Test;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Map;
 import java.util.Objects;
 import java.util.PriorityQueue;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
 
 public class MaxScoreTest {
 
-    Vocabulary vocDumped;
-    VocabularyImpl vocFetched;
+    Vocabulary vocabulary;
     MaxScore maxScore;
 
     @Before
     public void setup(){
-        Dumper dumper = new DumperCompressed();
-        Fetcher fetcher = new FetcherCompressed();
         Constants.setCompression(CompressionType.COMPRESSED);
         Constants.N = 2;
 
-        vocDumped = new VocabularyImpl();
-        vocDumped.addEntry("a", 1);
-        vocDumped.addEntry("b",1);
-        vocDumped.addEntry("a", 2);
-        vocDumped.addEntry("c",(int)Math.pow(2,30));
+        vocabulary = Vocabulary.getInstance();
+        vocabulary.addEntry("a", 1);
+        vocabulary.addEntry("b",1);
+        vocabulary.addEntry("a", 2);
+        vocabulary.addEntry("c", (int)Math.pow(2,30));
 
-        Constants.setPath(Constants.testPath);
-        dumper.start(Constants.testPath);
-        dumper.dumpVocabulary(vocDumped);
-        dumper.end();
-
-        vocFetched = new VocabularyImpl();
-        fetcher.start(Constants.testPath);
-        for(int i=0; i<3; i++){
-            Map.Entry<String, VocabularyEntry> output = fetcher.loadVocEntry();
-            vocFetched.setEntry(output.getKey(), output.getValue());
-        }
-        fetcher.end();
-
-        TokenizerImpl tokenizer = new TokenizerImpl(false, false);
-        maxScore = new MaxScore(vocFetched, tokenizer);
+        Tokenizer tokenizer = Tokenizer.getInstance(false, false);
+        maxScore = new MaxScore(vocabulary, tokenizer);
 
         // setting idfs by hand
-        vocFetched.getEntry("a").getPostingList().setIdf(Math.log10(2/2));
-        vocFetched.getEntry("b").getPostingList().setIdf(Math.log10(2/1));
-        vocFetched.getEntry("c").getPostingList().setIdf(Math.log10(2/1));
-        vocDumped.getEntry("a").getPostingList().setIdf(Math.log10(2/2));
-        vocDumped.getEntry("b").getPostingList().setIdf(Math.log10(2/1));
-        vocDumped.getEntry("c").getPostingList().setIdf(Math.log10(2/1));
+        vocabulary.getEntry("a").getPostingList().setIdf(Math.log10(2/2));
+        vocabulary.getEntry("b").getPostingList().setIdf(Math.log10(2/1));
+        vocabulary.getEntry("c").getPostingList().setIdf(Math.log10(2/1));
 
         // setting upper bounds by hand
-        vocFetched.getEntry("a").setUpperBound(0.0);
-        vocFetched.getEntry("b").setUpperBound(Math.log10(2));
-        vocFetched.getEntry("c").setUpperBound(Math.log10(2));
-        vocDumped.getEntry("a").setUpperBound(0.0);
-        vocDumped.getEntry("b").setUpperBound(Math.log10(2));
-        vocDumped.getEntry("c").setUpperBound(Math.log10(2));
-    }
-
-    @Test
-    public void testVocabularies(){
-        assertEquals(vocDumped, vocFetched);
+        vocabulary.getEntry("a").setUpperBound(0.0);
+        vocabulary.getEntry("b").setUpperBound(Math.log10(2));
+        vocabulary.getEntry("c").setUpperBound(Math.log10(2));
     }
 
     @Test

@@ -1,7 +1,6 @@
 package it.unipi.index;
 
 import it.unipi.encoding.Tokenizer;
-import it.unipi.encoding.implementation.TokenizerImpl;
 import it.unipi.io.DocumentStream;
 import it.unipi.model.*;
 import it.unipi.model.implementation.*;
@@ -213,11 +212,11 @@ public class InMemoryIndexing {
     public InMemoryIndexing(Vocabulary voc, Dumper d, DocumentIndex di){
         vocabulary = voc;
         dumper = d;
-        tokenizer = new TokenizerImpl();
+        tokenizer = Tokenizer.getInstance();
         docIndex = di;
     }
 
-    boolean setup(Path filename){
+    boolean setup(Path filename) {
         return dumper.start(filename);
     }
 
@@ -262,7 +261,7 @@ public class InMemoryIndexing {
     void dumpVocabulary(){
         dumper.dumpVocabulary(vocabulary);
         // Flush
-        vocabulary = new VocabularyImpl();
+        vocabulary = Vocabulary.getInstance();
     }
 
     void dumpVocabularyLine(Map.Entry<String, VocabularyEntry> entry) throws IOException {

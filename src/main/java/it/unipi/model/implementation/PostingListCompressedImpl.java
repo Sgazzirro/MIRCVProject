@@ -12,25 +12,6 @@ import java.util.List;
 
 public class PostingListCompressedImpl extends PostingList {
 
-    public static class ByteBlock {
-
-        private final byte[] bytes;
-        private final long offset;
-
-        public ByteBlock(byte[] bytes, long offset) {
-            this.bytes = bytes;
-            this.offset = offset;
-        }
-
-        public byte[] getBytes() {
-            return bytes;
-        }
-
-        public long getOffset() {
-            return offset;
-        }
-    }
-
     private byte[] compressedDocIds;
     private byte[] compressedTermFrequencies;
 
@@ -42,28 +23,6 @@ public class PostingListCompressedImpl extends PostingList {
 
     private final Encoder docIdsEncoder = new EliasFano();
     private final Encoder termFrequenciesEncoder = new Simple9(true);
-
-
-    public PostingListCompressedImpl(long docIdsOffset, long termFreqOffset, int docIdsLength, int termFreqLength, double idf) {
-        super(docIdsOffset, termFreqOffset, docIdsLength, termFreqLength, idf);
-        docIdsDecompressedList = new ArrayList<>();
-        termFrequenciesDecompressedList = new ArrayList<>();
-
-        docIdsBlockPointer = termFrequenciesBlockPointer = 0;
-        blockPointer = -1;
-        
-        // Load the blocks corresponding to these offset provided to the constructor
-        //String path = "data/";
-
-        //  WHEN TEST PURPOSE
-        // --------------
-        String path = "./data/test/";
-        // ---------------
-        /*fetcher.start(path);
-        loadPosting();
-        fetcher.end();*/
-
-    }
 
     public PostingListCompressedImpl() {
         docIdsDecompressedList = new ArrayList<>();
@@ -85,8 +44,8 @@ public class PostingListCompressedImpl extends PostingList {
 
     @Override
     public double score() {
-        double tf = 1+Math.log10(termFrequenciesDecompressedList.get(blockPointer));
-        double idf = Math.log10((float)Constants.N/this.getDocumentFrequency());
+        double tf = 1 + Math.log10(termFrequenciesDecompressedList.get(blockPointer));
+        double idf = Math.log10( (float) Constants.N / this.getDocumentFrequency() );
         return tf*idf;
     }
 
@@ -99,8 +58,8 @@ public class PostingListCompressedImpl extends PostingList {
 
     @Override
     public void next() throws EOFException {
-        long docIdsEndOffset = getDocIdsLength();
-        if (docIdsBlockPointer == docIdsEndOffset &&
+        long docIdsLength = getDocIdsLength();
+        if (docIdsBlockPointer == docIdsLength &&
                 blockPointer == docIdsDecompressedList.size() - 1)
             throw new EOFException();
 
@@ -117,17 +76,20 @@ public class PostingListCompressedImpl extends PostingList {
         while (true) {
             // If we are in the correct block advance the pointer to the right place
             if (docIdsDecompressedList.get(docIdsDecompressedList.size() - 1) >= docId) {
-                for (int i = blockPointer!=-1?blockPointer:0; i < docIdsDecompressedList.size(); i++) {
+                for (int i = (blockPointer!=-1) ? blockPointer : 0; i < docIdsDecompressedList.size(); i++) {
                     if (docIdsDecompressedList.get(i) >= docId) {
                         blockPointer = i;
                         return;
                     }
                 }
             }
+
             // if we're in the last block and it doesn't contain the docId
             // long docIdsEndOffset = getDocIdsOffset() + getDocIdsLength();
             long docIdsEndOffset = getDocIdsLength();
-            if(docIdsBlockPointer==docIdsEndOffset && docIdsDecompressedList.get(docIdsDecompressedList.size()-1)<docId) throw new EOFException();
+            if (docIdsBlockPointer == docIdsEndOffset &&
+                    docIdsDecompressedList.get(docIdsDecompressedList.size() - 1) < docId)
+                throw new EOFException();
 
             // Else get the next block
             loadNextBlock();
@@ -164,6 +126,12 @@ public class PostingListCompressedImpl extends PostingList {
         ByteBlock termFrequenciesBlock = ByteUtils.fetchNextTermFrequenciesBlock(compressedTermFrequencies, termFrequenciesBlockPointer);
         termFrequenciesBlockPointer = termFrequenciesBlock.getOffset();
         termFrequenciesDecompressedList = termFrequenciesEncoder.decode(termFrequenciesBlock.getBytes());
+
+        // Remove fictitious 0 frequencies
+        termFrequenciesDecompressedList.subList(
+                Math.min(Constants.BLOCK_SIZE, termFrequenciesDecompressedList.size()),
+                termFrequenciesDecompressedList.size()
+        ).clear();
     }
 
     @Override
@@ -184,59 +152,6 @@ public class PostingListCompressedImpl extends PostingList {
         this.compressedTermFrequencies = compressedTermFrequencies;
     }
 
-    /*
-    @Override
-    public boolean equals(Object o) {
-        System.out.println("DENTRO QUESTO EQUALS");
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        PostingListCompressed that = (PostingListCompressed) o;
-        try {
-            while (hasNext()) {
-                next();
-                that.next();
-                if (docId() != that.docId() || termFrequency() != that.termFrequency())
-                    return false;
-            }
-        } catch (EOFException eofException){
-            eofException.printStackTrace();
-        }
-        return true;
-    }
- */
-
-    public byte[] getCompressedDocIds() {
-        return compressedDocIds;
-    }
-
-    public byte[] getCompressedTermFrequencies() {
-        return compressedTermFrequencies;
-    }
-
-    /*      Abbiamo detto che verranno mergiate solo postingLists non compresse
-    @Override
-    public int mergePosting(PostingList toMerge) {
-        if (!(toMerge instanceof PostingListImpl))
-            throw new RuntimeException("Cannot merge PostingLists with different implementations");
-
-        PostingListCompressed other = (PostingListCompressed) toMerge;
-
-        // chiamato solo in fase di indexing
-        length += other.getLength();
-        // devo concatenare i 2 array di bytes
-        try {
-            ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-            outputStream.write(compressedDocIds);
-            outputStream.write(other.compressedDocIds);
-            compressedDocIds = outputStream.toByteArray();
-            return compressedDocIds.length;
-        } catch (IOException e){
-            System.err.println("Error in mergePosting");
-            e.printStackTrace();
-        }
-        return 0;
-    }
-     */
     public String toString() {
         return "DocIdList: " + docIdsDecompressedList + " TermFrequencyList: " + termFrequenciesDecompressedList;
     }

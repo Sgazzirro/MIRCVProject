@@ -17,11 +17,11 @@ public class SPIMIIndex {
     /**
      * The stream that generates one Document at a time
      */
-    private DocumentStream stream;
+    private final DocumentStream stream;
     /**
      * The globalIndexer is demanded to dump the merged version of the index
      */
-    private InMemoryIndexing globalIndexer;
+    private final InMemoryIndexing globalIndexer;
     /**
      * The block_size is number of bytes allowed to be used before creating a new block
      * Notice that, even in case of going ahead this threshold, the current document is however processed
@@ -38,11 +38,6 @@ public class SPIMIIndex {
      * Set to true when the DocumentStream no more generates documents
      */
     private boolean finish = false;
-
-    /**
-     * Set to the directory in which we want to save all files
-     */
-    private Path path;
 
     /**
      * The indexer demand to invert the current block. Compression is not
@@ -72,7 +67,7 @@ public class SPIMIIndex {
         // Creation of the block indexer
         // -------------------
         DocumentIndex di = new DocumentIndexImpl();
-        Vocabulary v = new VocabularyImpl();
+        Vocabulary v = Vocabulary.getInstance();
         Dumper d = Dumper.getInstance(this.compression);
         blockIndexer = new InMemoryIndexing(v, d, di);
         // -------------------
@@ -118,22 +113,16 @@ public class SPIMIIndex {
      * @param path the directory in which we want to store all needed file
      */
     public void buildIndexSPIMI(Path path) {
-        this.path = path;
 
         Path blocksPath = path.resolve("blocks/");
 
         // Preliminary flush of files
         IOUtils.deleteDirectory(blocksPath);
-
         IOUtils.createDirectory(blocksPath);
 
         // 1) create and invert a block. The block is then dumped in secondary memory
         // ---------------------
         while (!finished()) {
-            /*
-            if (next_block == 2)
-                break;
-            */
             invertBlock(blocksPath.resolve("" + next_block));
         }
         // ---------------------
@@ -165,7 +154,7 @@ public class SPIMIIndex {
             readVocBuffers.get(i).end();
         globalIndexer.close();
 
-        Constants.N=N;
+        Constants.N = N;
     }
 
 
@@ -176,8 +165,7 @@ public class SPIMIIndex {
     public void invertBlock(Path blockPath) {
         // Get memory state
         Runtime.getRuntime().gc();
-        long startMemory = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
-        long usedMemory = startMemory;
+        long usedMemory = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
 
         // Set up the indexer for this block
         blockIndexer.setup(blockPath);
@@ -341,13 +329,13 @@ public class SPIMIIndex {
      */
     VocabularyEntry mergeEntries(List<VocabularyEntry> toMerge, int numDocuments){
         PostingListImpl mergedList = new PostingListImpl();
-        Integer frequency = 0;
-        Double upperBound = 0.0;
+        int frequency = 0;
+        double upperBound = 0.0;
 
         for (VocabularyEntry vocabularyEntry : toMerge) {
 
             // Merge the (decompressed) posting lists of the entries
-            int L = mergedList.mergePosting(vocabularyEntry.getPostingList());
+            mergedList.mergePosting(vocabularyEntry.getPostingList());
 
             // Update term frequency and upper bound
             frequency += vocabularyEntry.getDocumentFrequency();
@@ -356,10 +344,9 @@ public class SPIMIIndex {
         }
 
         // final term upper bound computation
-        Double to_multiply = Math.log10( ((double) numDocuments/ mergedList.getDocIdsDecompressedList().size()));
-        upperBound *= to_multiply;
-        VocabularyEntry result = new VocabularyEntryImpl(frequency, upperBound, mergedList);
+        double toMultiply = Math.log10( ((double) numDocuments) / mergedList.getDocIdsDecompressedList().size());
+        upperBound *= toMultiply;
 
-        return result;
+        return new VocabularyEntryImpl(frequency, upperBound, mergedList);
     }
 }

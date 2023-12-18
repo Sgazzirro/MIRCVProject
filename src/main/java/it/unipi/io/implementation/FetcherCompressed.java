@@ -36,10 +36,8 @@ public class FetcherCompressed extends FetcherBinary {
 
     @Override
     public void loadPosting(PostingList postingList) {
-        if (!(postingList instanceof PostingListCompressedImpl))
+        if (!(postingList instanceof PostingListCompressedImpl pList))
             throw new RuntimeException("Unsupported operation");
-
-        PostingListCompressedImpl pList = (PostingListCompressedImpl) postingList;
 
         try {
             pList.setCompressedDocIds(

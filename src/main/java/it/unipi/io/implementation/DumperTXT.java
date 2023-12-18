@@ -30,7 +30,7 @@ public class DumperTXT implements Dumper {
 
     @Override
     public boolean start(Path path) {
-        // ./data/blocks/_
+
         try {
             IOUtils.createDirectory(path);
 

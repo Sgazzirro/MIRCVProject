@@ -1,9 +1,9 @@
 package it.unipi.scoring;
 
-import it.unipi.encoding.implementation.TokenizerImpl;
+import it.unipi.encoding.Tokenizer;
 import it.unipi.model.PostingList;
+import it.unipi.model.Vocabulary;
 import it.unipi.model.VocabularyEntry;
-import it.unipi.model.implementation.*;
 import it.unipi.utils.Constants;
 
 import java.io.EOFException;
@@ -12,27 +12,27 @@ import java.util.*;
 public class MaxScore{
     ////////////////////////////////////////////////////
     // TODO: GROSSO COME UNA CASA: LE POSTING LIST DOPO ESSER STATE VISTE DEVONO ESSERE RIPORTATE A 0, SENNò RIMANGONO PIANTATE INFONDO
-    private final VocabularyImpl vocabularyImpl;
+    private final Vocabulary vocabulary;
     //private final DocumentIndexImpl documentIndexImpl;
-    private final TokenizerImpl tokenizerImpl;
+    private final Tokenizer tokenizer;
 
-    public MaxScore(VocabularyImpl vocabularyImpl, TokenizerImpl tokenizerImpl) {
-        this.vocabularyImpl = vocabularyImpl;
+    public MaxScore(Vocabulary vocabulary, Tokenizer tokenizer) {
+        this.vocabulary = vocabulary;
         //this.documentIndexImpl = documentIndexImpl;
-        this.tokenizerImpl = tokenizerImpl;
+        this.tokenizer = tokenizer;
     }
 
     public PriorityQueue<DocumentScore> score(String query, int numResults, String mode){
         // Stupid check but better safe than sorry
         numResults = Math.min(numResults, Constants.N);
 
-        List<String> queryTokens = tokenizerImpl.tokenizeBySpace(query);
+        List<String> queryTokens = tokenizer.tokenizeBySpace(query);
         TreeMap<Double, PostingList> treeMap = new TreeMap<>();
 
         ////////////////// DISJUNCTIVE MODE ///////////////////////
         if(mode.equals("disjunctive")) {
             for (String token : queryTokens) {
-                VocabularyEntry entry = vocabularyImpl.getEntry(token);
+                VocabularyEntry entry = vocabulary.getEntry(token);
                 if(entry!=null) {
                     treeMap.put(entry.getUpperBound(), entry.getPostingList());
                 }
@@ -44,7 +44,7 @@ public class MaxScore{
         else {
             List<PostingList> postingLists = new ArrayList<>();
             for (String token : queryTokens) {
-                VocabularyEntry entry = vocabularyImpl.getEntry(token);
+                VocabularyEntry entry = vocabulary.getEntry(token);
                 if(entry==null) return new PriorityQueue<>();
                 postingLists.add(entry.getPostingList());
             }
@@ -91,7 +91,10 @@ public class MaxScore{
                         p.get(i).reset();    // RESET of the posting list
                         p.remove(i);
                         sigma.remove(i);
-                        if (p.size() > 1) ub = computeUB(p, sigma);
+                        if (p.size() > 1)
+                            ub = computeUB(p, sigma);
+
+                        i--;
                         continue;
                     }
                 }
@@ -107,7 +110,10 @@ public class MaxScore{
                     p.get(i).reset();    // RESET of the posting list
                     p.remove(i);
                     sigma.remove(i);
-                    if (p.size() > 1) ub = computeUB(p, sigma);
+                    if (p.size() > 1)
+                        ub = computeUB(p, sigma);
+
+                    i--;
                     continue;
                 }
                 if (p.get(i).docId() == current) {

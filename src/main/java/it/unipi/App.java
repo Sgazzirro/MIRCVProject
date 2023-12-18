@@ -8,8 +8,6 @@ import it.unipi.model.DocumentIndex;
 import it.unipi.io.DocumentStream;
 import it.unipi.model.Vocabulary;
 import it.unipi.model.implementation.DocumentIndexImpl;
-import it.unipi.io.implementation.DocumentStreamImpl;
-import it.unipi.model.implementation.VocabularyImpl;
 import it.unipi.utils.*;
 
 import java.io.*;
@@ -54,7 +52,7 @@ public class App
 
         DocumentStream ds = DocumentStream.getInstance();
         DocumentIndex di = new DocumentIndexImpl();
-        Vocabulary v = new VocabularyImpl();
+        Vocabulary v = Vocabulary.getInstance();
         Dumper d = Dumper.getInstance(CompressionType.COMPRESSED);
 
         InMemoryIndexing memoryIndexing = new InMemoryIndexing(v, d, di);

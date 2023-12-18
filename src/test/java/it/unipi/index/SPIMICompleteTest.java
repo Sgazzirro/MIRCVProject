@@ -11,7 +11,6 @@ import it.unipi.model.VocabularyEntry;
 import it.unipi.model.Document;
 import it.unipi.model.DocumentIndexEntry;
 import it.unipi.model.implementation.DocumentIndexImpl;
-import it.unipi.model.implementation.VocabularyImpl;
 import it.unipi.utils.*;
 import org.junit.*;
 import org.junit.runner.RunWith;
@@ -47,7 +46,7 @@ public class SPIMICompleteTest {
 
     @BeforeClass
     public static void createResult(){
-        correctVocabulary = new VocabularyImpl();
+        correctVocabulary = Vocabulary.getInstance();
         correctDocumentIndex = new DocumentIndexImpl();
 
         correctVocabulary.addEntry("duck", 0);
@@ -105,7 +104,7 @@ public class SPIMICompleteTest {
         CompressionType compression = CompressionType.DEBUG;
 
         // Dumping
-        indexerSingleBlock = new InMemoryIndexing(new VocabularyImpl(), new DumperTXT(), new DocumentIndexImpl());
+        indexerSingleBlock = new InMemoryIndexing(Vocabulary.getInstance(), new DumperTXT(), new DocumentIndexImpl());
         indexerSingleBlock.buildIndex(ds, Constants.testPath);
 
         // Fetching
@@ -135,7 +134,7 @@ public class SPIMICompleteTest {
         CompressionType compression = CompressionType.DEBUG;
 
         // Dumping
-        indexerSingleBlock = new InMemoryIndexing(new VocabularyImpl(), Dumper.getInstance(compression), new DocumentIndexImpl());
+        indexerSingleBlock = new InMemoryIndexing(Vocabulary.getInstance(), Dumper.getInstance(compression), new DocumentIndexImpl());
         new SPIMIIndex(compression, ds, indexerSingleBlock).buildIndexSPIMI(Constants.testPath);
 
 
@@ -165,7 +164,7 @@ public class SPIMICompleteTest {
         CompressionType compression = CompressionType.DEBUG;
 
         // Dumping
-        indexerSingleBlock = new InMemoryIndexing(new VocabularyImpl(), Dumper.getInstance(compression), new DocumentIndexImpl());
+        indexerSingleBlock = new InMemoryIndexing(Vocabulary.getInstance(), Dumper.getInstance(compression), new DocumentIndexImpl());
         SPIMIIndex spimi = new SPIMIIndex(compression, ds, indexerSingleBlock);
         spimi.setLimit(1);
         spimi.buildIndexSPIMI(Constants.testPath);
@@ -196,7 +195,7 @@ public class SPIMICompleteTest {
         CompressionType compression = CompressionType.BINARY;
 
         // Dumping
-        indexerSingleBlock = new InMemoryIndexing(new VocabularyImpl(), Dumper.getInstance(compression), new DocumentIndexImpl());
+        indexerSingleBlock = new InMemoryIndexing(Vocabulary.getInstance(), Dumper.getInstance(compression), new DocumentIndexImpl());
         new SPIMIIndex(compression, ds, indexerSingleBlock).buildIndexSPIMI(Constants.testPath);
 
 
@@ -224,7 +223,7 @@ public class SPIMICompleteTest {
         CompressionType compression = CompressionType.BINARY;
 
         // Dumping
-        indexerSingleBlock = new InMemoryIndexing(new VocabularyImpl(), Dumper.getInstance(compression), new DocumentIndexImpl());
+        indexerSingleBlock = new InMemoryIndexing(Vocabulary.getInstance(), Dumper.getInstance(compression), new DocumentIndexImpl());
         SPIMIIndex spimi = new SPIMIIndex(compression, ds, indexerSingleBlock);
         spimi.setLimit(1);
         spimi.buildIndexSPIMI(Constants.testPath);
@@ -258,7 +257,7 @@ public class SPIMICompleteTest {
         Constants.setCompression(compression);
 
         // Dumping
-        indexerSingleBlock = new InMemoryIndexing(new VocabularyImpl(), Dumper.getInstance(compression), new DocumentIndexImpl());
+        indexerSingleBlock = new InMemoryIndexing(Vocabulary.getInstance(), Dumper.getInstance(compression), new DocumentIndexImpl());
         new SPIMIIndex(compression, ds, indexerSingleBlock).buildIndexSPIMI(Constants.testPath);
 
 
@@ -293,7 +292,7 @@ public class SPIMICompleteTest {
         Constants.setCompression(compression);
 
         // Dumping
-        indexerSingleBlock = new InMemoryIndexing(new VocabularyImpl(), Dumper.getInstance(compression), new DocumentIndexImpl());
+        indexerSingleBlock = new InMemoryIndexing(Vocabulary.getInstance(), Dumper.getInstance(compression), new DocumentIndexImpl());
         SPIMIIndex spimi = new SPIMIIndex(compression, ds, indexerSingleBlock);
         spimi.setLimit(1);
         spimi.buildIndexSPIMI(Constants.testPath);

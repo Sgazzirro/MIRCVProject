@@ -7,7 +7,7 @@ import it.unipi.io.Fetcher;
 import java.io.Serializable;
 import java.util.*;
 
-public class VocabularyImpl implements Vocabulary, Serializable {
+public class VocabularyImpl implements Vocabulary {
 
     private final NavigableMap<String, VocabularyEntry> table;
     private final Fetcher fetcher;
@@ -56,20 +56,6 @@ public class VocabularyImpl implements Vocabulary, Serializable {
         return table.get(token);
     }
 
-    public void setEntry(String term, VocabularyEntry entry) {
-        table.put(term, entry);
-    }
-
-    /*
-    public TreeMap<String, VocabularyEntry> sortByTerm(){
-        // TreeMap to store values of HashMap
-        TreeMap<String, VocabularyEntry> sorted = new TreeMap<>();
-
-        // Copy all data from hashMap into TreeMap
-        sorted.putAll(table);
-        return sorted;
-    }
-*/
     @Override
     public Iterable<Map.Entry<String, VocabularyEntry>> getEntries() {
         return table.entrySet();
