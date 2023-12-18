@@ -77,12 +77,12 @@ public class EliasFanoTest extends TestCase {
     @Test
     public void test_finale(){
         Random random = new Random();
-        int numTimes = 10000;
+        int numTimes = 1000;
         List<Integer> list = new ArrayList<>();
         int lowerBound = 1;
         int upperBound = 8800000;
         for(int i=0; i<numTimes; i++){
-            int numDocIds = random.nextInt(100) + 1;
+            int numDocIds = random.nextInt(500) + 1;
             for(int j=0; j<numDocIds; j++){
                 int randomValue = lowerBound + random.nextInt(upperBound);
                 list.add(randomValue);

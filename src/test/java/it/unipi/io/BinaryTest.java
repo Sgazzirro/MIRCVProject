@@ -381,6 +381,62 @@ public class BinaryTest {
         });
     }
 
+    @Test
+    public void completeTest() throws IOException {
+        // parameters
+        String testTerm = "test";
+        Random random = new Random();
+        int numTimes = 1;
+        List<Integer> list = new ArrayList<>();
+        int lowerBound = 1;
+        int upperBound = 8800000;
+        int numDocs = 2000;
+
+        // tests
+        for(int i=0; i<numTimes; i++){
+            //int numDocIds = random.nextInt(numDocs) + 1;
+            int numDocIds = numDocs;
+            for(int j=0; j<numDocIds; j++){
+                int randomValue = lowerBound + random.nextInt(upperBound);
+                list.add(randomValue);
+            }
+            Collections.sort(list);
+
+            // posting list creation
+            PostingList p;
+            if (!(Constants.getCompression() == CompressionType.COMPRESSED))
+                p = new PostingListImpl();
+            else
+                p = new PostingListCompressedImpl();
+            for (int num: list){
+                p.addPosting(num, num);
+            }
+
+            // vocabulary entry creation
+            VocabularyEntry entry = new VocabularyEntryImpl(0, 0, p);
+            NavigableMap<String, VocabularyEntry> tree = new TreeMap<>();
+            tree.put(testTerm, entry);
+            Map.Entry<String, VocabularyEntry> input = tree.entrySet().iterator().next();
+
+            // dump
+            dumper.start(Constants.testPath);
+            dumper.dumpVocabularyEntry(input);
+            dumper.end();
+
+            // fetch
+            fetcher.start(Constants.testPath);
+            Map.Entry<String, VocabularyEntry> output = fetcher.loadVocEntry();
+            fetcher.end();
+
+            // assert
+            assertEquals(input.getKey(), output.getKey());
+            assertEquals(input.getValue(), output.getValue());
+
+            list.clear();
+            IOUtils.deleteDirectory(Constants.testPath);
+        }
+    }
+
     @After
     public void flush() {
         IOUtils.deleteDirectory(Constants.testPath);
