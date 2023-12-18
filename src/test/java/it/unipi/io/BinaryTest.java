@@ -386,11 +386,11 @@ public class BinaryTest {
         // parameters
         String testTerm = "test";
         Random random = new Random();
-        int numTimes = 1;
+        int numTimes = 10000;
         List<Integer> list = new ArrayList<>();
         int lowerBound = 1;
         int upperBound = 8800000;
-        int numDocs = 2000;
+        int numDocs = 10000;
 
         // tests
         for(int i=0; i<numTimes; i++){

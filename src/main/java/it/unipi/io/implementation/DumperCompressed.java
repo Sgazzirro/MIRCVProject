@@ -28,15 +28,19 @@ public class DumperCompressed extends DumperBinary {
 
     private int dumpEncodedList(List<Integer> list, Encoder encoder, FileChannel writer) throws IOException {
         List<ByteBuffer> buffers = new ArrayList<>();
+        int size = 0;
 
         for (int i = 0; i < list.size(); i += Constants.BLOCK_SIZE) {
             List<Integer> blockList = list.subList(i, Math.min(list.size(), i + Constants.BLOCK_SIZE));
             byte[] byteList = encoder.encode(blockList);
+            size += byteList.length;
 
             buffers.add(ByteBuffer.wrap(byteList));
         }
-
-        return (int) writer.write(buffers.toArray(new ByteBuffer[0]));
+        int written_size = 0;
+        while(written_size != size){
+            written_size += writer.write(buffers.toArray(new ByteBuffer[0]));
+        }
+        return written_size;
     }
-
 }
