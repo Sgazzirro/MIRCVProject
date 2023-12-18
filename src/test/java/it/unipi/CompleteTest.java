@@ -97,8 +97,8 @@ public class CompleteTest {
         DocumentScore documentScore1 = results.poll();
         DocumentScore documentScore2 = results.poll();
 
-        Assert.assertEquals(documentScore1.score, (1+Math.log10(2.0))*Math.log10(2.0), 0.01);
-        Assert.assertEquals(documentScore2.score, Math.log10(2.0), 0.01);
+        Assert.assertEquals(documentScore2.score, (1+Math.log10(2.0))*Math.log10(2.0), 0.01);
+        Assert.assertEquals(documentScore1.score, Math.log10(2.0), 0.01);
 
         Assert.assertNull(results.poll());
     }
@@ -123,8 +123,8 @@ public class CompleteTest {
         DocumentScore documentScore2 = results.poll();
         DocumentScore documentScore1 = results.poll();
 
-        Assert.assertEquals(documentScore1.score, Math.log10(2.0)+Math.pow(Math.log10(2.0),2), 0.01);
-        Assert.assertEquals(documentScore2.score, 2*Math.log10(2.0), 0.01);
+        Assert.assertEquals(documentScore2.score, Math.log10(2.0)+Math.pow(Math.log10(2.0),2), 0.01);
+        Assert.assertEquals(documentScore1.score, 2*Math.log10(2.0), 0.01);
 
         Assert.assertNull(results.poll());
     }
@@ -142,8 +142,55 @@ public class CompleteTest {
             DocumentScore documentScore2 = results.poll();
             DocumentScore documentScore1 = results.poll();
 
-            Assert.assertEquals(documentScore1.score, Math.log10(2.0) + Math.pow(Math.log10(2.0), 2), 0.01);
-            Assert.assertEquals(documentScore2.score, 2 * Math.log10(2.0), 0.01);
+            Assert.assertEquals(documentScore2.score, Math.log10(2.0) + Math.pow(Math.log10(2.0), 2), 0.01);
+            Assert.assertEquals(documentScore1.score, 2 * Math.log10(2.0), 0.01);
+
+            Assert.assertNull(results.poll());
+
+            System.out.println("Iterazione: "+i+" Tempo impiegato: "+(System.currentTimeMillis()-start));
+        }
+    }
+    @Test
+    public void testConjunctiveRabbitRecip(){
+        String query = "rabbit recip";
+        MaxScore maxScore = new MaxScore(vocabulary, new TokenizerImpl());
+
+        PriorityQueue<DocumentScore> results = maxScore.score(query, 10, "conjunctive");
+
+        DocumentScore documentScore2 = results.poll();
+        DocumentScore documentScore1 = results.poll();
+
+        Assert.assertEquals(documentScore1.score, ((1+Math.log10(2.0))*Math.log10(2.0) + Math.log10(2.0)), 0.01);
+        Assert.assertEquals(documentScore2.score, 2*Math.log10(2.0), 0.01);
+
+        Assert.assertNull(results.poll());
+    }
+
+    @Test
+    public void testConjunctiveEmpty(){
+        String query = "rabbit cat";
+        MaxScore maxScore = new MaxScore(vocabulary, new TokenizerImpl());
+
+        PriorityQueue<DocumentScore> results = maxScore.score(query, 10, "conjunctive");
+
+        Assert.assertNull(results.poll());
+    }
+
+    @Test
+    public void testResetConjunctive(){
+        String query = "duck rabbit";
+        MaxScore maxScore = new MaxScore(vocabulary, new TokenizerImpl());
+
+        for(int i=0; i<2; i++) {
+            double start = System.currentTimeMillis();
+
+            PriorityQueue<DocumentScore> results = maxScore.score(query, 10, "conjunctive");
+
+            DocumentScore documentScore2 = results.poll();
+            DocumentScore documentScore1 = results.poll();
+
+            Assert.assertEquals(documentScore1.score, Math.log10(2.0), 0.01);
+            Assert.assertEquals(documentScore2.score, Math.log10(2.0), 0.01);
 
             Assert.assertNull(results.poll());
 
@@ -151,6 +198,27 @@ public class CompleteTest {
         }
     }
 
+    @Test
+    public void testConjunctiveBeij(){
+        String query = "beij";
+        MaxScore maxScore = new MaxScore(vocabulary, new TokenizerImpl());
+
+        PriorityQueue<DocumentScore> results = maxScore.score(query, 10, "conjunctive");
+
+        Assert.assertEquals(results.poll().score, Math.log10(4.0), 0.01);
+
+        Assert.assertNull(results.poll());
+    }
+
+    @Test
+    public void testConjunctiveRabbitDishCatBeij(){
+        String query = "rabbit dish duck beij";
+        MaxScore maxScore = new MaxScore(vocabulary, new TokenizerImpl());
+
+        PriorityQueue<DocumentScore> results = maxScore.score(query, 10, "conjunctive");
+
+        Assert.assertNull(results.poll());
+    }
 
 
     @After

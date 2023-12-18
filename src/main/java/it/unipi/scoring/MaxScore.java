@@ -43,7 +43,11 @@ public class MaxScore{
         ////////////////// CONJUNCTIVE MODE ///////////////////////
         else {
             List<PostingList> postingLists = new ArrayList<>();
-            for (String token : queryTokens) postingLists.add(vocabularyImpl.getEntry(token).getPostingList());
+            for (String token : queryTokens) {
+                VocabularyEntry entry = vocabularyImpl.getEntry(token);
+                if(entry==null) return new PriorityQueue<>();
+                postingLists.add(entry.getPostingList());
+            }
             return conjunctiveScore(postingLists, numResults);
         }
     }
@@ -118,6 +122,7 @@ public class MaxScore{
                 theta = scores.peek().score;
                 while (pivot < p.size() && ub.get(pivot) < theta) {
                     pivot++;
+
                 }
             }
             // NESSUNO HA MODIFICATO NEXT
