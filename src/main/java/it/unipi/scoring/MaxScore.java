@@ -80,9 +80,6 @@ public class MaxScore{
         if (current == -1) return null;
         int n = p.size();
         while (pivot < p.size()) {
-            if(current == 877748 ){
-                System.out.println("ciao belli");
-            }
             double score = 0;
             int next = Integer.MAX_VALUE;
             for (int i = pivot; i < p.size(); i++) {

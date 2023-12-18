@@ -123,8 +123,8 @@ public class CompleteTest {
         DocumentScore documentScore2 = results.poll();
         DocumentScore documentScore1 = results.poll();
 
-        Assert.assertEquals(documentScore2.score, Math.log10(2.0)+Math.pow(Math.log10(2.0),2), 0.01);
-        Assert.assertEquals(documentScore1.score, 2*Math.log10(2.0), 0.01);
+        Assert.assertEquals(documentScore1.score, (1+Math.log10(2.0))*Math.log10(2.0)+Math.log10(2.0), 0.01);
+        Assert.assertEquals(documentScore2.score, 2*Math.log10(2.0), 0.01);
 
         Assert.assertNull(results.poll());
     }
@@ -142,8 +142,8 @@ public class CompleteTest {
             DocumentScore documentScore2 = results.poll();
             DocumentScore documentScore1 = results.poll();
 
-            Assert.assertEquals(documentScore2.score, Math.log10(2.0) + Math.pow(Math.log10(2.0), 2), 0.01);
-            Assert.assertEquals(documentScore1.score, 2 * Math.log10(2.0), 0.01);
+            Assert.assertEquals(documentScore1.score,(1+Math.log10(2.0))*Math.log10(2.0)+Math.log10(2.0) , 0.01);
+            Assert.assertEquals(documentScore2.score, 2 * Math.log10(2.0), 0.01);
 
             Assert.assertNull(results.poll());
 
