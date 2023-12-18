@@ -27,10 +27,10 @@ public class IndexCreated {
 
         for(int i = 0; i < 1; i++) {
             // TODO - with numResults = 10 or 100 we get different results
-            int numResults = 1000;
+            int numResults = 2;
             boolean printFirstText = true;
 
-            PriorityQueue<DocumentScore> scoring = max.score("top 10 cities in Europe", numResults, "disjunctive");
+            PriorityQueue<DocumentScore> scoring = max.score("average rainfall in Costa Rica", numResults, "disjunctive");
             List<DocumentScore> reverseMode = new ArrayList<>();
 
             while (!scoring.isEmpty()) {

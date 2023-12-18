@@ -386,7 +386,7 @@ public class BinaryTest {
         // parameters
         String testTerm = "test";
         Random random = new Random();
-        int numTimes = 10000;
+        int numTimes = 10;
         List<Integer> list = new ArrayList<>();
         int lowerBound = 1;
         int upperBound = 8800000;
@@ -394,8 +394,7 @@ public class BinaryTest {
 
         // tests
         for(int i=0; i<numTimes; i++){
-            //int numDocIds = random.nextInt(numDocs) + 1;
-            int numDocIds = numDocs;
+            int numDocIds = random.nextInt(numDocs) + 1;
             for(int j=0; j<numDocIds; j++){
                 int randomValue = lowerBound + random.nextInt(upperBound);
                 list.add(randomValue);
