@@ -20,8 +20,6 @@ public class Scorer {
     }
 
     private static double BM25Score(PostingList postingList) {
-        // TODO - tf should be tf or 1 + log(tf) ???
-        //double tf = 1 + Math.log10(postingList.termFrequency());
         double tf = postingList.termFrequency();
 
         int docLength           = Constants.documentIndex.getLength(postingList.docId());

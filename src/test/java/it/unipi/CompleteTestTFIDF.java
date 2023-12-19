@@ -11,6 +11,7 @@ import it.unipi.model.DocumentIndex;
 import it.unipi.model.Vocabulary;
 import it.unipi.scoring.DocumentScore;
 import it.unipi.scoring.MaxScore;
+import it.unipi.scoring.ScoringType;
 import it.unipi.utils.*;
 import org.junit.*;
 import org.junit.runner.RunWith;
@@ -23,7 +24,7 @@ import java.util.PriorityQueue;
 import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
-public class CompleteTest {
+public class CompleteTestTFIDF {
     @Mock
     static DocumentStream ds;
 
@@ -36,6 +37,7 @@ public class CompleteTest {
     @Before
     public void setup() {
         Constants.setPath(Constants.testPath);
+        Constants.setScoring(ScoringType.TFIDF);
 
         IOUtils.deleteDirectory(Constants.testPath);
         IOUtils.createDirectory(Constants.testPath);
