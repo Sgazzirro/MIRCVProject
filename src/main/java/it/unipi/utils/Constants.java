@@ -3,6 +3,8 @@ package it.unipi.utils;
 import it.unipi.encoding.CompressionType;
 import it.unipi.model.DocumentIndex;
 import it.unipi.model.Vocabulary;
+import it.unipi.model.implementation.DocumentIndexImpl;
+import it.unipi.model.implementation.VocabularyImpl;
 import it.unipi.scoring.ScoringType;
 
 import java.nio.file.Path;
@@ -75,6 +77,18 @@ public class Constants {
 
     public static void setScoring(ScoringType scoring) {
         Constants.scoringType = scoring;
+    }
+
+    public static boolean CACHING = false;
+    // CACHING STRATEGY
+    public static void cachingStrategy(){
+        if(!CACHING)
+            return;
+        if(Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory() > 0.8 * Runtime.getRuntime().maxMemory()){
+            vocabulary = new VocabularyImpl();
+            documentIndex = new DocumentIndexImpl();
+            System.gc();
+        }
     }
 }
 

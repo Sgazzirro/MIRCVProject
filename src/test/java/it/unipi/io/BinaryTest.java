@@ -23,10 +23,10 @@ public class BinaryTest {
 
     @BeforeClass
     public static void setup() {
-        dumper = new DumperTXT();
-        fetcher = new FetcherTXT();
+        dumper = new DumperCompressed();
+        fetcher = new FetcherCompressed();
 
-        Constants.setCompression(CompressionType.DEBUG);
+        Constants.setCompression(CompressionType.COMPRESSED);
         Constants.setPath(Constants.testPath);
     }
 

@@ -136,7 +136,7 @@ public class FetcherBinary implements Fetcher {
                 int comparison = truncatedTerm.compareTo(currentTerm);
 
                 // Stop condition
-                if (end == start && comparison != 0)
+                if (end - start == 1 && comparison != 0)
                     return null;
 
                 if (comparison > 0)         // This means term > entry
@@ -205,7 +205,7 @@ public class FetcherBinary implements Fetcher {
                 int currentDocId = ByteUtils.bytesToInt(documentIndexEntryBytes, 0);
 
                 // Stop condition
-                if (end == start && currentDocId != docId)
+                if (end == start + 1 && currentDocId != docId)
                     return null;
 
                 if (docId > currentDocId)

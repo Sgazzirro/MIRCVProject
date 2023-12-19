@@ -2,13 +2,18 @@ package it.unipi;
 
 import it.unipi.encoding.*;
 import it.unipi.encoding.implementation.TokenizerImpl;
+import it.unipi.io.Fetcher;
+import it.unipi.model.Vocabulary;
+import it.unipi.model.VocabularyEntry;
 import it.unipi.model.implementation.DocumentIndexImpl;
 import it.unipi.model.implementation.VocabularyImpl;
 import it.unipi.scoring.MaxScore;
 import it.unipi.scoring.*;
+import it.unipi.utils.Constants;
 
 import javax.print.Doc;
 import java.io.*;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.PriorityQueue;
@@ -109,7 +114,7 @@ public class TrecEvaluation {
                 Query q = new Query(queryLine);
 
                 List<Result> results = new ArrayList<>();
-                PriorityQueue<DocumentScore> scoring = scorer.score(q.getText(), 1000, "disjunctive");
+                PriorityQueue<DocumentScore> scoring = scorer.score(q.getText(), 10, "disjunctive");
                 PriorityQueue<DocumentScore> reverseMode = new PriorityQueue<>(java.util.Collections.reverseOrder());
 
                 while(scoring.size() > 0) {
@@ -134,5 +139,16 @@ public class TrecEvaluation {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    public static void main(String[] args){
+        Constants.setPath(Path.of("./data"));
+        Constants.setCompression(CompressionType.COMPRESSED);
+        //generateEvaluation();
+        Vocabulary v = new VocabularyImpl();
+        Fetcher f = Fetcher.getFetcher(Constants.getCompression());
+        f.start();
+        System.out.println(f.loadVocEntry());
+        f.end();
     }
 }

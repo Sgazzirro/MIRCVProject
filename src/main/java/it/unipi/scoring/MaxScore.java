@@ -23,6 +23,7 @@ public class MaxScore{
         this.tokenizer = tokenizer;
     }
 
+
     public PriorityQueue<DocumentScore> score(String query, int numResults, String mode){
         // Stupid check but better safe than sorry
         numResults = Math.min(numResults, Constants.N);
@@ -40,7 +41,9 @@ public class MaxScore{
             if (treeMap.isEmpty())
                 return null;
 
-            return maxScore(new ArrayList<>(treeMap.values()), new ArrayList<>(treeMap.keySet()), numResults);
+            PriorityQueue<DocumentScore> result = maxScore(new ArrayList<>(treeMap.values()), new ArrayList<>(treeMap.keySet()), numResults);
+            Constants.cachingStrategy();
+            return result;
         }
         ////////////////// CONJUNCTIVE MODE ///////////////////////
         else {
@@ -50,7 +53,9 @@ public class MaxScore{
                 if(entry==null) return new PriorityQueue<>();
                 postingLists.add(entry.getPostingList());
             }
-            return conjunctiveScore(postingLists, numResults);
+            PriorityQueue<DocumentScore> result =  conjunctiveScore(postingLists, numResults);
+            Constants.cachingStrategy();
+            return result;
         }
     }
 
