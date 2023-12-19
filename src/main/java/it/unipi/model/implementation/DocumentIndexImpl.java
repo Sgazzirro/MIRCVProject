@@ -1,7 +1,9 @@
 package it.unipi.model.implementation;
 
+import it.unipi.io.Fetcher;
 import it.unipi.model.DocumentIndex;
 import it.unipi.model.DocumentIndexEntry;
+import it.unipi.utils.Constants;
 
 import java.io.Serializable;
 import java.util.*;
@@ -10,10 +12,14 @@ public class DocumentIndexImpl implements DocumentIndex, Serializable {
 
     private int totalLength;
     private int numDocuments;
-    private NavigableMap<Integer, DocumentIndexEntry> table;
 
-    public DocumentIndexImpl(){
+    private final NavigableMap<Integer, DocumentIndexEntry> table;
+    private final Fetcher fetcher;
+
+    public DocumentIndexImpl() {
         table = new TreeMap<>();
+        fetcher = Fetcher.getFetcher(Constants.getCompression());
+
         numDocuments = 0;
         totalLength = 0;
     }
@@ -38,16 +44,32 @@ public class DocumentIndexImpl implements DocumentIndex, Serializable {
 
     @Override
     public int getLength(int docId) {
-        // returns -1 if the docId doesn't exist
-        if (table.containsKey(docId)){
-            return table.get(docId).getDocumentLength();
+        if (!table.containsKey(docId)) {
+            fetcher.start(Constants.getPath());
+            DocumentIndexEntry entry = fetcher.loadDocEntry(docId);
+            fetcher.end();
+
+            if (entry != null) {
+                table.put(docId, entry);
+                return entry.getDocumentLength();
+            }
         }
-        else return -1;
+        return table.get(docId).getDocumentLength();
     }
 
     @Override
     public double getAverageLength() {
-        return (double) totalLength/numDocuments;
+        // Check whether the document index metadata have not been loaded in memory
+        if (numDocuments == 0 && !table.isEmpty()) {
+            fetcher.start();
+            int[] stats = fetcher.getDocumentIndexStats();
+            fetcher.end();
+
+            numDocuments = stats[0];
+            totalLength  = stats[1];
+        }
+
+        return (double) totalLength / numDocuments;
     }
 
     @Override
@@ -56,17 +78,14 @@ public class DocumentIndexImpl implements DocumentIndex, Serializable {
             return false;
         }
         else{
-            DocumentIndexEntry die = new DocumentIndexEntryImpl();
+            DocumentIndexEntry die = new DocumentIndexEntry();
             die.setDocumentLength(docLength);
             table.put(docId, die);
-            numDocuments +=1;
+            numDocuments += 1;
             totalLength += docLength;
             return true;
         }
     }
-
-
-
 
     public Iterable<Map.Entry<Integer, DocumentIndexEntry>> getEntries() {
         return table.entrySet();

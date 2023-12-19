@@ -25,6 +25,12 @@ public interface Fetcher {
      */
     boolean start(Path path);
 
+    /**
+     * Close the stream
+     * @return whether the stream has been closed correctly or an IOException has been raised
+     */
+    boolean end();
+
     void loadPosting(VocabularyEntry entry);
 
     // TERM | DF | UB | PostingList
@@ -36,13 +42,7 @@ public interface Fetcher {
 
     Map.Entry<Integer, DocumentIndexEntry> loadDocEntry();
 
-    /**
-     * Close the stream
-     * @return whether the stream has been closed correctly or an IOException has been raised
-     */
-    boolean end();
-
-    int[] getInformations();
+    int[] getDocumentIndexStats();
 
     static Fetcher getFetcher(CompressionType compression) {
         switch (compression) {

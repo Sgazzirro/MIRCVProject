@@ -1,9 +1,26 @@
 package it.unipi.model;
 
-public interface DocumentIndexEntry {
+import it.unipi.encoding.CompressionType;
 
-    int getDocumentLength();
+public class DocumentIndexEntry {
 
-    void setDocumentLength(int documentLength);
+    private int documentLength;
 
+    public int getDocumentLength() {
+        return documentLength;
+    }
+
+    public void setDocumentLength(int documentLength) {
+        this.documentLength = documentLength;
+    }
+
+    public static DocumentIndexEntry parseTXT(String line) {
+        DocumentIndexEntry entry = new DocumentIndexEntry();
+        String[] params = line.split(",");
+
+        int docLength = Integer.parseInt(params[1]);
+
+        entry.setDocumentLength(docLength);
+        return entry;
+    }
 }

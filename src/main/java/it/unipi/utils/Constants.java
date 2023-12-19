@@ -33,6 +33,10 @@ public class Constants {
     public static int N = 8841823;
     public static final int VOCABULARY_ENTRY_BYTES_SIZE =
             BYTES_STORED_STRING + 3*Integer.BYTES + Double.BYTES + 2*Long.BYTES;
+    public static final int DOCUMENT_INDEX_ENTRY_BYTES_SIZE =
+            2*Integer.BYTES;
+    public static final int VOCABULARY_HEADER_BYTES = 0;
+    public static final int DOCUMENT_INDEX_HEADER_BYTES = 2*Integer.BYTES;
 
     // BM25 constants
     public static double BM25_b = 0.75;

@@ -3,7 +3,6 @@ package it.unipi.io.implementation;
 import it.unipi.io.Fetcher;
 import it.unipi.model.DocumentIndexEntry;
 import it.unipi.model.VocabularyEntry;
-import it.unipi.model.implementation.DocumentIndexEntryImpl;
 import it.unipi.utils.ByteUtils;
 import it.unipi.encoding.CompressionType;
 import it.unipi.utils.Constants;
@@ -16,7 +15,7 @@ import java.util.Map;
 public class FetcherBinary implements Fetcher {
 
     private   FileInputStream vocabularyReader;
-    private   InputStream documentIndexReader;
+    private   FileInputStream documentIndexReader;
     protected FileInputStream docIdsReader;
     protected FileInputStream termFreqReader;
 
@@ -25,6 +24,7 @@ public class FetcherBinary implements Fetcher {
 
     protected Path path;
     private int vocabularySize;
+    private int documentIndexSize;
 
     public FetcherBinary() {
         compression = CompressionType.BINARY;
@@ -36,15 +36,20 @@ public class FetcherBinary implements Fetcher {
         this.path = path;
 
         try {
-            Path vocpath = path.resolve(Constants.VOCABULARY_FILENAME);
-            vocabularySize = (int) Files.size(vocpath) / Constants.VOCABULARY_ENTRY_BYTES_SIZE;
+            Path vocPath = path.resolve(Constants.VOCABULARY_FILENAME);
+            Path docPath = path.resolve(Constants.DOCUMENT_INDEX_FILENAME);
+            vocabularySize = ((int) Files.size(vocPath) - Constants.VOCABULARY_HEADER_BYTES)
+                    / Constants.VOCABULARY_ENTRY_BYTES_SIZE;
+            documentIndexSize = ((int) Files.size(docPath) - Constants.DOCUMENT_INDEX_HEADER_BYTES)
+                    / Constants.DOCUMENT_INDEX_ENTRY_BYTES_SIZE;
 
-            vocabularyReader    = new FileInputStream(vocpath.toFile());
+            vocabularyReader    = new FileInputStream(vocPath.toFile());
             docIdsReader        = new FileInputStream(path.resolve(Constants.DOC_IDS_POSTING_FILENAME).toFile());
             termFreqReader      = new FileInputStream(path.resolve(Constants.TF_POSTING_FILENAME).toFile());
-            documentIndexReader = new BufferedInputStream(
-                    new FileInputStream(path.resolve(Constants.DOCUMENT_INDEX_FILENAME).toFile())
-            );
+            documentIndexReader = new FileInputStream(docPath.toFile());
+            /*documentIndexReader = new BufferedInputStream(
+                    new FileInputStream(docPath.toFile())
+            );*/
             opened = true;
 
         } catch (IOException ie) {
@@ -120,20 +125,22 @@ public class FetcherBinary implements Fetcher {
             System.arraycopy(term.getBytes(), 0, termBytes, 0, termNumBytes);
             String truncatedTerm = ByteUtils.bytesToString(termBytes, 0, Constants.BYTES_STORED_STRING);
 
-
             while (true) {
                 middle = (end + start) / 2;
-                vocabularyReader.getChannel().position((long) middle * Constants.VOCABULARY_ENTRY_BYTES_SIZE);
+                // Set the file pointer to the entry of index middle
+                vocabularyReader.getChannel().position(
+                        (long) middle * Constants.VOCABULARY_ENTRY_BYTES_SIZE + Constants.VOCABULARY_HEADER_BYTES);
+
                 if (vocabularyReader.read(vocabularyEntryBytes, 0, Constants.VOCABULARY_ENTRY_BYTES_SIZE) != Constants.VOCABULARY_ENTRY_BYTES_SIZE)
                     throw new IOException("Could not read vocabulary entry");
 
                 String currentTerm = ByteUtils.bytesToString(vocabularyEntryBytes, 0, Constants.BYTES_STORED_STRING);
                 int comparison = truncatedTerm.compareTo(currentTerm);
 
-                // condizione di stop
-                if(comparison!=0 && end-start==1){
+                // Stop condition
+                if (end == start && comparison != 0)
                     return null;
-                }
+
                 if (comparison > 0)         // This means term > entry
                     start = middle;
                 else if (comparison < 0)    // This means term < entry
@@ -143,6 +150,7 @@ public class FetcherBinary implements Fetcher {
                     loadPosting(result);
                     return result;
                 }
+
             }
         } catch (IOException e) {
             e.printStackTrace();
@@ -177,6 +185,42 @@ public class FetcherBinary implements Fetcher {
 
     @Override
     public DocumentIndexEntry loadDocEntry(long docId) {
+        try {
+            if (!opened)
+                throw new IOException("Fetcher has not been started");
+
+            // Binary search to find the docId
+            // Remember to consider also the ints at the beginning of file denoting documentIndex
+            int start = 0, end = documentIndexSize;
+            int middle;
+            byte[] documentIndexEntryBytes = new byte[Constants.DOCUMENT_INDEX_ENTRY_BYTES_SIZE];
+
+            while (true) {
+                middle = (end + start) / 2;
+                // Set the file pointer to the entry of index middle
+                documentIndexReader.getChannel().position(
+                        (long) middle * Constants.DOCUMENT_INDEX_ENTRY_BYTES_SIZE + Constants.DOCUMENT_INDEX_HEADER_BYTES);
+
+                if (documentIndexReader.read(documentIndexEntryBytes, 0, Constants.DOCUMENT_INDEX_ENTRY_BYTES_SIZE) != Constants.DOCUMENT_INDEX_ENTRY_BYTES_SIZE)
+                    throw new IOException("Could not read document index entry");
+
+                int currentDocId = ByteUtils.bytesToInt(documentIndexEntryBytes, 0);
+
+                // Stop condition
+                if (end == start && currentDocId != docId)
+                    return null;
+
+                if (docId > currentDocId)
+                    start = middle;
+                else if (docId < currentDocId)
+                    end = middle;
+                else {
+                    return ByteUtils.bytesToDocumentIndexEntry(documentIndexEntryBytes);
+                }
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
         return null;
     }
 
@@ -197,7 +241,7 @@ public class FetcherBinary implements Fetcher {
             if (documentIndexReader.read(length) != Integer.BYTES)
                 return null;
 
-            documentIndexEntry = new DocumentIndexEntryImpl();
+            documentIndexEntry = new DocumentIndexEntry();
             documentIndexEntry.setDocumentLength(ByteUtils.bytesToInt(length));
 
         } catch(IOException ie) {
@@ -209,9 +253,10 @@ public class FetcherBinary implements Fetcher {
     }
 
     @Override
-    public int[] getInformations() {
-        byte[] N = new byte[Integer.BYTES];
-        byte[] l = new byte[Integer.BYTES];
+    public int[] getDocumentIndexStats() {
+        byte[] N = new byte[Integer.BYTES],
+                l = new byte[Integer.BYTES];
+
         try {
             if (documentIndexReader.read(l) + documentIndexReader.read(N) != 2 * Integer.BYTES)
                 throw new IOException("Document index: error reading metadata");
@@ -219,6 +264,6 @@ public class FetcherBinary implements Fetcher {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-        return new int[]{ByteUtils.bytesToInt(N), ByteUtils.bytesToInt(l)};
+        return new int[] {ByteUtils.bytesToInt(N), ByteUtils.bytesToInt(l)};
     }
 }

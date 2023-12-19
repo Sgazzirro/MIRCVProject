@@ -2,7 +2,6 @@ package it.unipi.io.implementation;
 
 import it.unipi.io.Fetcher;
 import it.unipi.model.DocumentIndexEntry;
-import it.unipi.model.implementation.DocumentIndexEntryImpl;
 import it.unipi.model.VocabularyEntry;
 import it.unipi.utils.Constants;
 
@@ -126,28 +125,64 @@ public class FetcherTXT implements Fetcher {
 
     @Override
     public DocumentIndexEntry loadDocEntry(long docId) {
-        return null;
+        int firstDocId = -1;
+        String line;
+
+        // Use the global reader and restart it if EOF reached
+        if (!opened)
+            if (!start(path))
+                return null;
+
+
+        try {
+            while (true) {
+                line = globalReaderDOC.readLine();
+                if (line == null) {
+                    // EOF reached, restart buffer
+                    globalReaderDOC = new BufferedReader(new FileReader(path + Constants.DOCUMENT_INDEX_FILENAME));
+                    line = globalReaderDOC.readLine();
+                }
+
+                String[] params = line.split(",");
+                int currentDocId = Integer.parseInt(params[0]);
+                if (firstDocId == -1)
+                    // Remember first term read so to stop reading again the whole file
+                    firstDocId = currentDocId;
+                else if (currentDocId == firstDocId)
+                    // We are at the starting point after reading the whole file, stop
+                    return null;
+
+                if (currentDocId == docId)
+                    return DocumentIndexEntry.parseTXT(line);
+            }
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     @Override
     public Map.Entry<Integer, DocumentIndexEntry> loadDocEntry() {
         // The loading of an entry without arguments uses the global reader
-        DocumentIndexEntry result = new DocumentIndexEntryImpl();
+        DocumentIndexEntry result;
+
         int docId;
         if (!opened)
             if (!start(path))
                 return null;
+
         try {
             // Read next line
             String line = globalReaderDOC.readLine();
-            if(line == null)
+            if (line == null)
                 return null;
             String[] params = line.split(",");
             docId = Integer.parseInt(params[0]);
-            result.setDocumentLength(Integer.parseInt(params[1]));
+            result = DocumentIndexEntry.parseTXT(line);
+
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
+
         return Map.entry(docId, result);
     }
 
@@ -167,16 +202,15 @@ public class FetcherTXT implements Fetcher {
     }
 
     @Override
-    public int[] getInformations() {
-        int N;
-        int l;
+    public int[] getDocumentIndexStats() {
+        int N, l;
         try {
             l = Integer.parseInt(globalReaderDOC.readLine());
             N = Integer.parseInt(globalReaderDOC.readLine());
-        }
-        catch (IOException e) {
+
+        } catch (IOException e) {
             throw new RuntimeException(e);
         }
-        return new int[]{N, l};
+        return new int[] {N, l};
     }
 }

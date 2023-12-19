@@ -215,7 +215,7 @@ public class SPIMIIndex {
         int N = 0;
         int L = 0;
         for (int i = 0; i < next_block; i++) {
-            int[] info = readers.get(i).getInformations();
+            int[] info = readers.get(i).getDocumentIndexStats();
             N += info[0];
             L += info[1];
         }

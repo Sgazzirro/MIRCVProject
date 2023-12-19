@@ -3,6 +3,7 @@ package it.unipi.utils;
 import it.unipi.encoding.CompressionType;
 import it.unipi.encoding.Encoder;
 import it.unipi.encoding.implementation.EliasFano;
+import it.unipi.model.DocumentIndexEntry;
 import it.unipi.model.PostingList;
 import it.unipi.model.VocabularyEntry;
 
@@ -86,6 +87,14 @@ public class ByteUtils {
 
         entry.setPostingList(postingList);
 
+        return entry;
+    }
+
+    public static DocumentIndexEntry bytesToDocumentIndexEntry(byte[] documentIndexEntryBytes) {
+        int documentLength = bytesToInt(documentIndexEntryBytes, Integer.BYTES);
+
+        DocumentIndexEntry entry = new DocumentIndexEntry();
+        entry.setDocumentLength(documentLength);
         return entry;
     }
 
