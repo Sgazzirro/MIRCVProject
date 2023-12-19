@@ -1,6 +1,7 @@
 package it.unipi.model;
 
 import it.unipi.encoding.CompressionType;
+import it.unipi.model.implementation.DocumentIndexImpl;
 
 public class DocumentIndexEntry {
 
@@ -22,5 +23,12 @@ public class DocumentIndexEntry {
 
         entry.setDocumentLength(docLength);
         return entry;
+    }
+
+    public boolean equals(Object o){
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        DocumentIndexEntry that = (DocumentIndexEntry) o;
+        return that.getDocumentLength() == this.getDocumentLength();
     }
 }

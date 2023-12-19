@@ -72,6 +72,7 @@ public class DocumentStreamImpl implements DocumentStream {
         try {
             while (docId > 0) {
                 br.readLine();
+                firstLine = false;
                 docId--;
             }
             return nextDoc();

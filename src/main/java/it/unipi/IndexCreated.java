@@ -19,7 +19,7 @@ public class IndexCreated {
         int numDocs;
         int numWords;
         Constants.setCompression(CompressionType.COMPRESSED);
-        Constants.setScoring(ScoringType.BM25);
+        Constants.setScoring(ScoringType.TFIDF);
         Constants.setPath(Path.of("./data"));
         MaxScore max = new MaxScore(Constants.vocabulary, Constants.documentIndex, Tokenizer.getInstance());
 
@@ -30,7 +30,7 @@ public class IndexCreated {
             int numResults = 10;
             boolean printFirstText = true;
 
-            PriorityQueue<DocumentScore> scoring = max.score("average rainfall in Costa Rica", numResults, "disjunctive");
+            PriorityQueue<DocumentScore> scoring = max.score("average rainfall in Costa Rica", numResults, "conjunctive");
             List<DocumentScore> reverseMode = new ArrayList<>();
 
             while (!scoring.isEmpty()) {
