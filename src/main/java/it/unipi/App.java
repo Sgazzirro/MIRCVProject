@@ -7,7 +7,6 @@ import it.unipi.io.Dumper;
 import it.unipi.model.DocumentIndex;
 import it.unipi.io.DocumentStream;
 import it.unipi.model.Vocabulary;
-import it.unipi.model.implementation.DocumentIndexImpl;
 import it.unipi.utils.*;
 
 import java.io.*;
@@ -51,7 +50,7 @@ public class App
 */
 
         DocumentStream ds = DocumentStream.getInstance();
-        DocumentIndex di = new DocumentIndexImpl();
+        DocumentIndex di = DocumentIndex.getInstance();
         Vocabulary v = Vocabulary.getInstance();
         Dumper d = Dumper.getInstance(CompressionType.COMPRESSED);
 

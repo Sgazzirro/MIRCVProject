@@ -1,0 +1,433 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="AutoImportSettings">
+    <option name="autoReloadType" value="SELECTIVE" />
+  </component>
+  <component name="ChangeListManager">
+    <list default="true" id="7951b1f9-57aa-4149-8397-4684a3e77d6f" name="Changes" comment="Minor refactor" />
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="FileTemplateManagerImpl">
+    <option name="RECENT_TEMPLATES">
+      <list>
+        <option value="JUnit3 Test Class" />
+        <option value="Interface" />
+        <option value="Class" />
+        <option value="Enum" />
+      </list>
+    </option>
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
+  <component name="MarkdownSettingsMigration">
+    <option name="stateVersion" value="1" />
+  </component>
+  <component name="ProjectColorInfo">{
+  &quot;associatedIndex&quot;: 3
+}</component>
+  <component name="ProjectId" id="2XJAo32RkhHfTeozjul5M8eCTRj" />
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;RunOnceActivity.OpenProjectViewOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;SHARE_PROJECT_CONFIGURATION_FILES&quot;: &quot;true&quot;,
+    &quot;WebServerToolWindowFactoryState&quot;: &quot;false&quot;,
+    &quot;com.intellij.testIntegration.createTest.CreateTestDialog.defaultLibrary&quot;: &quot;JUnit3&quot;,
+    &quot;com.intellij.testIntegration.createTest.CreateTestDialog.defaultLibrarySuperClass.JUnit3&quot;: &quot;junit.framework.TestCase&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;main&quot;,
+    &quot;last_opened_file_path&quot;: &quot;/home/daniele/Scrivania/Università/MIRCV/Project/MIRCVProject/data&quot;,
+    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
+    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
+    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
+    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;preferences.pluginManager&quot;,
+    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
+  }
+}</component>
+  <component name="RecentsManager">
+    <key name="CopyFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/data" />
+    </key>
+    <key name="CreateTestDialog.Recents.Supers">
+      <recent name="junit.framework.TestCase" />
+    </key>
+    <key name="MoveClassesOrPackagesDialog.RECENTS_KEY">
+      <recent name="it.unipi.model" />
+    </key>
+    <key name="CreateTestDialog.RecentsKey">
+      <recent name="it.unipi.model.implementation" />
+      <recent name="it.unipi.scoring" />
+    </key>
+  </component>
+  <component name="RunManager">
+    <configuration name="BinaryTest.testNext2dot5Blocks" type="JUnit" factoryName="JUnit" temporary="true" nameIsGenerated="true">
+      <module name="MIRCVProject" />
+      <extension name="coverage">
+        <pattern>
+          <option name="PATTERN" value="it.unipi.io.*" />
+          <option name="ENABLED" value="true" />
+        </pattern>
+      </extension>
+      <option name="PACKAGE_NAME" value="it.unipi.io" />
+      <option name="MAIN_CLASS_NAME" value="it.unipi.io.BinaryTest" />
+      <option name="METHOD_NAME" value="testNext2dot5Blocks" />
+      <option name="TEST_OBJECT" value="method" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="BinaryTest.testNextNotPresent" type="JUnit" factoryName="JUnit" temporary="true" nameIsGenerated="true">
+      <module name="MIRCVProject" />
+      <extension name="coverage">
+        <pattern>
+          <option name="PATTERN" value="it.unipi.io.*" />
+          <option name="ENABLED" value="true" />
+        </pattern>
+      </extension>
+      <option name="PACKAGE_NAME" value="it.unipi.io" />
+      <option name="MAIN_CLASS_NAME" value="it.unipi.io.BinaryTest" />
+      <option name="METHOD_NAME" value="testNextNotPresent" />
+      <option name="TEST_OBJECT" value="method" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="SPIMICompleteTest.testBuildSingleBlock_BINARY" type="JUnit" factoryName="JUnit" temporary="true" nameIsGenerated="true">
+      <module name="MIRCVProject" />
+      <extension name="coverage">
+        <pattern>
+          <option name="PATTERN" value="it.unipi.index.*" />
+          <option name="ENABLED" value="true" />
+        </pattern>
+      </extension>
+      <option name="PACKAGE_NAME" value="it.unipi.index" />
+      <option name="MAIN_CLASS_NAME" value="it.unipi.index.SPIMICompleteTest" />
+      <option name="METHOD_NAME" value="testBuildSingleBlock_BINARY" />
+      <option name="TEST_OBJECT" value="method" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="SPIMICompleteTest.testBuildSingleBlock_COMPRESSED" type="JUnit" factoryName="JUnit" temporary="true" nameIsGenerated="true">
+      <module name="MIRCVProject" />
+      <extension name="coverage">
+        <pattern>
+          <option name="PATTERN" value="it.unipi.index.*" />
+          <option name="ENABLED" value="true" />
+        </pattern>
+      </extension>
+      <option name="PACKAGE_NAME" value="it.unipi.index" />
+      <option name="MAIN_CLASS_NAME" value="it.unipi.index.SPIMICompleteTest" />
+      <option name="METHOD_NAME" value="testBuildSingleBlock_COMPRESSED" />
+      <option name="TEST_OBJECT" value="method" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="SPIMICompleteTest.testBuildSingleBlock_DEBUG" type="JUnit" factoryName="JUnit" temporary="true" nameIsGenerated="true">
+      <module name="MIRCVProject" />
+      <extension name="coverage">
+        <pattern>
+          <option name="PATTERN" value="it.unipi.index.*" />
+          <option name="ENABLED" value="true" />
+        </pattern>
+      </extension>
+      <option name="PACKAGE_NAME" value="it.unipi.index" />
+      <option name="MAIN_CLASS_NAME" value="it.unipi.index.SPIMICompleteTest" />
+      <option name="METHOD_NAME" value="testBuildSingleBlock_DEBUG" />
+      <option name="TEST_OBJECT" value="method" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration default="true" type="JetRunConfigurationType">
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration default="true" type="KotlinStandaloneScriptRunConfigurationType">
+      <option name="filePath" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <recent_temporary>
+      <list>
+        <item itemvalue="JUnit.BinaryTest.testNext2dot5Blocks" />
+        <item itemvalue="JUnit.BinaryTest.testNextNotPresent" />
+        <item itemvalue="JUnit.SPIMICompleteTest.testBuildSingleBlock_COMPRESSED" />
+        <item itemvalue="JUnit.SPIMICompleteTest.testBuildSingleBlock_BINARY" />
+        <item itemvalue="JUnit.SPIMICompleteTest.testBuildSingleBlock_DEBUG" />
+      </list>
+    </recent_temporary>
+  </component>
+  <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="7951b1f9-57aa-4149-8397-4684a3e77d6f" name="Changes" comment="" />
+      <created>1698336979632</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1698336979632</updated>
+      <workItem from="1698336980645" duration="3949000" />
+      <workItem from="1698908955136" duration="5192000" />
+      <workItem from="1698914158593" duration="5526000" />
+      <workItem from="1698951135892" duration="1549000" />
+      <workItem from="1699032420513" duration="3272000" />
+      <workItem from="1699105970674" duration="19728000" />
+      <workItem from="1699456152599" duration="776000" />
+      <workItem from="1699900505590" duration="939000" />
+      <workItem from="1699953098624" duration="2845000" />
+      <workItem from="1699973065036" duration="37000" />
+      <workItem from="1700054387595" duration="11000000" />
+      <workItem from="1700409555502" duration="8202000" />
+      <workItem from="1700472059609" duration="25253000" />
+      <workItem from="1700563712167" duration="9240000" />
+      <workItem from="1700951460149" duration="3911000" />
+      <workItem from="1700955415616" duration="857000" />
+      <workItem from="1701020433606" duration="7954000" />
+      <workItem from="1701092678684" duration="129000" />
+      <workItem from="1701122128076" duration="2076000" />
+      <workItem from="1701169542651" duration="1274000" />
+      <workItem from="1701267108048" duration="27000" />
+      <workItem from="1701538559810" duration="2751000" />
+      <workItem from="1701871736472" duration="13133000" />
+      <workItem from="1701971676649" duration="11249000" />
+      <workItem from="1702203182938" duration="10147000" />
+      <workItem from="1702308869059" duration="5545000" />
+      <workItem from="1702378231665" duration="2629000" />
+      <workItem from="1702461246960" duration="8661000" />
+      <workItem from="1702736553415" duration="996000" />
+    </task>
+    <task id="LOCAL-00001" summary="Package refactoring">
+      <option name="closed" value="true" />
+      <created>1698340459337</created>
+      <option name="number" value="00001" />
+      <option name="presentableId" value="LOCAL-00001" />
+      <option name="project" value="LOCAL" />
+      <updated>1698340459337</updated>
+    </task>
+    <task id="LOCAL-00002" summary="Model interfaces">
+      <option name="closed" value="true" />
+      <created>1698341972608</created>
+      <option name="number" value="00002" />
+      <option name="presentableId" value="LOCAL-00002" />
+      <option name="project" value="LOCAL" />
+      <updated>1698341972608</updated>
+    </task>
+    <task id="LOCAL-00003" summary="Minor fixes">
+      <option name="closed" value="true" />
+      <created>1698915242767</created>
+      <option name="number" value="00003" />
+      <option name="presentableId" value="LOCAL-00003" />
+      <option name="project" value="LOCAL" />
+      <updated>1698915242767</updated>
+    </task>
+    <task id="LOCAL-00004" summary="Stemming and stopwords removal implementation">
+      <option name="closed" value="true" />
+      <created>1698915271157</created>
+      <option name="number" value="00004" />
+      <option name="presentableId" value="LOCAL-00004" />
+      <option name="project" value="LOCAL" />
+      <updated>1698915271157</updated>
+    </task>
+    <task id="LOCAL-00005" summary="Refactored vocabulary write">
+      <option name="closed" value="true" />
+      <created>1698920251036</created>
+      <option name="number" value="00005" />
+      <option name="presentableId" value="LOCAL-00005" />
+      <option name="project" value="LOCAL" />
+      <updated>1698920251036</updated>
+    </task>
+    <task id="LOCAL-00006" summary="Implemented loading of vocabulary, document index and posting lists from txt">
+      <option name="closed" value="true" />
+      <created>1699008510627</created>
+      <option name="number" value="00006" />
+      <option name="presentableId" value="LOCAL-00006" />
+      <option name="project" value="LOCAL" />
+      <updated>1699008510627</updated>
+    </task>
+    <task id="LOCAL-00007" summary="TfIdf scoring - First test">
+      <option name="closed" value="true" />
+      <created>1699268188351</created>
+      <option name="number" value="00007" />
+      <option name="presentableId" value="LOCAL-00007" />
+      <option name="project" value="LOCAL" />
+      <updated>1699268188351</updated>
+    </task>
+    <task id="LOCAL-00008" summary="Simple9 compression algorithm">
+      <option name="closed" value="true" />
+      <created>1700063829482</created>
+      <option name="number" value="00008" />
+      <option name="presentableId" value="LOCAL-00008" />
+      <option name="project" value="LOCAL" />
+      <updated>1700063829482</updated>
+    </task>
+    <task id="LOCAL-00009" summary="Simple9 and EliasFano encoders interface unified">
+      <option name="closed" value="true" />
+      <created>1700472215039</created>
+      <option name="number" value="00009" />
+      <option name="presentableId" value="LOCAL-00009" />
+      <option name="project" value="LOCAL" />
+      <updated>1700472215039</updated>
+    </task>
+    <task id="LOCAL-00010" summary="Major refactoring and Dump/Fetch of compressed vocabulary implemented">
+      <option name="closed" value="true" />
+      <created>1700596398387</created>
+      <option name="number" value="00010" />
+      <option name="presentableId" value="LOCAL-00010" />
+      <option name="project" value="LOCAL" />
+      <updated>1700596398387</updated>
+    </task>
+    <task id="LOCAL-00011" summary="Minor fix">
+      <option name="closed" value="true" />
+      <created>1700597496137</created>
+      <option name="number" value="00011" />
+      <option name="presentableId" value="LOCAL-00011" />
+      <option name="project" value="LOCAL" />
+      <updated>1700597496137</updated>
+    </task>
+    <task id="LOCAL-00012" summary="Creation of compressed index with spimi fixed">
+      <option name="closed" value="true" />
+      <created>1700956179693</created>
+      <option name="number" value="00012" />
+      <option name="presentableId" value="LOCAL-00012" />
+      <option name="project" value="LOCAL" />
+      <updated>1700956179693</updated>
+    </task>
+    <task id="LOCAL-00013" summary="Minor fixes">
+      <option name="closed" value="true" />
+      <created>1701035777260</created>
+      <option name="number" value="00013" />
+      <option name="presentableId" value="LOCAL-00013" />
+      <option name="project" value="LOCAL" />
+      <updated>1701035777260</updated>
+    </task>
+    <task id="LOCAL-00014" summary="Simple9 minor fix">
+      <option name="closed" value="true" />
+      <created>1701170757086</created>
+      <option name="number" value="00014" />
+      <option name="presentableId" value="LOCAL-00014" />
+      <option name="project" value="LOCAL" />
+      <updated>1701170757086</updated>
+    </task>
+    <task id="LOCAL-00015" summary="SPIMI speed improved (TODO fix the dump of document index after merging)">
+      <option name="closed" value="true" />
+      <created>1701889737920</created>
+      <option name="number" value="00015" />
+      <option name="presentableId" value="LOCAL-00015" />
+      <option name="project" value="LOCAL" />
+      <updated>1701889737920</updated>
+    </task>
+    <task id="LOCAL-00016" summary="Fetcher and Dumper sped up, minor refactoring">
+      <option name="closed" value="true" />
+      <created>1702316191893</created>
+      <option name="number" value="00016" />
+      <option name="presentableId" value="LOCAL-00016" />
+      <option name="project" value="LOCAL" />
+      <updated>1702316191893</updated>
+    </task>
+    <task id="LOCAL-00017" summary="Fixed BinaryTest">
+      <option name="closed" value="true" />
+      <created>1702463038184</created>
+      <option name="number" value="00017" />
+      <option name="presentableId" value="LOCAL-00017" />
+      <option name="project" value="LOCAL" />
+      <updated>1702463038184</updated>
+    </task>
+    <task id="LOCAL-00018" summary="Fixed MaxScoreTest">
+      <option name="closed" value="true" />
+      <created>1702463516968</created>
+      <option name="number" value="00018" />
+      <option name="presentableId" value="LOCAL-00018" />
+      <option name="project" value="LOCAL" />
+      <updated>1702463516968</updated>
+    </task>
+    <task id="LOCAL-00019" summary="Minor fixes">
+      <option name="closed" value="true" />
+      <created>1702478028743</created>
+      <option name="number" value="00019" />
+      <option name="presentableId" value="LOCAL-00019" />
+      <option name="project" value="LOCAL" />
+      <updated>1702478028743</updated>
+    </task>
+    <task id="LOCAL-00020" summary="Minor refactor">
+      <option name="closed" value="true" />
+      <created>1702478095526</created>
+      <option name="number" value="00020" />
+      <option name="presentableId" value="LOCAL-00020" />
+      <option name="project" value="LOCAL" />
+      <updated>1702478095526</updated>
+    </task>
+    <option name="localTasksCounter" value="21" />
+    <servers />
+  </component>
+  <component name="TypeScriptGeneratedFilesManager">
+    <option name="version" value="3" />
+  </component>
+  <component name="Vcs.Log.Tabs.Properties">
+    <option name="TAB_STATES">
+      <map>
+        <entry key="MAIN">
+          <value>
+            <State />
+          </value>
+        </entry>
+      </map>
+    </option>
+  </component>
+  <component name="VcsManagerConfiguration">
+    <MESSAGE value="Package refactoring" />
+    <MESSAGE value="Model interfaces" />
+    <MESSAGE value="Stemming and stopwords removal implementation" />
+    <MESSAGE value="Refactored vocabulary write" />
+    <MESSAGE value="Implemented loading of vocabulary, document index and posting lists from txt" />
+    <MESSAGE value="TfIdf scoring - First test" />
+    <MESSAGE value="Simple9 compression algorithm" />
+    <MESSAGE value="Simple9 and EliasFano encoders interface unified" />
+    <MESSAGE value="Major refactoring and Dump/Fetch of compressed vocabulary implemented" />
+    <MESSAGE value="Minor fix" />
+    <MESSAGE value="Creation of compressed index with spimi fixed" />
+    <MESSAGE value="Simple9 minor fix" />
+    <MESSAGE value="SPIMI speed improved (TODO fix the dump of document index after merging)" />
+    <MESSAGE value="Added buffers to speed up index dumping" />
+    <MESSAGE value="Fetcher and Dumper sped up, minor refactoring" />
+    <MESSAGE value="Fixed BinaryTest" />
+    <MESSAGE value="Fixed MaxScoreTest" />
+    <MESSAGE value="Minor fixes" />
+    <MESSAGE value="Minor refactor" />
+    <option name="LAST_COMMIT_MESSAGE" value="Minor refactor" />
+  </component>
+  <component name="XDebuggerManager">
+    <breakpoint-manager>
+      <breakpoints>
+        <line-breakpoint enabled="true" type="java-method">
+          <url>file://$PROJECT_DIR$/src/main/java/it/unipi/utils/FetcherCompressed.java</url>
+          <line>34</line>
+          <properties class="it.unipi.utils.FetcherCompressed" method="fetchDocIdsBlock">
+            <option name="EMULATED" value="true" />
+            <option name="WATCH_EXIT" value="false" />
+          </properties>
+          <option name="timeStamp" value="1" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-method">
+          <url>file://$PROJECT_DIR$/src/main/java/it/unipi/model/implementation/PostingListCompressed.java</url>
+          <line>149</line>
+          <properties class="it.unipi.model.implementation.PostingListCompressed">
+            <option name="EMULATED" value="true" />
+            <option name="WATCH_EXIT" value="false" />
+          </properties>
+          <option name="timeStamp" value="2" />
+        </line-breakpoint>
+      </breakpoints>
+    </breakpoint-manager>
+  </component>
+</project>

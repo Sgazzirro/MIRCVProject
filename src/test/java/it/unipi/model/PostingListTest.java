@@ -30,7 +30,7 @@ public class PostingListTest {
     private final PostingList postingList;
 
     public PostingListTest(CompressionType compression) {
-        this.postingList = PostingList.getInstance(compression);
+        this.postingList = PostingList.getInstance(compression, new VocabularyEntry());
 
         for (int i = 0; i < postingLength; i++)
             postingList.addPosting(i);   // Add docId i with tf 1

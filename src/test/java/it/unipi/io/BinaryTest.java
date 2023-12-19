@@ -5,9 +5,6 @@ import it.unipi.io.implementation.FetcherCompressed;
 import it.unipi.model.PostingList;
 import it.unipi.model.Vocabulary;
 import it.unipi.model.VocabularyEntry;
-import it.unipi.model.implementation.PostingListCompressedImpl;
-import it.unipi.model.implementation.PostingListImpl;
-import it.unipi.model.implementation.VocabularyEntryImpl;
 import it.unipi.utils.*;
 import org.junit.*;
 
@@ -61,14 +58,14 @@ public class BinaryTest {
     @Test
     public void testGenericEntry() throws IOException {
         String testTerm = "teseo";
-        PostingList p = PostingList.getInstance(Constants.getCompression());
+        VocabularyEntry entry = new VocabularyEntry();
 
-        p.addPosting(1, 1);
-        p.addPosting(2, 2);
-        VocabularyEntry i = new VocabularyEntryImpl(2, 2.2, p);
+        entry.addPosting(1, 1);
+        entry.addPosting(2, 2);
+        entry.setUpperBound(2.2);
 
         NavigableMap<String, VocabularyEntry> tree = new TreeMap<>();
-        tree.put(testTerm, i);
+        tree.put(testTerm, entry);
         Map.Entry<String, VocabularyEntry> input = tree.entrySet().iterator().next();
         dumper.start();
         dumper.dumpVocabularyEntry(input);
@@ -394,13 +391,11 @@ public class BinaryTest {
             }
             Collections.sort(list);
 
-            // posting list creation
-            PostingList p = PostingList.getInstance(Constants.getCompression());
-            for (int num: list)
-                p.addPosting(num, num);
-
             // vocabulary entry creation
-            VocabularyEntry entry = new VocabularyEntryImpl(0, 0, p);
+            VocabularyEntry entry = new VocabularyEntry();
+            for (int num: list)
+                entry.addPosting(num, num);
+
             NavigableMap<String, VocabularyEntry> tree = new TreeMap<>();
             tree.put(testTerm, entry);
             Map.Entry<String, VocabularyEntry> input = tree.entrySet().iterator().next();

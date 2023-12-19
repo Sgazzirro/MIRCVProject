@@ -65,7 +65,6 @@ public class DumperTXT implements Dumper {
 
             int termFrequency = vocEntry.getDocumentFrequency();
             double upperBound = vocEntry.getUpperBound();
-            double IDF = vocEntry.getPostingList().getIdf();
 
             PostingListImpl postingListImpl = (PostingListImpl) vocEntry.getPostingList();
             long[] offsets = dumpPostings(postingListImpl);
@@ -74,7 +73,6 @@ public class DumperTXT implements Dumper {
             String result =  new StringBuilder().append(term).append(",")
                     .append(termFrequency).append(",")
                     .append(upperBound).append(",")
-                    .append(IDF).append(",")
                     .append(offsets[0]).append(",")
                     .append(offsets[1]).append(",")
                     .append(length).append("\n").toString();

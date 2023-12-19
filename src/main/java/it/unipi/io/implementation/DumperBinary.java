@@ -77,7 +77,6 @@ public class DumperBinary implements Dumper {
         
         PostingList postingList = vocabularyEntry.getPostingList();
 
-        double idf = postingList.getIdf();
         List<Integer> docIdList = postingList.getDocIdsDecompressedList();
         List<Integer> termFrequencyList = postingList.getTermFrequenciesDecompressedList();
         
@@ -102,12 +101,13 @@ public class DumperBinary implements Dumper {
         vocBuffer.put(stringTruncatedBytes);
         vocBuffer.putInt(documentFrequency)
                 .putDouble(upperBound)
-                .putDouble(idf)
                 .putLong(docIdsOffset)
                 .putInt(docIdsLength)
                 .putLong(termFreqOffset)
                 .putInt(termFreqLength);
-        vocabularyWriter.write(vocBuffer.flip());
+
+        if (vocabularyWriter.write(vocBuffer.flip()) != Constants.VOCABULARY_ENTRY_BYTES_SIZE)
+            throw new IOException("Could not dump vocabulary entry");
 
         docIdsOffset += docIdsLength;
         termFreqOffset += termFreqLength;

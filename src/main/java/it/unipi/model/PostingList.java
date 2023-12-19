@@ -3,39 +3,21 @@ package it.unipi.model;
 import it.unipi.model.implementation.PostingListCompressedImpl;
 import it.unipi.model.implementation.PostingListImpl;
 import it.unipi.encoding.CompressionType;
+import it.unipi.scoring.Scorer;
 
 import java.io.EOFException;
 import java.util.List;
 
-public abstract class PostingList{
-    // aggiunta per calcolare lo score
-    private int documentFrequency;
-    ///
-    private long docIdsOffset;
-    private long termFreqOffset;
-    private int docIdsLength;
-    private int termFreqLength;
-    private double idf;
+public abstract class PostingList {
 
+    protected VocabularyEntry rootEntry;
 
-    // A default constructor used when building the list
-    public PostingList() {
+    public PostingList(VocabularyEntry entry) {
+        this.rootEntry = entry;
     }
 
-    public void setDocumentFrequency(int documentFrequency){
-        this.documentFrequency=documentFrequency;
-    }
-    public int getDocumentFrequency(){
-        return documentFrequency;
-    }
-
-    // A constructor used when we fetch information from vocabulary entry
-    public PostingList(long docIdsOffset, long termFreqOffset, int docIdsLength, int termFreqLength, double idf) {
-        this.docIdsOffset = docIdsOffset;
-        this.termFreqOffset = termFreqOffset;
-        this.docIdsLength = docIdsLength;
-        this.termFreqLength = termFreqLength;
-        this.idf = idf;
+    public VocabularyEntry vocabularyEntry() {
+        return rootEntry;
     }
 
     /**
@@ -44,11 +26,14 @@ public abstract class PostingList{
     public abstract int docId();
 
     public abstract int termFrequency();
+
     /**
      * Function that computes the score (according to the class settings) of that term in that document
      * @return the score of the current posting
      */
-    public abstract double score();
+    public double score() {
+        return Scorer.score(this);
+    }
 
     /**
      * @return whether the list has another posting or not
@@ -84,46 +69,6 @@ public abstract class PostingList{
 
     public abstract boolean addPosting(int docId, int freq);
 
-    public long getDocIdsOffset() {
-        return docIdsOffset;
-    }
-
-    public void setDocIdsOffset(long docIdsOffset) {
-        this.docIdsOffset = docIdsOffset;
-    }
-
-    public long getTermFreqOffset() {
-        return termFreqOffset;
-    }
-
-    public void setTermFreqOffset(long termFreqOffset) {
-        this.termFreqOffset = termFreqOffset;
-    }
-
-    public double getIdf() {
-        return idf;
-    }
-
-    public void setIdf(double idf) {
-        this.idf = idf;
-    }
-
-    public int getDocIdsLength() {
-        return docIdsLength;
-    }
-
-    public void setDocIdsLength(int docIdsLength) {
-        this.docIdsLength = docIdsLength;
-    }
-
-    public int getTermFreqLength() {
-        return termFreqLength;
-    }
-
-    public void setTermFreqLength(int termFreqLength) {
-        this.termFreqLength = termFreqLength;
-    }
-
     public abstract List<Integer> getTermFrequenciesDecompressedList();
 
     public abstract List<Integer> getDocIdsDecompressedList();
@@ -152,21 +97,17 @@ public abstract class PostingList{
     @Override
     public String toString() {
         return "PostingList{" +
-                "docIdsOffset=" + docIdsOffset +
-                ", termFreqOffset=" + termFreqOffset +
-                ", docIdsLength=" + docIdsLength +
-                ", termFreqLength=" + termFreqLength +
-                ", nextDocId=" + docId() +
+                "nextDocId=" + docId() +
                 '}';
     }
 
-    public static PostingList getInstance(CompressionType compression) {
-        switch (compression) {
-            case DEBUG:
-            case BINARY: return new PostingListImpl();
+    public static PostingList getInstance(CompressionType compression, VocabularyEntry entry) {
+        PostingList postingList = switch (compression) {
+            case DEBUG, BINARY -> new PostingListImpl(entry);
+            case COMPRESSED -> new PostingListCompressedImpl(entry);
+        };
 
-            case COMPRESSED: return new PostingListCompressedImpl();
-        }
-        throw new RuntimeException("Unsupported compression type: " + compression);
+        entry.setPostingList(postingList);
+        return postingList;
     }
 }

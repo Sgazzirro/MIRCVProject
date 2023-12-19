@@ -24,22 +24,14 @@ public class VocabularyImpl implements Vocabulary {
 
     @Override
     public void addEntry(String token, int docId) {
-        // TODO: add entry to the posting list
-        VocabularyEntry ve;
+        VocabularyEntry entry;
         if (!isPresent(token)) {
-            ve = new VocabularyEntryImpl();
-            ve.setDocumentFrequency(0);
-            //if(!Constants.getCompression())
-                ve.setPostingList(new PostingListImpl());
-            //else
-            //    ve.setPostingList(new PostingListCompressed());
-            ve.setUpperBound((double) 0);
-            table.put(token,ve);
-        }
-        else
-            ve = getEntry(token);
+            entry = new VocabularyEntry();
+            table.put(token, entry);
+        } else
+            entry = getEntry(token);
 
-        ve.addPosting(docId);
+        entry.addPosting(docId);
     }
 
     @Override

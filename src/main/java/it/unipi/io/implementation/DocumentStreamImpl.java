@@ -69,12 +69,15 @@ public class DocumentStreamImpl implements DocumentStream {
     public Document getDoc(int docId) {
         reset();
 
-        Document doc = null;
-        while (docId >= 0) {
-            doc = nextDoc();
-            docId--;
-        }
-        return doc;
+        try {
+            while (docId > 0) {
+                br.readLine();
+                docId--;
+            }
+            return nextDoc();
+        } catch (IOException ignored) { }
+
+        return null;
     }
 }
 

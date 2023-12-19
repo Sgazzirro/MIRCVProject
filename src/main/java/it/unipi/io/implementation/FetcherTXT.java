@@ -2,7 +2,6 @@ package it.unipi.io.implementation;
 
 import it.unipi.io.Fetcher;
 import it.unipi.model.DocumentIndexEntry;
-import it.unipi.model.PostingList;
 import it.unipi.model.implementation.DocumentIndexEntryImpl;
 import it.unipi.model.VocabularyEntry;
 import it.unipi.utils.Constants;
@@ -39,12 +38,11 @@ public class FetcherTXT implements Fetcher {
     }
 
     @Override
-    public void loadPosting(PostingList list) {
-
+    public void loadPosting(VocabularyEntry entry) {
         // The loading of a posting list uses two inner buffers
 
-        long[] offsets = new long[]{list.getDocIdsOffset(), list.getTermFreqOffset()};
-        int len = list.getDocIdsLength();
+        long[] offsets = new long[]{entry.getDocIdsOffset(), entry.getTermFreqOffset()};
+        int len = entry.getDocIdsLength();
 
         try (
                 BufferedReader readerIds = new BufferedReader(new FileReader(path.resolve(Constants.DOC_IDS_POSTING_FILENAME).toFile()));
@@ -52,9 +50,9 @@ public class FetcherTXT implements Fetcher {
         ) {
             readerIds.skip(offsets[0]);
             readerTf.skip(offsets[1]);
-            for(int i = 0; i < len; i++){
-                list.addPosting(Integer.parseInt(readerIds.readLine()), Integer.parseInt(readerTf.readLine()));
-            }
+            for (int i = 0; i < len; i++)
+                entry.getPostingList().addPosting(Integer.parseInt(readerIds.readLine()), Integer.parseInt(readerTf.readLine()));
+
 
         } catch (IOException e) {
             throw new RuntimeException(e);
@@ -93,7 +91,7 @@ public class FetcherTXT implements Fetcher {
 
                 if (params[0].equals(term)) {
                     result = VocabularyEntry.parseTXT(line);
-                    loadPosting(result.getPostingList());
+                    loadPosting(result);
                     return result;
                 }
             }
@@ -119,7 +117,7 @@ public class FetcherTXT implements Fetcher {
             String[] params = line.split(",");
             term = params[0];
             result = VocabularyEntry.parseTXT(line);
-            loadPosting(result.getPostingList());
+            loadPosting(result);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }

@@ -1,6 +1,7 @@
 package it.unipi.io.implementation;
 
 import it.unipi.model.PostingList;
+import it.unipi.model.VocabularyEntry;
 import it.unipi.model.implementation.PostingListCompressedImpl;
 import it.unipi.encoding.CompressionType;
 
@@ -35,16 +36,18 @@ public class FetcherCompressed extends FetcherBinary {
 
 
     @Override
-    public void loadPosting(PostingList postingList) {
+    public void loadPosting(VocabularyEntry entry) {
+        PostingList postingList = entry.getPostingList();
+
         if (!(postingList instanceof PostingListCompressedImpl pList))
             throw new RuntimeException("Unsupported operation");
 
         try {
             pList.setCompressedDocIds(
-                    fetchCompressedDocIds(postingList.getDocIdsOffset(), postingList.getDocIdsLength())
+                    fetchCompressedDocIds(entry.getDocIdsOffset(), entry.getDocIdsLength())
             );
             pList.setCompressedTermFrequencies(
-                    fetchCompressedTermFrequencies(postingList.getTermFreqOffset(), postingList.getTermFreqLength())
+                    fetchCompressedTermFrequencies(entry.getTermFreqOffset(), entry.getTermFreqLength())
             );
 
             pList.loadNextBlock();

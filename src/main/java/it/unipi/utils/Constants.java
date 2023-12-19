@@ -1,6 +1,9 @@
 package it.unipi.utils;
 
 import it.unipi.encoding.CompressionType;
+import it.unipi.model.DocumentIndex;
+import it.unipi.model.Vocabulary;
+import it.unipi.scoring.ScoringType;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -29,26 +32,45 @@ public class Constants {
 
     public static int N = 8841823;
     public static final int VOCABULARY_ENTRY_BYTES_SIZE =
-            BYTES_STORED_STRING + 3*Integer.BYTES + 2*Double.BYTES + 2*Long.BYTES;
+            BYTES_STORED_STRING + 3*Integer.BYTES + Double.BYTES + 2*Long.BYTES;
+
+    // BM25 constants
+    public static double BM25_b = 0.75;
+    public static double BM25_k = 1.6;
+    private static ScoringType scoringType = ScoringType.TFIDF;
 
     private static Path currentPath;
-    private static CompressionType currentCompression = CompressionType.DEBUG;
+    private static CompressionType currentCompression;
 
-    public static void setCompression(CompressionType compression) {
-        currentCompression = compression;
-    }
+    // Global structures
+    public static Vocabulary vocabulary;
+    public static DocumentIndex documentIndex;
 
     public static CompressionType getCompression() {
         return currentCompression;
     }
 
-    public static void setPath(Path path) {
-        currentPath = path;
+    public static void setCompression(CompressionType compression) {
+        Constants.currentCompression = compression;
+
+        vocabulary = Vocabulary.getInstance();
+        documentIndex = DocumentIndex.getInstance();
     }
 
     public static Path getPath() {
         return currentPath;
     }
 
+    public static void setPath(Path path) {
+        Constants.currentPath = path;
+    }
+
+    public static ScoringType getScoring() {
+        return scoringType;
+    }
+
+    public static void setScoring(ScoringType scoring) {
+        Constants.scoringType = scoring;
+    }
 }
 

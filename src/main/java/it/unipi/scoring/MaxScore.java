@@ -1,6 +1,7 @@
 package it.unipi.scoring;
 
 import it.unipi.encoding.Tokenizer;
+import it.unipi.model.DocumentIndex;
 import it.unipi.model.PostingList;
 import it.unipi.model.Vocabulary;
 import it.unipi.model.VocabularyEntry;
@@ -13,12 +14,12 @@ public class MaxScore{
     ////////////////////////////////////////////////////
     // TODO: GROSSO COME UNA CASA: LE POSTING LIST DOPO ESSER STATE VISTE DEVONO ESSERE RIPORTATE A 0, SENNò RIMANGONO PIANTATE INFONDO
     private final Vocabulary vocabulary;
-    //private final DocumentIndexImpl documentIndexImpl;
+    private final DocumentIndex documentIndex;
     private final Tokenizer tokenizer;
 
-    public MaxScore(Vocabulary vocabulary, Tokenizer tokenizer) {
+    public MaxScore(Vocabulary vocabulary, DocumentIndex documentIndex, Tokenizer tokenizer) {
         this.vocabulary = vocabulary;
-        //this.documentIndexImpl = documentIndexImpl;
+        this.documentIndex = documentIndex;
         this.tokenizer = tokenizer;
     }
 
@@ -33,11 +34,12 @@ public class MaxScore{
         if(mode.equals("disjunctive")) {
             for (String token : queryTokens) {
                 VocabularyEntry entry = vocabulary.getEntry(token);
-                if(entry!=null) {
+                if (entry != null)
                     treeMap.put(entry.getUpperBound(), entry.getPostingList());
-                }
             }
-            if(treeMap.isEmpty()) return null;
+            if (treeMap.isEmpty())
+                return null;
+
             return maxScore(new ArrayList<>(treeMap.values()), new ArrayList<>(treeMap.keySet()), numResults);
         }
         ////////////////// CONJUNCTIVE MODE ///////////////////////

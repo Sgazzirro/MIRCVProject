@@ -2,9 +2,9 @@ package it.unipi;
 
 import it.unipi.encoding.Tokenizer;
 import it.unipi.io.DocumentStream;
-import it.unipi.model.Vocabulary;
 import it.unipi.scoring.MaxScore;
 import it.unipi.encoding.CompressionType;
+import it.unipi.scoring.ScoringType;
 import it.unipi.utils.Constants;
 import it.unipi.scoring.DocumentScore;
 
@@ -19,14 +19,15 @@ public class IndexCreated {
         int numDocs;
         int numWords;
         Constants.setCompression(CompressionType.COMPRESSED);
+        Constants.setScoring(ScoringType.BM25);
         Constants.setPath(Path.of("./data"));
-        MaxScore max = new MaxScore(Vocabulary.getInstance(), Tokenizer.getInstance());
+        MaxScore max = new MaxScore(Constants.vocabulary, Constants.documentIndex, Tokenizer.getInstance());
 
         DocumentStream stream = DocumentStream.getInstance();
 
         for(int i = 0; i < 1; i++) {
             // TODO - with numResults = 10 or 100 we get different results
-            int numResults = 2;
+            int numResults = 10;
             boolean printFirstText = true;
 
             PriorityQueue<DocumentScore> scoring = max.score("average rainfall in Costa Rica", numResults, "disjunctive");

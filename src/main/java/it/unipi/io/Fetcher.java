@@ -1,7 +1,6 @@
 package it.unipi.io;
 
 
-import it.unipi.model.PostingList;
 import it.unipi.model.DocumentIndexEntry;
 import it.unipi.model.VocabularyEntry;
 import it.unipi.encoding.CompressionType;
@@ -26,7 +25,7 @@ public interface Fetcher {
      */
     boolean start(Path path);
 
-    void loadPosting(PostingList list);
+    void loadPosting(VocabularyEntry entry);
 
     // TERM | DF | UB | PostingList
     VocabularyEntry loadVocEntry(String term);

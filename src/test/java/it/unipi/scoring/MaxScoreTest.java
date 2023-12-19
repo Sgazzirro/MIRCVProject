@@ -2,6 +2,7 @@ package it.unipi.scoring;
 
 import it.unipi.encoding.CompressionType;
 import it.unipi.encoding.Tokenizer;
+import it.unipi.model.DocumentIndex;
 import it.unipi.model.Vocabulary;
 import it.unipi.utils.*;
 import org.apache.commons.io.FileUtils;
@@ -19,26 +20,27 @@ import static org.junit.Assert.assertEquals;
 public class MaxScoreTest {
 
     Vocabulary vocabulary;
+    DocumentIndex documentIndex;
     MaxScore maxScore;
 
     @Before
     public void setup(){
-        Constants.setCompression(CompressionType.COMPRESSED);
+        Constants.setCompression(CompressionType.DEBUG);
         Constants.N = 2;
 
         vocabulary = Vocabulary.getInstance();
         vocabulary.addEntry("a", 1);
         vocabulary.addEntry("b",1);
         vocabulary.addEntry("a", 2);
-        vocabulary.addEntry("c", (int)Math.pow(2,30));
+        vocabulary.addEntry("c", (int) Math.pow(2,30));
+
+        documentIndex = DocumentIndex.getInstance();
+        documentIndex.addDocument(1, 2);
+        documentIndex.addDocument(2, 1);
+        documentIndex.addDocument((int) Math.pow(2, 30), 1);
 
         Tokenizer tokenizer = Tokenizer.getInstance(false, false);
-        maxScore = new MaxScore(vocabulary, tokenizer);
-
-        // setting idfs by hand
-        vocabulary.getEntry("a").getPostingList().setIdf(Math.log10(2/2));
-        vocabulary.getEntry("b").getPostingList().setIdf(Math.log10(2/1));
-        vocabulary.getEntry("c").getPostingList().setIdf(Math.log10(2/1));
+        maxScore = new MaxScore(vocabulary, documentIndex, tokenizer);
 
         // setting upper bounds by hand
         vocabulary.getEntry("a").setUpperBound(0.0);

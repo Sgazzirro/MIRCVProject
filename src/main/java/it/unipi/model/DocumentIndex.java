@@ -1,21 +1,27 @@
 package it.unipi.model;
 
+import it.unipi.model.implementation.DocumentIndexImpl;
+
 import java.util.Map;
 
 public interface DocumentIndex {
 
-    public int getTotalLength();
-    public int getNumDocuments();
+    int getTotalLength();
+    int getNumDocuments();
 
     // Get the length of a specific document
-    public int getLength(int docId);
+    int getLength(int docId);
 
     // Get the average length of the documents in the collection
-    public double getAverageLength();
+    double getAverageLength();
 
-    public boolean addDocument(int docId, int docLength);
+    boolean addDocument(int docId, int docLength);
 
-    public void setTotalLength(int L);
-    public void setNumDocuments(int N);
+    void setTotalLength(int L);
+    void setNumDocuments(int N);
     Iterable<? extends Map.Entry<Integer, DocumentIndexEntry>> getEntries();
+
+    static DocumentIndex getInstance() {
+        return new DocumentIndexImpl();
+    }
 }

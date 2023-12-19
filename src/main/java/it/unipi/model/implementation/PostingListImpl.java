@@ -1,6 +1,7 @@
 package it.unipi.model.implementation;
 
 import it.unipi.model.PostingList;
+import it.unipi.model.VocabularyEntry;
 
 import java.io.*;
 import java.util.*;
@@ -17,19 +18,12 @@ public class PostingListImpl extends PostingList {
     private int pointer = -1;
 
     // Used when building the index
-    public PostingListImpl() {
-        super();
+    public PostingListImpl(VocabularyEntry entry) {
+        super(entry);
+
         this.docIdsDecompressedList = new ArrayList<>();
         this.termFrequenciesDecompressedList = new ArrayList<>();
     }
-
-    // Used when reading the index
-    public PostingListImpl(long docIdsOffset, long termFreqOffset, int docIdsLength, int termFreqLength, double idf) {
-        super(docIdsOffset, termFreqOffset, docIdsLength, termFreqLength, idf);
-        this.docIdsDecompressedList = new ArrayList<>();
-        this.termFrequenciesDecompressedList = new ArrayList<>();
-    }
-
 
     /**
      * Concatenate the passed list to the current one, assuming that no sorting is required
@@ -80,12 +74,6 @@ public class PostingListImpl extends PostingList {
     @Override
     public int termFrequency() {
         return termFrequenciesDecompressedList.get(pointer);
-    }
-
-    @Override
-    public double score() {
-        int tf = termFrequenciesDecompressedList.get(pointer);
-        return (1 + Math.log10(tf)) * getIdf();
     }
 
     @Override

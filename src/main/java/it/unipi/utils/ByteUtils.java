@@ -5,8 +5,6 @@ import it.unipi.encoding.Encoder;
 import it.unipi.encoding.implementation.EliasFano;
 import it.unipi.model.PostingList;
 import it.unipi.model.VocabularyEntry;
-import it.unipi.model.implementation.PostingListCompressedImpl;
-import it.unipi.model.implementation.VocabularyEntryImpl;
 
 import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
@@ -71,25 +69,21 @@ public class ByteUtils {
         bytes.position(Constants.BYTES_STORED_STRING);
         int documentFrequency = bytes.getInt();
         double upperBound = bytes.getDouble();
-        double idf = bytes.getDouble();
         long docIdsOffset = bytes.getLong();
         int docIdsLength = bytes.getInt();
         long termFreqOffset = bytes.getLong();
         int termFreqLength = bytes.getInt();
 
-        VocabularyEntry entry = new VocabularyEntryImpl();
+        VocabularyEntry entry = new VocabularyEntry();
         entry.setDocumentFrequency(documentFrequency);
         entry.setUpperBound(upperBound);
+        entry.setDocIdsOffset(docIdsOffset);
+        entry.setTermFreqOffset(termFreqOffset);
+        entry.setDocIdsLength(docIdsLength);
+        entry.setTermFreqLength(termFreqLength);
 
-        PostingList postingList = PostingList.getInstance(compression);
-        postingList.setDocIdsOffset(docIdsOffset);
-        postingList.setTermFreqOffset(termFreqOffset);
-        postingList.setDocIdsLength(docIdsLength);
-        postingList.setTermFreqLength(termFreqLength);
-        postingList.setIdf(idf);
-        /// modifica che ho fatto per calcolare lo score
-        postingList.setDocumentFrequency(documentFrequency);
-        ///
+        PostingList postingList = PostingList.getInstance(compression, entry);
+
         entry.setPostingList(postingList);
 
         return entry;

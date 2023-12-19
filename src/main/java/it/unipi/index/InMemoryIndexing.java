@@ -3,7 +3,6 @@ package it.unipi.index;
 import it.unipi.encoding.Tokenizer;
 import it.unipi.io.DocumentStream;
 import it.unipi.model.*;
-import it.unipi.model.implementation.*;
 import it.unipi.io.Dumper;
 
 import java.io.*;
@@ -273,7 +272,7 @@ public class InMemoryIndexing {
     void dumpDocumentIndex(){
         dumper.dumpDocumentIndex(docIndex);
         // Flush
-        docIndex = new DocumentIndexImpl();
+        docIndex = DocumentIndex.getInstance();
     }
 
     void dumpDocumentIndexLine(Map.Entry<Integer, DocumentIndexEntry> entry){

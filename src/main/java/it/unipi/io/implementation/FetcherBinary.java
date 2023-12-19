@@ -2,7 +2,6 @@ package it.unipi.io.implementation;
 
 import it.unipi.io.Fetcher;
 import it.unipi.model.DocumentIndexEntry;
-import it.unipi.model.PostingList;
 import it.unipi.model.VocabularyEntry;
 import it.unipi.model.implementation.DocumentIndexEntryImpl;
 import it.unipi.utils.ByteUtils;
@@ -31,9 +30,6 @@ public class FetcherBinary implements Fetcher {
         compression = CompressionType.BINARY;
     }
 
-    public int getVocabularySize() {
-        return vocabularySize;
-    }
 
     @Override
     public boolean start(Path path) {
@@ -41,7 +37,7 @@ public class FetcherBinary implements Fetcher {
 
         try {
             Path vocpath = path.resolve(Constants.VOCABULARY_FILENAME);
-            vocabularySize = (int) Files.size(vocpath)/Constants.VOCABULARY_ENTRY_BYTES_SIZE;
+            vocabularySize = (int) Files.size(vocpath) / Constants.VOCABULARY_ENTRY_BYTES_SIZE;
 
             vocabularyReader    = new FileInputStream(vocpath.toFile());
             docIdsReader        = new FileInputStream(path.resolve(Constants.DOC_IDS_POSTING_FILENAME).toFile());
@@ -78,10 +74,10 @@ public class FetcherBinary implements Fetcher {
 
 
     @Override
-    public void loadPosting(PostingList list) {
-        long docIdsOffset = list.getDocIdsOffset(),
-                termFreqOffset = list.getTermFreqOffset();
-        int docIdsLength = list.getDocIdsLength();
+    public void loadPosting(VocabularyEntry entry) {
+        long docIdsOffset = entry.getDocIdsOffset(),
+                termFreqOffset = entry.getTermFreqOffset();
+        int docIdsLength = entry.getDocIdsLength();
 
         try {
             docIdsReader.getChannel().position(docIdsOffset);
@@ -96,7 +92,7 @@ public class FetcherBinary implements Fetcher {
                 int docId = disDocId.readInt();
                 int termFreq = disTermFreq.readInt();
 
-                list.addPosting(docId, termFreq);
+                entry.getPostingList().addPosting(docId, termFreq);
             }
             //disDocId.close();
             //disTermFreq.close();
@@ -144,7 +140,7 @@ public class FetcherBinary implements Fetcher {
                     end = middle;
                 else {                      // This means term = entry
                     VocabularyEntry result = ByteUtils.bytesToVocabularyEntry(vocabularyEntryBytes, compression);
-                    loadPosting(result.getPostingList());
+                    loadPosting(result);
                     return result;
                 }
             }
@@ -167,7 +163,7 @@ public class FetcherBinary implements Fetcher {
             if (vocabularyReader.read(vocabularyEntryBytes) != Constants.VOCABULARY_ENTRY_BYTES_SIZE)
                 return null;
             vocabularyEntry = ByteUtils.bytesToVocabularyEntry(vocabularyEntryBytes, compression);
-            loadPosting(vocabularyEntry.getPostingList());
+            loadPosting(vocabularyEntry);
             //vocabularyEntry.getPostingList().loadPosting(path);
 
             term = ByteUtils.bytesToString(vocabularyEntryBytes, 0, Constants.BYTES_STORED_STRING);

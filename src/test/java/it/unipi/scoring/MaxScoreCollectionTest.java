@@ -2,6 +2,7 @@ package it.unipi.scoring;
 
 import it.unipi.encoding.CompressionType;
 import it.unipi.encoding.Tokenizer;
+import it.unipi.model.DocumentIndex;
 import it.unipi.model.Vocabulary;
 import it.unipi.utils.Constants;
 import org.junit.BeforeClass;
@@ -41,7 +42,7 @@ public class MaxScoreCollectionTest {
         Constants.setCompression(CompressionType.COMPRESSED);
         Constants.setPath(Path.of("./data"));
 
-        maxScore = new MaxScore(Vocabulary.getInstance(), Tokenizer.getInstance());
+        maxScore = new MaxScore(Vocabulary.getInstance(), DocumentIndex.getInstance(), Tokenizer.getInstance());
     }
 
     /**

@@ -5,7 +5,7 @@ import it.unipi.io.DocumentStream;
 import it.unipi.io.Dumper;
 import it.unipi.io.Fetcher;
 import it.unipi.model.*;
-import it.unipi.model.implementation.*;
+import it.unipi.model.implementation.PostingListImpl;
 import it.unipi.utils.*;
 
 import java.io.*;
@@ -66,7 +66,7 @@ public class SPIMIIndex {
 
         // Creation of the block indexer
         // -------------------
-        DocumentIndex di = new DocumentIndexImpl();
+        DocumentIndex di = DocumentIndex.getInstance();
         Vocabulary v = Vocabulary.getInstance();
         Dumper d = Dumper.getInstance(this.compression);
         blockIndexer = new InMemoryIndexing(v, d, di);
@@ -327,8 +327,10 @@ public class SPIMIIndex {
      * @param toMerge the list of vocabulary entries to merge
      * @return a merged entry
      */
-    VocabularyEntry mergeEntries(List<VocabularyEntry> toMerge, int numDocuments){
-        PostingListImpl mergedList = new PostingListImpl();
+    VocabularyEntry mergeEntries(List<VocabularyEntry> toMerge, int numDocuments) {
+        VocabularyEntry mergedEntry = new VocabularyEntry();
+        PostingListImpl mergedList = new PostingListImpl(mergedEntry);
+
         int frequency = 0;
         double upperBound = 0.0;
 
@@ -347,6 +349,9 @@ public class SPIMIIndex {
         double toMultiply = Math.log10( ((double) numDocuments) / mergedList.getDocIdsDecompressedList().size());
         upperBound *= toMultiply;
 
-        return new VocabularyEntryImpl(frequency, upperBound, mergedList);
+        mergedEntry.setPostingList(mergedList);
+        mergedEntry.setUpperBound(upperBound);
+        mergedEntry.setDocumentFrequency(frequency);
+        return mergedEntry;
     }
 }

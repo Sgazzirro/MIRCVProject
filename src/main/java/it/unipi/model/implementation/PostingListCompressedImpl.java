@@ -4,6 +4,7 @@ import it.unipi.encoding.Encoder;
 import it.unipi.encoding.implementation.EliasFano;
 import it.unipi.encoding.implementation.Simple9;
 import it.unipi.model.PostingList;
+import it.unipi.model.VocabularyEntry;
 import it.unipi.utils.*;
 
 import java.io.EOFException;
@@ -24,7 +25,9 @@ public class PostingListCompressedImpl extends PostingList {
     private final Encoder docIdsEncoder = new EliasFano();
     private final Encoder termFrequenciesEncoder = new Simple9(true);
 
-    public PostingListCompressedImpl() {
+    public PostingListCompressedImpl(VocabularyEntry entry) {
+        super(entry);
+
         docIdsDecompressedList = new ArrayList<>();
         termFrequenciesDecompressedList = new ArrayList<>();
 
@@ -43,22 +46,15 @@ public class PostingListCompressedImpl extends PostingList {
     }
 
     @Override
-    public double score() {
-        double tf = 1 + Math.log10(termFrequenciesDecompressedList.get(blockPointer));
-        double idf = Math.log10( (float) Constants.N / this.getDocumentFrequency() );
-        return tf*idf;
-    }
-
-    @Override
     public boolean hasNext() {
         //long docIdsEndOffset = getDocIdsOffset() + getDocIdsLength();
-        long docIdsEndOffset = getDocIdsLength();
+        long docIdsEndOffset = rootEntry.getDocIdsLength();
         return (blockPointer + 1 < docIdsDecompressedList.size()) || (docIdsBlockPointer < docIdsEndOffset);
     }
 
     @Override
     public void next() throws EOFException {
-        long docIdsLength = getDocIdsLength();
+        long docIdsLength = rootEntry.getDocIdsLength();
         if (docIdsBlockPointer == docIdsLength &&
                 blockPointer == docIdsDecompressedList.size() - 1)
             throw new EOFException();
@@ -86,7 +82,7 @@ public class PostingListCompressedImpl extends PostingList {
 
             // if we're in the last block and it doesn't contain the docId
             // long docIdsEndOffset = getDocIdsOffset() + getDocIdsLength();
-            long docIdsEndOffset = getDocIdsLength();
+            long docIdsEndOffset = rootEntry.getDocIdsLength();
             if (docIdsBlockPointer == docIdsEndOffset &&
                     docIdsDecompressedList.get(docIdsDecompressedList.size() - 1) < docId)
                 throw new EOFException();
@@ -128,8 +124,10 @@ public class PostingListCompressedImpl extends PostingList {
         termFrequenciesDecompressedList = termFrequenciesEncoder.decode(termFrequenciesBlock.getBytes());
 
         // Remove fictitious 0 frequencies
+        int first0Index = Math.min(Constants.BLOCK_SIZE, termFrequenciesDecompressedList.size());
+        first0Index = Math.min(first0Index, rootEntry.getDocumentFrequency());
         termFrequenciesDecompressedList.subList(
-                Math.min(Constants.BLOCK_SIZE, termFrequenciesDecompressedList.size()),
+                first0Index,
                 termFrequenciesDecompressedList.size()
         ).clear();
     }
