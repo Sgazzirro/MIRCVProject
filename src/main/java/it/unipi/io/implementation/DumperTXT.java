@@ -88,16 +88,16 @@ public class DumperTXT implements Dumper {
         long offsetID = writtenDIDS;
         long offsetTF = writtenTF;
         int length = postingList.getDocIdsDecompressedList().size();
-
+        StringBuilder bufferID = new StringBuilder();
+        StringBuilder bufferTF = new StringBuilder();
         for(int i = 0; i < length; i++) {
-            String bufferID = postingList.getDocIdsDecompressedList().get(i) + "\n";
-            String bufferTF = postingList.getTermFrequenciesDecompressedList().get(i) + "\n";
-            writerDIDS.write(bufferID);
-            writerTF.write(bufferTF);
-            writtenDIDS += bufferID.getBytes().length;
-            writtenTF += bufferTF.getBytes().length;
+             bufferID.append(postingList.getDocIdsDecompressedList().get(i) + "\n");
+             bufferTF.append(postingList.getTermFrequenciesDecompressedList().get(i) + "\n");
         }
-
+        writerDIDS.write(String.valueOf(bufferID));
+        writerTF.write(String.valueOf(bufferTF));
+        writtenDIDS += bufferID.toString().getBytes().length;
+        writtenTF += bufferTF.toString().getBytes().length;
         return new long[]{offsetID, offsetTF};
     }
 
