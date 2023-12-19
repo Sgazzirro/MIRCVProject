@@ -48,14 +48,14 @@ public class App
         }
 
 */
-
+        Constants.setCompression(CompressionType.COMPRESSED);
         DocumentStream ds = DocumentStream.getInstance();
         DocumentIndex di = DocumentIndex.getInstance();
         Vocabulary v = Vocabulary.getInstance();
         Dumper d = Dumper.getInstance(CompressionType.COMPRESSED);
 
         InMemoryIndexing memoryIndexing = new InMemoryIndexing(v, d, di);
-        Constants.setCompression(CompressionType.COMPRESSED);
+
         SPIMIIndex spimi = new SPIMIIndex(CompressionType.COMPRESSED, ds, memoryIndexing);
         Path indexPath = Paths.get("./data");
         Constants.setPath(indexPath);

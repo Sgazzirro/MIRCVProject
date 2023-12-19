@@ -23,7 +23,7 @@ public class Constants {
     public static final String TF_POSTING_FILENAME = "term_frequencies.bin";
 
     // Stopwords downloaded from https://raw.githubusercontent.com/stopwords-iso/stopwords-en/master/stopwords-en.txt
-    public static final Path STOPWORDS_FILE = Paths.get("data/", "stopwords-en.txt");
+    public static final Path STOPWORDS_FILE = Paths.get("data/", "400stops.txt");
     public static final List<String> STOPWORDS = IOUtils.loadStopwords();
 
     public static int BLOCK_SIZE = 100;
@@ -44,7 +44,7 @@ public class Constants {
     private static ScoringType scoringType = ScoringType.TFIDF;
 
     private static Path currentPath;
-    private static CompressionType currentCompression;
+    private static CompressionType currentCompression = CompressionType.DEBUG;
 
     // Global structures
     public static Vocabulary vocabulary;

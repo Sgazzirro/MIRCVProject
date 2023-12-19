@@ -99,8 +99,6 @@ public class FetcherBinary implements Fetcher {
 
                 entry.getPostingList().addPosting(docId, termFreq);
             }
-            //disDocId.close();
-            //disTermFreq.close();
 
         } catch (IOException ie){
             ie.printStackTrace();

@@ -1,7 +1,9 @@
 package it.unipi.io;
 import it.unipi.encoding.CompressionType;
 import it.unipi.io.implementation.DumperCompressed;
+import it.unipi.io.implementation.DumperTXT;
 import it.unipi.io.implementation.FetcherCompressed;
+import it.unipi.io.implementation.FetcherTXT;
 import it.unipi.model.PostingList;
 import it.unipi.model.Vocabulary;
 import it.unipi.model.VocabularyEntry;
@@ -21,10 +23,10 @@ public class BinaryTest {
 
     @BeforeClass
     public static void setup() {
-        dumper = new DumperCompressed();
-        fetcher = new FetcherCompressed();
+        dumper = new DumperTXT();
+        fetcher = new FetcherTXT();
 
-        Constants.setCompression(CompressionType.COMPRESSED);
+        Constants.setCompression(CompressionType.DEBUG);
         Constants.setPath(Constants.testPath);
     }
 

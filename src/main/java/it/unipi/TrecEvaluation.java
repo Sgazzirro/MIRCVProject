@@ -1,13 +1,17 @@
 package it.unipi;
 
-import it.unipi.encoding.Tokenizer;
-import it.unipi.model.DocumentIndex;
-import it.unipi.model.Vocabulary;
+import it.unipi.encoding.*;
+import it.unipi.encoding.implementation.TokenizerImpl;
+import it.unipi.model.implementation.DocumentIndexImpl;
+import it.unipi.model.implementation.VocabularyImpl;
 import it.unipi.scoring.MaxScore;
+import it.unipi.scoring.*;
 
+import javax.print.Doc;
 import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.PriorityQueue;
 
 /**
  * A class demanded to perform a trec_eval onto our index
@@ -22,19 +26,20 @@ public class TrecEvaluation {
      * The name of the file in which trec queries are stored
      * QUERY STRUCTURE : queryID | text
      */
-    private static String QUERIES = "./data/evaluation/queries.train.tsv";
+    private static String QUERIES = "./data/evaluation/msmarco-test2019-queries.tsv";
     /**
      * The name of the file in which we store our IR's results
      * RESULT FORMAT : QueryID | Q0 | pid | rank | Score | IDofTheRUN
      */
-    private static String RESULT = "./data/evaluation/results.tsv";
+    private static String RESULT = "./data/evaluation/results.txt";
 
     private static class Query{
         String queryID;
         String text;
 
         public Query(String query){
-            String[] params = query.split("");
+            String[] params = query.split("\t");
+            System.out.println(params[0]);
             queryID = params[0];
             text = params[1];
         }
@@ -77,10 +82,10 @@ public class TrecEvaluation {
         String queryID;
         String PID;
         Integer rank;
-        Float score;
+        Double score;
         String scope = "STANDARD";
 
-        public Result(String queryID, String PID, Integer rank, Float score) {
+        public Result(String queryID, String PID, Integer rank, Double score) {
             this.queryID = queryID;
             this.PID = PID;
             this.rank = rank;
@@ -96,18 +101,32 @@ public class TrecEvaluation {
                 BufferedReader queries = new BufferedReader(new FileReader(QUERIES));
                 BufferedWriter writer = new BufferedWriter(new FileWriter(RESULT));
                 ) {
+            System.out.println(QUERIES);
             String queryLine;
 
-            MaxScore scorer = new MaxScore(Vocabulary.getInstance(), DocumentIndex.getInstance(), Tokenizer.getInstance());
+            MaxScore scorer = new MaxScore(new VocabularyImpl(), new DocumentIndexImpl(), new TokenizerImpl(true, true));
             while((queryLine = queries.readLine()) != null){
                 Query q = new Query(queryLine);
-                List<Result> results = new ArrayList<>();
-                scorer.score(q.getText(), 1000, "disjunctive");
 
+                List<Result> results = new ArrayList<>();
+                PriorityQueue<DocumentScore> scoring = scorer.score(q.getText(), 1000, "disjunctive");
+                PriorityQueue<DocumentScore> reverseMode = new PriorityQueue<>(java.util.Collections.reverseOrder());
+
+                while(scoring.size() > 0) {
+                    DocumentScore first = scoring.poll();
+                    reverseMode.add(first);
+                }
+
+                int rank = 1;
+                while(reverseMode.size() > 0){
+                    DocumentScore first = reverseMode.poll();
+                    results.add(new Result(q.getQueryID(), String.valueOf(first.docId), rank, first.score));
+                    rank++;
+                }
                 // TODO: Riempire la lista di risultati
 
                 for(Result r : results){
-                    writer.write(r.toString());
+                    writer.write(r.toString() + "\n");
                 }
             }
         } catch (FileNotFoundException e) {
