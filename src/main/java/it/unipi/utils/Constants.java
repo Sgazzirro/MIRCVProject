@@ -7,9 +7,11 @@ import it.unipi.model.implementation.DocumentIndexImpl;
 import it.unipi.model.implementation.VocabularyImpl;
 import it.unipi.scoring.ScoringType;
 
+import javax.print.Doc;
+import java.io.*;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.List;
+import java.util.*;
 
 public class Constants {
 
@@ -79,16 +81,79 @@ public class Constants {
         Constants.scoringType = scoring;
     }
 
+
+    // FROM THIS ON, IS ALL FOR CACHING PURPOSES
+    // -----------------------------------------------------------
     public static boolean CACHING = false;
-    // CACHING STRATEGY
-    public static void cachingStrategy(){
+
+    public static Map<String, Map.Entry<String, Long>> saved = new HashMap<>();
+    public static PriorityQueue<Map.Entry<String, Long>> influencers =
+            new PriorityQueue<>(Comparator.comparing(Map.Entry::getValue));
+
+    private static int SIZE_INFLUENCERS = 1000;
+    public static double MEMORY_USED(){
+        return (double) ((Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory()) / Runtime.getRuntime().maxMemory());
+    }
+
+    public static void CACHE(String token, Long touches){
         if(!CACHING)
             return;
-        if(Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory() > 0.8 * Runtime.getRuntime().maxMemory()){
+        // FIXME: Strange things will happen
+
+        if(influencers.size() == SIZE_INFLUENCERS && influencers.peek().getValue() < touches) {
+            influencers.poll();
+        }
+        if(saved.containsKey(token)){
+            influencers.remove(saved.get(token));
+        }
+        influencers.offer(Map.entry(token, touches));
+        saved.put(token, Map.entry(token, touches));
+
+    }
+    public static void startSession(){
+        if(CACHING) {
+            PriorityQueue<Map.Entry<String, Long>> influencersR = new PriorityQueue<>(Comparator.comparing(Map.Entry::getValue, Comparator.reverseOrder()));
+            try(
+                    BufferedReader reader = new BufferedReader(new FileReader("./data/cache/influencers.txt"));
+                    ){
+                String influence;
+
+
+                while((influence = reader.readLine()) != null && MEMORY_USED() < 50){
+                    String[] params = influence.split(" ");
+                    influencersR.offer(Map.entry(params[0], Long.parseLong(params[1])));
+                    influencers.offer(Map.entry(params[0], Long.parseLong(params[1])));
+                    saved.put(params[0], Map.entry(params[0], Long.parseLong(params[1])));
+                }
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+            System.out.println("QUI CI VADO");
+            vocabulary = new VocabularyImpl(influencersR);
+        }
+        else {
             vocabulary = new VocabularyImpl();
             documentIndex = new DocumentIndexImpl();
-            System.gc();
+        }
+
+    }
+
+    public static void onExit(){
+        if(!CACHING)
+            return;
+        // Save influencers
+        try(
+                BufferedWriter writer = new BufferedWriter(new FileWriter("./data/cache/influencers.txt", false));
+                ){
+
+            while(influencers.size() > 0){
+                Map.Entry<String, Long> entry = influencers.poll();
+                writer.write(entry.getKey() + " " + entry.getValue() + "\n");
+            }
+        } catch (IOException e) {
+            throw new RuntimeException(e);
         }
     }
+
 }
 

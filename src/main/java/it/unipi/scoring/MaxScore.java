@@ -42,7 +42,6 @@ public class MaxScore{
                 return null;
 
             PriorityQueue<DocumentScore> result = maxScore(new ArrayList<>(treeMap.values()), new ArrayList<>(treeMap.keySet()), numResults);
-            Constants.cachingStrategy();
             return result;
         }
         ////////////////// CONJUNCTIVE MODE ///////////////////////
@@ -54,7 +53,6 @@ public class MaxScore{
                 postingLists.add(entry.getPostingList());
             }
             PriorityQueue<DocumentScore> result =  conjunctiveScore(postingLists, numResults);
-            Constants.cachingStrategy();
             return result;
         }
     }

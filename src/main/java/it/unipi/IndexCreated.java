@@ -19,18 +19,19 @@ public class IndexCreated {
         int numDocs;
         int numWords;
         Constants.setCompression(CompressionType.COMPRESSED);
-        Constants.setScoring(ScoringType.TFIDF);
+        Constants.setScoring(ScoringType.BM25);
         Constants.setPath(Path.of("./data"));
         MaxScore max = new MaxScore(Constants.vocabulary, Constants.documentIndex, Tokenizer.getInstance());
 
         DocumentStream stream = DocumentStream.getInstance();
 
-        for(int i = 0; i < 1; i++) {
+        for(int i = 0; i < 2; i++) {
+            long start = System.currentTimeMillis();
             // TODO - with numResults = 10 or 100 we get different results
             int numResults = 10;
-            boolean printFirstText = true;
+            boolean printFirstText = false;
 
-            PriorityQueue<DocumentScore> scoring = max.score("average rainfall in Costa Rica", numResults, "conjunctive");
+            PriorityQueue<DocumentScore> scoring = max.score("pizza and hamburger and coca in costa Rica", numResults, "disjunctive");
             List<DocumentScore> reverseMode = new ArrayList<>();
 
             while (!scoring.isEmpty()) {
@@ -53,6 +54,11 @@ public class IndexCreated {
                 }
             }
 
+            long end = System.currentTimeMillis();
+            if(i == 0)
+                System.out.println("SENZA IL CACHING GENTILMENTE OFFERTO DA JAVA : " + (end - start));
+            else
+                System.out.println("CON IL CACHING GENTILMENTE OFFERTO DA JAVA : " + (end - start));
         }
     }
 }

@@ -36,7 +36,7 @@ public class TrecEvaluation {
      * The name of the file in which we store our IR's results
      * RESULT FORMAT : QueryID | Q0 | pid | rank | Score | IDofTheRUN
      */
-    private static String RESULT = "./data/evaluation/results.txt";
+    private static String RESULT = "./data/evaluation/testRes.txt";
 
     private static class Query{
         String queryID;
@@ -106,17 +106,17 @@ public class TrecEvaluation {
                 BufferedReader queries = new BufferedReader(new FileReader(QUERIES));
                 BufferedWriter writer = new BufferedWriter(new FileWriter(RESULT));
                 ) {
-            System.out.println(QUERIES);
+            long startQuery = System.currentTimeMillis();
             String queryLine;
 
-            MaxScore scorer = new MaxScore(new VocabularyImpl(), new DocumentIndexImpl(), new TokenizerImpl(true, true));
+            MaxScore scorer = new MaxScore(Constants.vocabulary, Constants.documentIndex, Tokenizer.getInstance());
             while((queryLine = queries.readLine()) != null){
                 Query q = new Query(queryLine);
-
+                System.out.println(q.getText());
                 List<Result> results = new ArrayList<>();
                 PriorityQueue<DocumentScore> scoring = scorer.score(q.getText(), 10, "disjunctive");
                 PriorityQueue<DocumentScore> reverseMode = new PriorityQueue<>(java.util.Collections.reverseOrder());
-
+                System.out.println("OK");
                 while(scoring.size() > 0) {
                     DocumentScore first = scoring.poll();
                     reverseMode.add(first);
@@ -134,6 +134,7 @@ public class TrecEvaluation {
                     writer.write(r.toString() + "\n");
                 }
             }
+            System.out.println("Per fare una query ci ho messo " + (System.currentTimeMillis() - startQuery));
         } catch (FileNotFoundException e) {
             throw new RuntimeException(e);
         } catch (IOException e) {
@@ -142,13 +143,13 @@ public class TrecEvaluation {
     }
 
     public static void main(String[] args){
-        Constants.setPath(Path.of("./data"));
+        Constants.CACHING = true;
         Constants.setCompression(CompressionType.COMPRESSED);
-        //generateEvaluation();
-        Vocabulary v = new VocabularyImpl();
-        Fetcher f = Fetcher.getFetcher(Constants.getCompression());
-        f.start();
-        System.out.println(f.loadVocEntry());
-        f.end();
+        Constants.setPath(Path.of("./data"));
+        Constants.setScoring(ScoringType.TFIDF);
+        Constants.startSession();
+
+        generateEvaluation();
+        Constants.onExit();
     }
 }

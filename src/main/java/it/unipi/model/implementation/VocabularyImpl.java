@@ -7,14 +7,31 @@ import it.unipi.io.Fetcher;
 import java.io.Serializable;
 import java.util.*;
 
+import static it.unipi.utils.Constants.CACHE;
+import static it.unipi.utils.Constants.MEMORY_USED;
+
 public class VocabularyImpl implements Vocabulary {
 
     private final NavigableMap<String, VocabularyEntry> table;
     private final Fetcher fetcher;
 
     public VocabularyImpl(){
-        table = new TreeMap<>();
+        this(new TreeMap<>());
+    }
+
+    public VocabularyImpl(NavigableMap<String, VocabularyEntry> table){
+        this.table = table;
         fetcher = Fetcher.getFetcher(Constants.getCompression());
+    }
+
+    public VocabularyImpl(PriorityQueue<Map.Entry<String, Long>> init) {
+        this();
+        for(Map.Entry<String, Long> entry : init.stream().toList()){
+            if(MEMORY_USED() > 50)
+                break;
+            getEntry(entry.getKey()).setTouched(entry.getValue());
+        }
+
     }
 
     @Override
@@ -42,10 +59,17 @@ public class VocabularyImpl implements Vocabulary {
             fetcher.end();
             if(entry!=null){
                 table.put(token, entry);
+                entry.touch();
+                CACHE(token, entry.getTouch());
                 return entry;
             }
+            else
+                return null;
         }
-        return table.get(token);
+        VocabularyEntry entry = table.get(token);
+        entry.touch();
+        CACHE(token, entry.getTouch());
+        return entry;
     }
 
     @Override

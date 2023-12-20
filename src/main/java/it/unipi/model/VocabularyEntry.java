@@ -7,6 +7,8 @@ import java.util.Objects;
 
 public class VocabularyEntry {
 
+    private long touched;
+
     private int documentFrequency;
     private double upperBound;
     private long docIdsOffset;
@@ -15,6 +17,12 @@ public class VocabularyEntry {
     private int termFreqLength;
 
     private PostingList postingList;
+
+    public void touch(){
+        touched++;
+        return;
+    }
+    public long getTouch(){return touched;}
 
     public VocabularyEntry() {
         this.postingList = PostingList.getInstance(Constants.getCompression(), this);
@@ -89,6 +97,10 @@ public class VocabularyEntry {
 
     public void setPostingList(PostingList postingList) {
         this.postingList = postingList;
+    }
+
+    public void setTouched(long touched) {
+        this.touched = touched;
     }
 
     @Override
