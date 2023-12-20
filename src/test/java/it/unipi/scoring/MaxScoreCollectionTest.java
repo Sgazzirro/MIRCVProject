@@ -26,7 +26,8 @@ public class MaxScoreCollectionTest {
     @Parameterized.Parameters
     public static Collection<Object[]> testQueries() {
         return Arrays.asList(new Object[][] {
-                {"does legionella pneumophila cause pneumonia"}
+                {"does legionella pneumophila cause pneumonia"},
+                {"pizza and hamburger and coca in costa Rica"}
         });
     }
 
@@ -61,8 +62,9 @@ public class MaxScoreCollectionTest {
                     testQuery, K, "disjunctive");
             List<DocumentScore> topScores = new ArrayList<>();
 
-            while (topScores.size() < topK)
+            while (!scoring.isEmpty())
                 topScores.add(0, scoring.poll());
+            topScores = topScores.subList(0, topK);
 
             queriesScores.add(topScores);
         }
