@@ -1,5 +1,6 @@
 package it.unipi.model.implementation;
 
+import it.unipi.model.Posting;
 import it.unipi.model.PostingList;
 import it.unipi.model.VocabularyEntry;
 
@@ -77,11 +78,12 @@ public class PostingListImpl extends PostingList {
     }
 
     @Override
-    public void next() throws EOFException {
+    public Posting next() {
         if (!hasNext())
-            throw new EOFException();
+            throw new NoSuchElementException();
 
         pointer++;
+        return new Posting(termFrequency(), docId());
     }
 
     public boolean hasNext() {

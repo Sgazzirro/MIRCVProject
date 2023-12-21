@@ -1,39 +1,32 @@
 package it.unipi.scoring;
 
-import it.unipi.encoding.Tokenizer;
+import it.unipi.model.Posting;
 import it.unipi.model.PostingList;
-import it.unipi.model.Vocabulary;
-import it.unipi.model.VocabularyEntry;
-import it.unipi.model.implementation.*;
 import it.unipi.utils.Constants;
-
-import java.io.EOFException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.PriorityQueue;
 
 public class Scorer {
 
-    private static double TFIDFScore(PostingList postingList) {
-        double tf = 1 + Math.log10(postingList.termFrequency());
-        return tf * postingList.vocabularyEntry().idf();
+    private static double TFIDFPartialTF(Posting posting) {
+        return 1 + Math.log10(posting.getTf());
     }
 
-    private static double BM25Score(PostingList postingList) {
-        double tf = postingList.termFrequency();
-
-        int docLength           = Constants.documentIndex.getLength(postingList.docId());
+    private static double BM25PartialTF(Posting posting) {
+        int docLength           = Constants.documentIndex.getLength(posting.getDocId());
         double averageDocLength = Constants.documentIndex.getAverageLength();
 
-        return tf / ( Constants.BM25_k *
+        return posting.getTf() / ( Constants.BM25_k *
                 ( (1 - Constants.BM25_b) + Constants.BM25_b * docLength / averageDocLength) +
-                tf ) * postingList.vocabularyEntry().idf();
+                posting.getTf() );
     }
 
-    public static double score(PostingList postingList) {
+    public static double partialTF(Posting posting) {
         return switch (Constants.getScoring()) {
-            case TFIDF -> TFIDFScore(postingList);
-            case BM25 -> BM25Score(postingList);
+            case TFIDF -> TFIDFPartialTF(posting);
+            case BM25 -> BM25PartialTF(posting);
         };
+    }
+
+    public static double score(Posting posting, double idf) {
+        return partialTF(posting) * idf;
     }
 }

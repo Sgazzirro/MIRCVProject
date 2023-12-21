@@ -3,6 +3,7 @@ package it.unipi.model.implementation;
 import it.unipi.encoding.Encoder;
 import it.unipi.encoding.implementation.EliasFano;
 import it.unipi.encoding.implementation.Simple9;
+import it.unipi.model.Posting;
 import it.unipi.model.PostingList;
 import it.unipi.model.VocabularyEntry;
 import it.unipi.utils.*;
@@ -10,6 +11,7 @@ import it.unipi.utils.*;
 import java.io.EOFException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.NoSuchElementException;
 
 public class PostingListCompressedImpl extends PostingList {
 
@@ -53,11 +55,11 @@ public class PostingListCompressedImpl extends PostingList {
     }
 
     @Override
-    public void next() throws EOFException {
+    public Posting next() {
         long docIdsLength = rootEntry.getDocIdsLength();
         if (docIdsBlockPointer == docIdsLength &&
                 blockPointer == docIdsDecompressedList.size() - 1)
-            throw new EOFException();
+            throw new NoSuchElementException();
 
         if (blockPointer + 1 < docIdsDecompressedList.size())
             blockPointer++;
@@ -65,6 +67,8 @@ public class PostingListCompressedImpl extends PostingList {
             loadNextBlock();
             blockPointer = 0;
         }
+
+        return new Posting(termFrequency(), docId());
     }
 
     @Override

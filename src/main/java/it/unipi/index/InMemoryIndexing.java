@@ -1,75 +1,84 @@
 package it.unipi.index;
 
+import it.unipi.encoding.CompressionType;
 import it.unipi.encoding.Tokenizer;
 import it.unipi.io.DocumentStream;
 import it.unipi.model.*;
 import it.unipi.io.Dumper;
+import it.unipi.scoring.Scorer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.*;
 import java.nio.file.Path;
 import java.util.*;
 
-import static java.lang.System.exit;
+public class InMemoryIndexing implements AutoCloseable {
 
-public class InMemoryIndexing {
+    private static final Logger logger = LoggerFactory.getLogger(InMemoryIndexing.class);
+
     private Vocabulary vocabulary;
+    private DocumentIndex documentIndex;
+
     private final Dumper dumper;
     private final Tokenizer tokenizer;
-    private DocumentIndex docIndex;
 
-    public InMemoryIndexing(Vocabulary voc, Dumper d, DocumentIndex di){
-        vocabulary = voc;
-        dumper = d;
+    public InMemoryIndexing(CompressionType compression) {
+        vocabulary = Vocabulary.getInstance();
+        documentIndex = DocumentIndex.getInstance();
+
+        dumper = Dumper.getInstance(compression);
         tokenizer = Tokenizer.getInstance();
-        docIndex = di;
     }
 
-    boolean setup(Path filename) {
+    public boolean setup(Path filename) {
         return dumper.start(filename);
     }
 
-    boolean close(){
-        return dumper.end();
-    }
+    @Override
+    public void close() {
+        vocabulary = null;
+        documentIndex = null;
 
-    // FIXME: This function is only used when you write the fully index in memory
-    public void buildIndex(DocumentStream tokenStream, Path filePath) {
-        Optional<Document> document;
-
-        if (!setup(filePath)) {
-            System.err.println("Something strange in opening the file");
-            exit(1);
-        }
-
-        while((document = Optional.ofNullable(tokenStream.nextDoc())).isPresent())
-            processDocument(document.get());
-
-        dumpVocabulary();
-        dumpDocumentIndex();
-
-        if (!close()) {
-            System.err.println("Something strange in closing the file");
-            exit(1);
+        try {
+            dumper.close();
+        } catch (Exception e) {
+            logger.warn("Something wrong happened when closing the dumper", e);
         }
     }
 
-    public boolean processDocument(Document document) {
-        if(document == null || document.getText().isEmpty())
-            return false;
+    public void buildIndex(DocumentStream tokenStream) {
+        try {
+            Document document;
+
+            while ((document = tokenStream.nextDoc()) != null)
+                processDocument(document);
+
+            dumpVocabulary();
+            dumpDocumentIndex();
+
+        } catch (IOException ioException) {
+            logger.error("Fatal error when building the index", ioException);
+            System.exit(1);
+        }
+    }
+
+    public void processDocument(Document document) {
+        if (document == null || document.getText().isEmpty())
+            return;
         List<String> tokenized = tokenizer.tokenizeBySpace(document.getText());
 
         for (String token : tokenized) {
             vocabulary.addEntry(token, document.getId());
         }
 
-        docIndex.addDocument(document.getId(), tokenized.size());
-        return true;
+        documentIndex.addDocument(document.getId(), tokenized.size());
     }
 
-    void dumpVocabulary(){
+    void dumpVocabulary() throws IOException {
+        computeTermsPartialUpperBound();
+
         dumper.dumpVocabulary(vocabulary);
-        // Flush
-        vocabulary = Vocabulary.getInstance();
     }
 
     void dumpVocabularyLine(Map.Entry<String, VocabularyEntry> entry) throws IOException {
@@ -78,13 +87,11 @@ public class InMemoryIndexing {
         dumper.dumpVocabularyEntry(entry);
     }
 
-    void dumpDocumentIndex(){
-        dumper.dumpDocumentIndex(docIndex);
-        // Flush
-        docIndex = DocumentIndex.getInstance();
+    void dumpDocumentIndex() throws IOException {
+        dumper.dumpDocumentIndex(documentIndex);
     }
 
-    void dumpDocumentIndexLine(Map.Entry<Integer, DocumentIndexEntry> entry){
+    void dumpDocumentIndexLine(Map.Entry<Integer, DocumentIndexEntry> entry) throws IOException {
         dumper.dumpDocumentIndexEntry(entry);
     }
 
@@ -92,20 +99,31 @@ public class InMemoryIndexing {
         return vocabulary;
     }
 
-    public DocumentIndex getDocIndex() {
-        return docIndex;
+    public DocumentIndex getDocumentIndex() {
+        return documentIndex;
     }
 
-    public void computePartialTermUB() {
-        // TODO: With BM25 serve l'average length, quindi stiamo attenti a come calcolare questo partial score perché forse in realtà non si può
-        for(Map.Entry<String, VocabularyEntry> entry: vocabulary.getEntries()){
-            VocabularyEntry vocabularyEntry = entry.getValue();
-            List<Integer> termFreqList = vocabularyEntry.getPostingList().getTermFrequenciesDecompressedList();
-            int maxTermFreq = Collections.max(termFreqList);
+    private void computeTermsPartialUpperBound() {
 
-            // partial term upper bound = (1+log(tf))
-            double partialTermUB = 1+Math.log10(maxTermFreq);
+        for (Map.Entry<String, VocabularyEntry> entry: vocabulary.getEntries()) {
+            VocabularyEntry vocabularyEntry = entry.getValue();
+            Posting bestPosting = getMaxPosting(vocabularyEntry.getPostingList());
+
+            double partialTermUB = Scorer.partialTF(bestPosting);
             vocabularyEntry.setUpperBound(partialTermUB);
         }
+    }
+
+    private Posting getMaxPosting(PostingList postingList) {
+        postingList.reset();
+
+        Posting bestPosting = postingList.next();
+        while (postingList.hasNext()) {
+            Posting next = postingList.next();
+            if (bestPosting.compareTo(next) < 0)
+                bestPosting = next;
+        }
+
+        return bestPosting;
     }
 }

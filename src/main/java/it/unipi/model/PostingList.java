@@ -6,9 +6,10 @@ import it.unipi.encoding.CompressionType;
 import it.unipi.scoring.Scorer;
 
 import java.io.EOFException;
+import java.util.Iterator;
 import java.util.List;
 
-public abstract class PostingList {
+public abstract class PostingList implements Iterator<Posting> {
 
     protected VocabularyEntry rootEntry;
 
@@ -32,7 +33,7 @@ public abstract class PostingList {
      * @return the score of the current posting
      */
     public double score() {
-        return Scorer.score(this);
+        return Scorer.score(new Posting(termFrequency(), docId()), rootEntry.idf());
     }
 
     /**
@@ -43,7 +44,7 @@ public abstract class PostingList {
     /**
      * Moves sequentially the posting list to the next posting
      */
-    public abstract void next() throws EOFException;
+    public abstract Posting next();
 
     /**
      * Moves the iterator toward the next posting
@@ -78,19 +79,16 @@ public abstract class PostingList {
         if (this == o) return true;
         if (o == null) return false;
         PostingList that = (PostingList) o;
-        try {
-            while (hasNext()) {
-                next();
-                that.next();
-                if (docId() != that.docId() || termFrequency() != that.termFrequency()) {
-                    System.out.println("THIS DOCID : " + docId() + " AND THAT DOCID : "+ that.docId());
-                    System.out.println("THIS FREQUENCY : " + termFrequency() + " AND THAT FREQUENCY : "+ that.termFrequency());
-                    return false;
-                }
+        while (hasNext()) {
+            next();
+            that.next();
+            if (docId() != that.docId() || termFrequency() != that.termFrequency()) {
+                System.out.println("THIS DOCID : " + docId() + " AND THAT DOCID : "+ that.docId());
+                System.out.println("THIS FREQUENCY : " + termFrequency() + " AND THAT FREQUENCY : "+ that.termFrequency());
+                return false;
             }
-        } catch (EOFException eofException){
-            eofException.printStackTrace();
         }
+
         return true;
     };
 
