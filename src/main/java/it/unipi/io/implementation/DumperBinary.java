@@ -4,6 +4,8 @@ import it.unipi.io.Dumper;
 import it.unipi.model.*;
 import it.unipi.utils.Constants;
 import it.unipi.utils.IOUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -16,13 +18,11 @@ import java.util.Map;
 
 public class DumperBinary implements Dumper {
 
-    // vocabulary writer
+    private static final Logger logger = LoggerFactory.getLogger(DumperBinary.class);
+
     protected FileChannel  vocabularyWriter;
-    // Doc Ids writer
     protected FileChannel docIdsWriter;
-    // Term frequencies writer
     protected FileChannel termFreqWriter;
-    // documentIndexWriter
     protected FileChannel documentIndexWriter;
 
     protected long docIdsOffset;
@@ -30,41 +30,63 @@ public class DumperBinary implements Dumper {
     protected boolean opened;
 
     private ByteBuffer docIndexBuffer;
-    private static final int docIndexBufferCapacity = 100000;
+    private int        docIndexBufferSize;
+    private static final int DOC_INDEX_BUFFER_CAPACITY = 100000;
 
     @Override
     public boolean start(Path path) {
+        if (!opened) {
+            try {
+                IOUtils.createDirectory(path);
 
-        try {
-            if (opened)
-                throw new IOException();
+                vocabularyWriter    = FileChannel.open(path.resolve(Constants.VOCABULARY_FILENAME),      StandardOpenOption.CREATE, StandardOpenOption.APPEND);
+                documentIndexWriter = FileChannel.open(path.resolve(Constants.DOCUMENT_INDEX_FILENAME),  StandardOpenOption.CREATE, StandardOpenOption.APPEND);
+                docIdsWriter        = FileChannel.open(path.resolve(Constants.DOC_IDS_POSTING_FILENAME), StandardOpenOption.CREATE, StandardOpenOption.APPEND);
+                termFreqWriter      = FileChannel.open(path.resolve(Constants.TF_POSTING_FILENAME),      StandardOpenOption.CREATE, StandardOpenOption.APPEND);
+                docIdsOffset = termFreqOffset = 0;
 
-            IOUtils.createDirectory(path);
+                opened = true;
+                logger.info("Dumper correctly initialized at path: " + path);
 
-            vocabularyWriter    = FileChannel.open(path.resolve(Constants.VOCABULARY_FILENAME),      StandardOpenOption.CREATE, StandardOpenOption.APPEND);
-            documentIndexWriter = FileChannel.open(path.resolve(Constants.DOCUMENT_INDEX_FILENAME),  StandardOpenOption.CREATE, StandardOpenOption.APPEND);
-            docIdsWriter        = FileChannel.open(path.resolve(Constants.DOC_IDS_POSTING_FILENAME), StandardOpenOption.CREATE, StandardOpenOption.APPEND);
-            termFreqWriter      = FileChannel.open(path.resolve(Constants.TF_POSTING_FILENAME),      StandardOpenOption.CREATE, StandardOpenOption.APPEND);
-
-            opened = true;
-            docIdsOffset = termFreqOffset = 0;
-
-        } catch(IOException ie) {
-            System.out.println("Error in opening the file");
-            opened = false;
+            } catch (IOException ie) {
+                logger.error("Could not start dumper", ie);
+                opened = false;
+            }
+        } else {
+            logger.warn("Dumper was already opened");
         }
+
         return opened;
     }
 
     @Override
-    public void dumpVocabulary(Vocabulary vocabulary) {
-        try {
-            for (Map.Entry<String, VocabularyEntry> entry : vocabulary.getEntries())
-                dumpVocabularyEntry(entry);
-
-        } catch (IOException e) {
-            e.printStackTrace();
+    public void close() {
+        if (!opened) {
+            logger.warn("Could not close fetcher: it was not started");
+            return;
         }
+
+        try {
+            vocabularyWriter.close();
+            docIdsWriter.close();
+            termFreqWriter.close();
+
+            // Final flush of entries of document index in buffer
+            if (docIndexBuffer != null)
+                flushDocumentIndexBuffer();
+            documentIndexWriter.close();
+
+            logger.info("Dumper correctly closed");
+
+        } catch (IOException exception) {
+            logger.warn("Error in closing the dumper", exception);
+        }
+    }
+
+    @Override
+    public void dumpVocabulary(Vocabulary vocabulary) throws IOException {
+        for (Map.Entry<String, VocabularyEntry> entry : vocabulary.getEntries())
+            dumpVocabularyEntry(entry);
     }
 
     @Override
@@ -132,33 +154,25 @@ public class DumperBinary implements Dumper {
     }
 
     @Override
-    public void dumpDocumentIndex(DocumentIndex docIndex) {
+    public void dumpDocumentIndex(DocumentIndex docIndex) throws IOException {
         int numEntries;
+
         // Write document index info (length and number of documents
-        try {
-            ByteBuffer buffer = ByteBuffer.allocate(2 * Integer.BYTES);
-            buffer.putInt(docIndex.getTotalLength());
-            numEntries = docIndex.getNumDocuments();
-            buffer.putInt(numEntries);
-            documentIndexWriter.write(buffer.flip());
-        } catch (IOException ie) {
-            ie.printStackTrace();
-            return;
-        }
+        ByteBuffer buffer = ByteBuffer.allocate(2 * Integer.BYTES);
+        buffer.putInt(docIndex.getTotalLength());
+        numEntries = docIndex.getNumDocuments();
+        buffer.putInt(numEntries);
+        if (documentIndexWriter.write(buffer.flip()) != 2 * Integer.BYTES)
+            logger.error("Fatal error in dumping document index metadata: " +
+                    "document index has not been correctly written to file");
 
         // Dump all entries
-        try {
-            docIndexBuffer = ByteBuffer.allocate(numEntries * 2 * Integer.BYTES);    // For each entry we have 2 integers
-            for (Map.Entry<Integer, DocumentIndexEntry> entry : docIndex.getEntries())
-                dumpDocumentIndexEntry(entry, docIndexBuffer);
-            documentIndexWriter.write(docIndexBuffer.flip());
+        docIndexBuffer = ByteBuffer.allocate(numEntries * 2 * Integer.BYTES);    // For each entry we have 2 integers
+        for (Map.Entry<Integer, DocumentIndexEntry> entry : docIndex.getEntries())
+            dumpDocumentIndexEntry(entry, docIndexBuffer);
 
-            // Clear the buffer
-            docIndexBuffer = null;
-
-        } catch (IOException ie) {
-            ie.printStackTrace();
-        }
+        // Dump left over entries in buffer
+        flushDocumentIndexBuffer();
     }
 
     private void dumpDocumentIndexEntry(Map.Entry<Integer, DocumentIndexEntry> entry, ByteBuffer buffer) {
@@ -167,46 +181,29 @@ public class DumperBinary implements Dumper {
 
         buffer.putInt(docId);
         buffer.putInt(documentIndexEntry.getDocumentLength());
+        docIndexBufferSize += 2;
     }
 
     @Override
-    public void dumpDocumentIndexEntry(Map.Entry<Integer, DocumentIndexEntry> entry) {
+    public void dumpDocumentIndexEntry(Map.Entry<Integer, DocumentIndexEntry> entry) throws IOException {
         if (docIndexBuffer == null)
-            docIndexBuffer = ByteBuffer.allocate(docIndexBufferCapacity);
+            docIndexBuffer = ByteBuffer.allocate(DOC_INDEX_BUFFER_CAPACITY);
         else if (!docIndexBuffer.hasRemaining()) {
-            try {
-                documentIndexWriter.write(docIndexBuffer.flip());
-                docIndexBuffer = ByteBuffer.allocate(docIndexBufferCapacity);
-            } catch (IOException e) {
-                e.printStackTrace();
-                return;
-            }
+            flushDocumentIndexBuffer();
+            docIndexBuffer = ByteBuffer.allocate(DOC_INDEX_BUFFER_CAPACITY);
         }
 
         dumpDocumentIndexEntry(entry, docIndexBuffer);
     }
 
-    @Override
-    public boolean end() {
-        try {
-            if (opened) {
-                vocabularyWriter.close();
-                docIdsWriter.close();
-                termFreqWriter.close();
+    private void flushDocumentIndexBuffer() throws IOException {
+        // Dump left over entries in buffer
+        if (documentIndexWriter.write(docIndexBuffer.flip()) != docIndexBufferSize)
+            logger.error("Fatal error in dumping document index: " +
+                    "document index has not been correctly written to file");
 
-                if (docIndexBuffer != null) {
-                    documentIndexWriter.write(docIndexBuffer.flip());
-                    docIndexBuffer = null;
-                }
-                documentIndexWriter.close();
-
-                opened = false;
-            } else
-                throw new IOException();
-        } catch (IOException ie) {
-            ie.printStackTrace();
-        }
-        return !opened;
+        // Clear the buffer
+        docIndexBuffer = null;
+        docIndexBufferSize = 0;
     }
-
 }

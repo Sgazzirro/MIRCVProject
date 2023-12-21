@@ -9,10 +9,11 @@ import it.unipi.io.implementation.FetcherCompressed;
 import it.unipi.io.implementation.FetcherTXT;
 import it.unipi.utils.Constants;
 
+import java.io.IOException;
 import java.nio.file.Path;
 import java.util.Map;
 
-public interface Fetcher {
+public interface Fetcher extends AutoCloseable {
 
     default boolean start() {
         return start(Constants.getPath());
@@ -25,34 +26,19 @@ public interface Fetcher {
      */
     boolean start(Path path);
 
-    /**
-     * Close the stream
-     * @return whether the stream has been closed correctly or an IOException has been raised
-     */
-    boolean end();
+    VocabularyEntry loadVocEntry(String term) throws IOException;
+    Map.Entry<String, VocabularyEntry> loadVocEntry() throws IOException;
+    void loadPosting(VocabularyEntry entry) throws IOException;
 
-    void loadPosting(VocabularyEntry entry);
-
-    // TERM | DF | UB | PostingList
-    VocabularyEntry loadVocEntry(String term);
-
-    Map.Entry<String, VocabularyEntry> loadVocEntry();
-
-    DocumentIndexEntry loadDocEntry(long docId);
-
-    Map.Entry<Integer, DocumentIndexEntry> loadDocEntry();
-
-    int[] getDocumentIndexStats();
+    DocumentIndexEntry loadDocEntry(long docId) throws IOException;
+    Map.Entry<Integer, DocumentIndexEntry> loadDocEntry() throws IOException;
+    int[] getDocumentIndexStats() throws IOException;
 
     static Fetcher getFetcher(CompressionType compression) {
-        switch (compression) {
-            case DEBUG:
-                return new FetcherTXT();
-            case BINARY:
-                return new FetcherBinary();
-            case COMPRESSED:
-                return new FetcherCompressed();
-        }
-        throw new RuntimeException("Unsupported compression type: " + compression);
+        return switch (compression) {
+            case DEBUG -> new FetcherTXT();
+            case BINARY -> new FetcherBinary();
+            case COMPRESSED -> new FetcherCompressed();
+        };
     }
 }

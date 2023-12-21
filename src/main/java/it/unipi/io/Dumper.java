@@ -17,7 +17,7 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.util.Map;
 
-public interface Dumper {
+public interface Dumper extends AutoCloseable {
 
     default boolean start() {
         return start(Constants.getPath());
@@ -29,27 +29,19 @@ public interface Dumper {
      * @return whether the stream has been open correctly or an IOException has been raised
      */
     boolean start(Path path);
-    void dumpVocabularyEntry(Map.Entry<String, VocabularyEntry> entry) throws IOException;
-    void dumpDocumentIndex(DocumentIndex docIndex);
-    void dumpDocumentIndexEntry(Map.Entry<Integer, DocumentIndexEntry> entry);
-    void dumpVocabulary(Vocabulary vocabulary);
 
-    /**
-     * Close the stream
-     * @return whether the stream has been closed correctly or an IOException has been raised
-     */
-    boolean end();
+    void dumpVocabulary(Vocabulary vocabulary) throws IOException;
+    void dumpVocabularyEntry(Map.Entry<String, VocabularyEntry> entry) throws IOException;
+
+    void dumpDocumentIndex(DocumentIndex docIndex) throws IOException;
+    void dumpDocumentIndexEntry(Map.Entry<Integer, DocumentIndexEntry> entry) throws IOException;
 
     static Dumper getInstance(CompressionType compression) {
-        switch (compression) {
-            case DEBUG:
-                return new DumperTXT();
-            case BINARY:
-                return new DumperBinary();
-            case COMPRESSED:
-                return new DumperCompressed();
-        }
-        throw new RuntimeException("Unsupported compression type: " + compression);
+        return switch (compression) {
+            case DEBUG -> new DumperTXT();
+            case BINARY -> new DumperBinary();
+            case COMPRESSED -> new DumperCompressed();
+        };
     }
 
 }
