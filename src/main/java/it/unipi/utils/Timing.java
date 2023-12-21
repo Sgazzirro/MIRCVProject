@@ -23,22 +23,23 @@ public class Timing {
         Constants.setPath(Path.of("./data"));
         Constants.setScoring(ScoringType.TFIDF);
         long start, end;
-
-        Constants.CACHING = false;
+        int queries = 0;
+        /*
+        Constants.CACHING = true;
         Constants.startSession();
 
         try(
-                BufferedReader readerQ = new BufferedReader(new FileReader("./data/evaluation/msmarco-test2019-queries.tsv"));
+                BufferedReader readerQ = new BufferedReader(new FileReader("./data/evaluation/queries.train.tsv"));
                 ){
             String query;
 
 
             start = System.currentTimeMillis();
             while((query = readerQ.readLine()) != null){
+                if(queries++ ==1000)
+                    break;
                 MaxScore scorer = new MaxScore(Constants.vocabulary, Constants.documentIndex, new TokenizerImpl(true, true));
                 PriorityQueue<DocumentScore> scoring = scorer.score(query.split("\t")[1], 300, "disjunctive");
-                Constants.startSession();
-                System.gc();
             }
             end = System.currentTimeMillis();
 
@@ -48,13 +49,13 @@ public class Timing {
         }
         Constants.onExit();
 
-        System.out.println("WITHOUT CACHE : " + (end - start));
-
+        System.out.println("LEARNING INFLUENCERS : " + (end - start));
+        */
         // ------------------------------------------------------------------------------------------------------------------------------
 
-        Constants.CACHING = true;
+        Constants.CACHING = false;
         Constants.startSession();
-
+        queries = 0;
         try(
                 BufferedReader readerQ = new BufferedReader(new FileReader("./data/evaluation/msmarco-test2019-queries.tsv"));
         ){
@@ -63,6 +64,36 @@ public class Timing {
 
             start = System.currentTimeMillis();
             while((query = readerQ.readLine()) != null){
+                System.out.println(query);
+                if(queries++ == 100)
+                    break;
+                PriorityQueue<DocumentScore> scoring = scorer.score(query.split("\t")[1], 300, "disjunctive");
+                //Constants.startSession();
+            }
+            end = System.currentTimeMillis();
+
+        }
+        catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        System.out.println("WITHOUT CACHE : " + (end - start));
+        Constants.onExit();
+
+        // ------------------------------------------------------------------------------------------------------------------------------
+
+        Constants.CACHING = true;
+        Constants.startSession();
+        queries = 0;
+        try(
+                BufferedReader readerQ = new BufferedReader(new FileReader("./data/evaluation/msmarco-test2019-queries.tsv"));
+        ){
+            String query;
+            MaxScore scorer = new MaxScore(Constants.vocabulary, Constants.documentIndex, new TokenizerImpl(true, true));
+
+            start = System.currentTimeMillis();
+            while((query = readerQ.readLine()) != null){
+                if(queries++ == 100)
+                    break;
                 PriorityQueue<DocumentScore> scoring = scorer.score(query.split("\t")[1], 300, "disjunctive");
             }
             end = System.currentTimeMillis();
@@ -73,8 +104,6 @@ public class Timing {
         }
         System.out.println("WITH CACHE : " + (end - start));
         Constants.onExit();
-
-
 
     }
 }

@@ -61,7 +61,7 @@ public class MaxScoreCollectionTest {
                     testQuery, K, "disjunctive");
             List<DocumentScore> topScores = new ArrayList<>();
 
-            while (topScores.size() < topK)
+            while (scoring.size() > 0)
                 topScores.add(0, scoring.poll());
 
             queriesScores.add(topScores);

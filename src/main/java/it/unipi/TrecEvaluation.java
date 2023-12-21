@@ -36,7 +36,7 @@ public class TrecEvaluation {
      * The name of the file in which we store our IR's results
      * RESULT FORMAT : QueryID | Q0 | pid | rank | Score | IDofTheRUN
      */
-    private static String RESULT = "./data/evaluation/testRes.txt";
+    private static String RESULT = "./data/evaluation/result1000NOTHSTFIDF.txt";
 
     private static class Query{
         String queryID;
@@ -106,10 +106,10 @@ public class TrecEvaluation {
                 BufferedReader queries = new BufferedReader(new FileReader(QUERIES));
                 BufferedWriter writer = new BufferedWriter(new FileWriter(RESULT));
                 ) {
-            long startQuery = System.currentTimeMillis();
+
             String queryLine;
 
-            MaxScore scorer = new MaxScore(Constants.vocabulary, Constants.documentIndex, Tokenizer.getInstance());
+            MaxScore scorer = new MaxScore(Constants.vocabulary, Constants.documentIndex, Tokenizer.getInstance(false, false));
             while((queryLine = queries.readLine()) != null){
                 Query q = new Query(queryLine);
                 System.out.println(q.getText());
@@ -134,7 +134,7 @@ public class TrecEvaluation {
                     writer.write(r.toString() + "\n");
                 }
             }
-            System.out.println("Per fare una query ci ho messo " + (System.currentTimeMillis() - startQuery));
+
         } catch (FileNotFoundException e) {
             throw new RuntimeException(e);
         } catch (IOException e) {
@@ -143,12 +143,11 @@ public class TrecEvaluation {
     }
 
     public static void main(String[] args){
-        Constants.CACHING = true;
+        Constants.CACHING = false;
         Constants.setCompression(CompressionType.COMPRESSED);
-        Constants.setPath(Path.of("./data"));
+        Constants.setPath(Path.of("./data/compressedNOTHING10K"));
         Constants.setScoring(ScoringType.TFIDF);
         Constants.startSession();
-
         generateEvaluation();
         Constants.onExit();
     }
