@@ -2,25 +2,28 @@ package it.unipi.encoding;
 
 import it.unipi.encoding.implementation.Simple9;
 import it.unipi.utils.ByteUtils;
-import junit.framework.TestCase;
+import org.junit.BeforeClass;
+import org.junit.Test;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-public class Simple9Test extends TestCase {
+import static org.junit.Assert.assertEquals;
 
-    Simple9 simple9;
+public class Simple9Test {
 
-    @Override
-    public void setUp() throws Exception {
-        super.setUp();
+    private static Encoder simple9;
+
+    @BeforeClass
+    public static void setUp() {
         simple9 = new Simple9();
     }
 
+    @Test
     public void testSkippingPointer() {
         Simple9 simple9Skipping = new Simple9(true);
-        List<Integer> list = Arrays.asList(1,3,6,2,10,11,2,
+        List<Integer> list = Arrays.asList(1, 3, 6, 2, 10, 11, 2,
                 500, 128, 109);
         byte[] bytes = simple9Skipping.encode(list);
         int bytesToSkip = ByteUtils.bytesToInt(bytes);
@@ -28,6 +31,7 @@ public class Simple9Test extends TestCase {
         assertEquals(bytesToSkip, 4 + 2*4);
     }
 
+    @Test
     public void testEncodeAll1() {
         List<Integer> list = new ArrayList<>();
         for (int i = 0; i < 27; i++)
@@ -38,6 +42,7 @@ public class Simple9Test extends TestCase {
         assertEquals(getBinaryRepresentation(block), "00001111111111111111111111111110");
     }
 
+    @Test
     public void testEncodeSecondConfiguration() {
         List<Integer> list = Arrays.asList(1,2,3,1,1,3,3,2,1,2,1);
         byte[] bytes = simple9.encode(list);
@@ -46,6 +51,7 @@ public class Simple9Test extends TestCase {
         assertEquals(getBinaryRepresentation(block), "00010110110101111110011001000000");
     }
 
+    @Test
     public void testFifthConfiguration() {
         List<Integer> list = Arrays.asList(6, 19, 31, 1, 10);
         byte[] bytes = simple9.encode(list);
@@ -54,6 +60,7 @@ public class Simple9Test extends TestCase {
         assertEquals(getBinaryRepresentation(block), "01000011010011111110000101010000");
     }
 
+    @Test
     public void testLastConfiguration() {
         List<Integer> list = List.of(128 * 128);
         byte[] bytes = simple9.encode(list);
@@ -62,8 +69,9 @@ public class Simple9Test extends TestCase {
         assertEquals(getBinaryRepresentation(block), "10000000000000000100000000000000");
     }
 
+    @Test
     public void testMultipleBytes() {
-        List<Integer> list = Arrays.asList(1,3,6,2,10,11,2,
+        List<Integer> list = Arrays.asList(1, 3, 6, 2, 10, 11, 2,
                 500, 128, 109);
         byte[] bytes = simple9.encode(list);
         int block0 = ByteUtils.bytesToInt(bytes, 0);
@@ -73,10 +81,7 @@ public class Simple9Test extends TestCase {
         assertEquals(getBinaryRepresentation(block1), "01101111101000100000000011011010");
     }
 
-    private String getBinaryRepresentation(int n) {
-        return String.format("%32s", Integer.toBinaryString(n)).replace(" ", "0");
-    }
-
+    @Test
     public void testDecode() {
         byte[] byteList = {
                 0b00110001, 0b00110110, 0b00101010, (byte) 0b10110010,
@@ -89,5 +94,9 @@ public class Simple9Test extends TestCase {
                 intList,
                 Arrays.asList(1,3,6,2,10,11,2, 500,128,109, 128*128)
         );
+    }
+
+    private String getBinaryRepresentation(int n) {
+        return String.format("%32s", Integer.toBinaryString(n)).replace(" ", "0");
     }
 }

@@ -6,19 +6,20 @@ import it.unipi.utils.ByteUtils;
 import java.util.ArrayList;
 import java.util.List;
 
-public class Simple9 implements Encoder {
+public class Simple9 extends Encoder {
 
-    // Each block is 4 byte large
-    //  - First 4 bit describe the layout of the other 28 bits
-    //    with 9 possible configurations
-    //  - A matrix describes these configurations: for 0 <= i <= 8
-    //        CONFIGURATIONS[i] = {l, k, waste, maxN}
-    //    where
-    //      -- l is the length in bit of each code
-    //      -- k is the number of codes in the block
-    //      -- waste is the number of wasted bits at the end of the block
-    //      -- maxN is the highest number representable in l bits
-
+    /**
+     *  Each block is 4 byte large
+     *  - First 4 bit describe the layout of the other 28 bits
+     *    with 9 possible configurations
+     *  - A matrix describes these configurations: for 0 <= i <= 8
+     *        CONFIGURATIONS[i] = {l, k, waste, maxN}
+     *    where
+     *      -- l is the length in bit of each code
+     *      -- k is the number of codes in the block
+     *      -- waste is the number of wasted bits at the end of the block
+     *      -- maxN is the highest number representable in l bits
+     */
     private static final int[][] CONFIGURATIONS = {
             {1,  28, 0, 1},
             {2,  14, 0, 3},
@@ -41,6 +42,7 @@ public class Simple9 implements Encoder {
         this(false);
     }
 
+    @Override
     public byte[] encode(List<Integer> intList) {
         // Encode a list of numbers using the Simple9 compression algorithm
         List<Integer> blockList = new ArrayList<>();
@@ -75,8 +77,7 @@ public class Simple9 implements Encoder {
             blockList.add(0, byteToSkip);
         }
 
-        int skippingPointerSize = (useSkippingPointer) ? 4 : 0;
-        byte[] byteArray = new byte[skippingPointerSize + 4 * blockList.size()];
+        byte[] byteArray = new byte[4 * blockList.size()];
         int offset = 0;
         for (int b : blockList) {
             ByteUtils.intToBytes(b, byteArray, offset);
@@ -86,6 +87,7 @@ public class Simple9 implements Encoder {
         return byteArray;
     }
 
+    @Override
     public List<Integer> decode(byte[] byteList) {
         List<Integer> intList = new ArrayList<>();
 

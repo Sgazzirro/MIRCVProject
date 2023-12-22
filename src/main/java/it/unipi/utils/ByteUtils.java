@@ -1,21 +1,13 @@
 package it.unipi.utils;
 
 import it.unipi.encoding.CompressionType;
-import it.unipi.encoding.Encoder;
-import it.unipi.encoding.implementation.EliasFano;
 import it.unipi.model.DocumentIndexEntry;
 import it.unipi.model.PostingList;
 import it.unipi.model.VocabularyEntry;
 
-import java.io.ByteArrayInputStream;
-import java.io.DataInputStream;
-import java.io.EOFException;
-import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
 
 public class ByteUtils {
 
@@ -98,133 +90,62 @@ public class ByteUtils {
         return entry;
     }
 
-    private static String byteToBinary(int b) {
-        return String.format("%8s", Integer.toBinaryString(b & 0xFF)).replace(" ", "0");
-    }
-
-    public static String byteArrayToBinaryString(byte[] byteArray) {
-        StringBuilder binaryStringBuilder = new StringBuilder();
-
-        for (byte b : byteArray) {
-            // Convert each byte to binary and append to the StringBuilder
-            binaryStringBuilder.append(String.format("%8s", Integer.toBinaryString(b & 0xFF)).replace(' ', '0'));
-        }
-
-        return binaryStringBuilder.toString();
-    }
-
-    public static byte[] binaryStringToByteArray(String binaryString) {
-        int length = binaryString.length();
-        byte[] byteArray = new byte[length / 8];
-        int index = 0; // Added index variable
-
-        for (int i = 0; i < length; i += 8) {
-            String byteString = binaryString.substring(i, i + 8);
-            byte b = (byte) Integer.parseInt(byteString, 2);
-            byteArray[index++] = b; // Use separate index variable
-        }
-
-        return byteArray;
-    }
-
-    public static List<Integer> decodeFullList(byte[] bytes) {
-        List<Integer> fullList = new ArrayList<>();
-        long offset = 0;
-
-        Encoder eliasFano = new EliasFano();
+    public static ByteBlock fetchDocIdsBlock(byte[] compressedDocIds, int docId, int docIdsBlockOffset) {
+        // skips unnecessary lists
+        ByteBuffer buffer = ByteBuffer.wrap(compressedDocIds);
+        buffer.position(docIdsBlockOffset);
 
         while (true) {
-            ByteBlock block = fetchDocIdsBlock(bytes, 0, offset);
-            if (block == null)
-                return fullList;
+            // Read integers from the byte array
+            int U = buffer.getInt();
+            U = (U == 0) ? 1 : U;
+            int n = buffer.getInt();
+            docIdsBlockOffset += 2*Integer.BYTES;
 
-            fullList.addAll(eliasFano.decode(block.getBytes()));
-            offset = block.getOffset();
-        }
-    }
-    public static ByteBlock fetchDocIdsBlock(byte[] compressedDocIds, int docId, long docIdsBlockOffset) {
-        // skips unnecessary lists
-        try (
-                ByteArrayInputStream bais = new ByteArrayInputStream(compressedDocIds);
-                DataInputStream dis = new DataInputStream(bais)
-        ) {
-            if (docIdsBlockOffset != dis.skip(docIdsBlockOffset))
-                throw new IOException("Offset is greater than block length");
-
-            while (true) {
-                // Read integers from the byte array
-                int U = dis.readInt();
-                U = (U == 0) ? 1 : U;
-                int n = dis.readInt();
-                docIdsBlockOffset += 2*Integer.BYTES;
-
-                // computing number of bytes to skip
-                int lowHalfLength = (int) Math.ceil(Math.log((float) U / n) / Math.log(2));
-                int highHalfLength = (int) Math.ceil(Math.log(U) / Math.log(2)) - lowHalfLength;
-                int nTotLowBits = lowHalfLength * n;
-                int nTotHighBits = (int) (n + Math.pow(2, highHalfLength));
-                int bytesToSkip = (int) Math.ceil((float) nTotLowBits / 8) + (int) Math.ceil((float) nTotHighBits / 8);
-                if (U < docId) {
-                    // I have to read the next block
-                    docIdsBlockOffset += bytesToSkip;
-                    if (bytesToSkip != bais.skip(bytesToSkip))
-                        throw new IOException();
-
-                } else {
-                    int numLowBytes = (int) Math.ceil((float) nTotLowBits/8);
-                    int numHighBytes = (int) Math.ceil((float) nTotHighBits/8);
-                    byte[] byteArray = new byte[4 + 4 + numLowBytes + numHighBytes];
-                    ByteUtils.intToBytes(U, byteArray, 0);
-                    ByteUtils.intToBytes(n, byteArray, 4);
-                    if (numHighBytes!=0) docIdsBlockOffset += dis.read(byteArray, 8, numHighBytes);
-                    if (numLowBytes!=0) docIdsBlockOffset += dis.read(byteArray, 8+numHighBytes, numLowBytes);
-                    dis.close();
-
-                    return new ByteBlock(byteArray, docIdsBlockOffset);
+            // computing number of bytes to skip
+            int lowHalfLength = (int) Math.ceil(Math.log((float) U / n) / Math.log(2));
+            if (lowHalfLength < 0)
+                lowHalfLength = 0;
+            int highHalfLength = (int) Math.ceil(Math.log(U) / Math.log(2)) - lowHalfLength;
+            int nTotLowBits = lowHalfLength * n;
+            int nTotHighBits = (int) (n + Math.pow(2, highHalfLength));
+            int bytesToSkip = (int) Math.ceil((float) nTotLowBits / 8) + (int) Math.ceil((float) nTotHighBits / 8);
+            if (U < docId)
+                // I have to read the next block
+                buffer.position(buffer.position() + bytesToSkip);
+            else {
+                int numLowBytes = (int) Math.ceil((float) nTotLowBits/8);
+                int numHighBytes = (int) Math.ceil((float) nTotHighBits/8);
+                byte[] byteArray = new byte[4 + 4 + numLowBytes + numHighBytes];
+                ByteUtils.intToBytes(U, byteArray, 0);
+                ByteUtils.intToBytes(n, byteArray, 4);
+                if (numHighBytes != 0) {
+                    buffer.get(byteArray, 8, numHighBytes);
+                    docIdsBlockOffset += numHighBytes;
                 }
+                if (numLowBytes!=0) {
+                    buffer.get(byteArray, 8+numHighBytes, numLowBytes);
+                    docIdsBlockOffset += numLowBytes;
+                }
+
+                return new ByteBlock(byteArray, docIdsBlockOffset);
             }
-        } catch (EOFException e) {
-            // end of file reached
-            return null;
-        } catch (Exception e) {
-            e.printStackTrace();
         }
-        return null;
     }
 
-    public static ByteBlock fetchNextTermFrequenciesBlock(byte[] compressedTermFrequencies, long termFrequenciesBlockOffset) {
-        try (
-                ByteArrayInputStream bais = new ByteArrayInputStream(compressedTermFrequencies);
-                DataInputStream dis = new DataInputStream(bais)
-        ) {
-            if (termFrequenciesBlockOffset != dis.skip(termFrequenciesBlockOffset))
-                throw new IOException();
+    public static ByteBlock fetchNextTermFrequenciesBlock(byte[] compressedTermFrequencies, int termFrequenciesBlockOffset) {
+        ByteBuffer buffer = ByteBuffer.wrap(compressedTermFrequencies);
+        buffer.position(termFrequenciesBlockOffset);
 
-            // Read length of the block
-            int length = dis.readInt();
+        // Read length of the block
+        int length = buffer.getInt();
 
-            byte[] byteArray = new byte[4 + length];
-            ByteUtils.intToBytes(length, byteArray, 0);
-            termFrequenciesBlockOffset += dis.read(byteArray, 4, length);
-            termFrequenciesBlockOffset += 4;            // Consider also the first 4 bytes describing the block length
-            dis.close();
+        byte[] byteArray = new byte[length];
+        ByteUtils.intToBytes(length, byteArray, 0);
 
-            return new ByteBlock(byteArray, termFrequenciesBlockOffset);
+        buffer.get(byteArray, Integer.BYTES, length - Integer.BYTES);   // Do not consider the bytes of the length (already fetched)
+        termFrequenciesBlockOffset += length;   // Consider also the first 4 bytes describing the block length
 
-        } catch (EOFException e) {
-            // end of file reached
-            return null;
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return null;
-    }
-
-    public static void main(String[] args) {
-        String str = "ciao€";
-        byte[] bytes = str.getBytes(StandardCharsets.UTF_8);
-        byte[] truncatedBytes = new byte[6];
-        System.arraycopy(bytes, 0, truncatedBytes, 0, 4);
-        String newStr = bytesToString(truncatedBytes, 0, 6);
+        return new ByteBlock(byteArray, termFrequenciesBlockOffset);
     }
 }

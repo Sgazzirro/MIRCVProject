@@ -19,8 +19,8 @@ public class PostingListCompressedImpl extends PostingList {
     private List<Integer> docIdsDecompressedList;           // ELIAS FANO    - DOC IDS
     private List<Integer> termFrequenciesDecompressedList;  // SIMPLE9/UNARY - TERM FREQUENCIES
     private int blockPointer;
-    private long docIdsBlockPointer;                    // This represents the offset of the next docIdsBlock
-    private long termFrequenciesBlockPointer;           // This represents the index of the actual block of term frequencies
+    private int docIdsBlockPointer;                    // This represents the offset of the next docIdsBlock
+    private int termFrequenciesBlockPointer;           // This represents the index of the actual block of term frequencies
 
     private final Encoder docIdsEncoder = new EliasFano();
     private final Encoder termFrequenciesEncoder = new Simple9(true);
@@ -80,7 +80,7 @@ public class PostingListCompressedImpl extends PostingList {
                 }
             }
 
-            // if we're in the last block and it doesn't contain the docId
+            // if we're in the last block, and it doesn't contain the docId
             // long docIdsEndOffset = getDocIdsOffset() + getDocIdsLength();
             long docIdsEndOffset = rootEntry.getDocIdsLength();
             if (docIdsBlockPointer == docIdsEndOffset &&
@@ -103,29 +103,28 @@ public class PostingListCompressedImpl extends PostingList {
 
     @Override
     public boolean addPosting(int docId, int termFreq) {
-        if (docIdsDecompressedList.isEmpty() || docIdsDecompressedList.get(docIdsDecompressedList.size()-1)!=docId){
+        if (docIdsDecompressedList.isEmpty() || docIdsDecompressedList.get(docIdsDecompressedList.size()-1) != docId){
             docIdsDecompressedList.add(docId);
             termFrequenciesDecompressedList.add(termFreq);
             return true;
         }
 
-        // se il docId è già presente come ultima entry, aumenta solo la term freq
+        // if docId is already present in the postingList (as last entry), increase the termFreq
         termFrequenciesDecompressedList.set(termFrequenciesDecompressedList.size() - 1, termFrequenciesDecompressedList.get(termFrequenciesDecompressedList.size() - 1) + termFreq);
         return false;
     }
 
     public void loadNextBlock() {
         ByteBlock docIdsBlock = ByteUtils.fetchDocIdsBlock(compressedDocIds, 0, docIdsBlockPointer);
-        docIdsBlockPointer = docIdsBlock.getOffset();
-        docIdsDecompressedList = docIdsEncoder.decode(docIdsBlock.getBytes());
+        docIdsBlockPointer = docIdsBlock.offset();
+        docIdsDecompressedList = docIdsEncoder.decode(docIdsBlock.bytes());
 
         ByteBlock termFrequenciesBlock = ByteUtils.fetchNextTermFrequenciesBlock(compressedTermFrequencies, termFrequenciesBlockPointer);
-        termFrequenciesBlockPointer = termFrequenciesBlock.getOffset();
-        termFrequenciesDecompressedList = termFrequenciesEncoder.decode(termFrequenciesBlock.getBytes());
+        termFrequenciesBlockPointer = termFrequenciesBlock.offset();
+        termFrequenciesDecompressedList = termFrequenciesEncoder.decode(termFrequenciesBlock.bytes());
 
         // Remove fictitious 0 frequencies
-        int first0Index = Math.min(Constants.BLOCK_SIZE, termFrequenciesDecompressedList.size());
-        // first0Index = Math.min(first0Index, rootEntry.getDocumentFrequency());
+        int first0Index = docIdsDecompressedList.size();
         termFrequenciesDecompressedList.subList(
                 first0Index,
                 termFrequenciesDecompressedList.size()
