@@ -4,14 +4,12 @@ JAVA STRUCTURE
 |   term    |   DF  |   UB  |  PostingList  |
 +-------------------------------------------+
 WHATS WRITTEN INSTEAD
-+-----------------------------------------------------------------+
-|   term    |   DF  |   UB  |  IDF  | docO | docL | termO | termL |
-+-----------------------------------------------------------------+
++---------------------------------------------------------+
+|   term    |   DF  |   UB  | docO | docL | termO | termL |
++---------------------------------------------------------+
 Ordered by term:
 DF -> Document Frequency, Length of the posting list,
-        Number of Postings
-UB -> Upper Bound, a double computed during index creation
-IDF -> Inverse Document Frequency, computed ad log(N/DF)
+UB -> Upper Bound, a double computed during index creation for scoring purposes
 docO -> DocumentIdOffset, the offset (in byte) at which the list is stored
 docL -> The length of the list in byte
 termO -> TermFreqOffset, the offset (in byte) at which the list is stored

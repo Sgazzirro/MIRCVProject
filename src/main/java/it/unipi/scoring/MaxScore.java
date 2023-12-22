@@ -6,10 +6,14 @@ import it.unipi.model.PostingList;
 import it.unipi.model.Vocabulary;
 import it.unipi.model.VocabularyEntry;
 import it.unipi.utils.Constants;
+import org.slf4j.LoggerFactory;
 
 import java.util.*;
+import java.util.logging.Logger;
 
 public class MaxScore {
+
+    private static final Logger logger = LoggerFactory.getLogger(MaxScore.class);
 
     private final Vocabulary vocabulary;
     private final DocumentIndex documentIndex;
@@ -35,14 +39,19 @@ public class MaxScore {
 
         ////////////////// DISJUNCTIVE MODE ///////////////////////
         if (mode.equals("disjunctive")) {
+        int IOCalls = 0;
+        if(mode.equals("disjunctive")) {
             for (String token : queryTokens) {
+                if(!vocabulary.isPresent(token))
+                    IOCalls++;
                 VocabularyEntry entry = vocabulary.getEntry(token);
                 if (entry != null)
                     treeMap.put(entry.getUpperBound(), entry.getPostingList());
             }
             if (treeMap.isEmpty())
                 return null;
-
+            
+            logger.info("IO calls in maxscore: " + IOCalls);
             return maxScore(new ArrayList<>(treeMap.values()), new ArrayList<>(treeMap.keySet()), numResults);
         }
         ////////////////// CONJUNCTIVE MODE ///////////////////////
