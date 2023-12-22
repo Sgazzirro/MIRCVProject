@@ -73,6 +73,7 @@ public class DumperTXT implements Dumper {
             writerTF.close();
 
             logger.info("Dumper correctly closed");
+            opened = false;
 
         } catch (IOException exception) {
             logger.warn("Error in closing the dumper", exception);
@@ -95,7 +96,7 @@ public class DumperTXT implements Dumper {
 
         PostingListImpl postingListImpl = (PostingListImpl) vocEntry.getPostingList();
         long[] offsets = dumpPostings(postingListImpl);
-        int length = postingListImpl.getDocIdsDecompressedList().size();
+        int length = postingListImpl.getDocIdsList().size();
 
         String result = term + "," +
                 termFrequency + "," +
@@ -110,13 +111,13 @@ public class DumperTXT implements Dumper {
     private long[] dumpPostings(PostingList postingList) throws IOException {
         long offsetID = writtenDIDS;
         long offsetTF = writtenTF;
-        int length = postingList.getDocIdsDecompressedList().size();
+        int length = postingList.getDocIdsList().size();
 
         StringBuilder bufferID = new StringBuilder();
         StringBuilder bufferTF = new StringBuilder();
         for (int i = 0; i < length; i++) {
-             bufferID.append(postingList.getDocIdsDecompressedList().get(i)).append("\n");
-             bufferTF.append(postingList.getTermFrequenciesDecompressedList().get(i)).append("\n");
+             bufferID.append(postingList.getDocIdsList().get(i)).append("\n");
+             bufferTF.append(postingList.getTermFrequenciesList().get(i)).append("\n");
         }
 
         writerDIDS.write(String.valueOf(bufferID));
@@ -128,9 +129,7 @@ public class DumperTXT implements Dumper {
     }
 
     @Override
-    public void dumpDocumentIndex(DocumentIndex docIndex) throws IOException{
-        System.out.println("DOC INDEX L : " + docIndex.getTotalLength());
-        System.out.println("DOC INDEX N : " + docIndex.getNumDocuments());
+    public void dumpDocumentIndex(DocumentIndex docIndex) throws IOException {
         writerDIX.write(docIndex.getTotalLength() + "\n");
         writerDIX.write(docIndex.getNumDocuments() + "\n");
 

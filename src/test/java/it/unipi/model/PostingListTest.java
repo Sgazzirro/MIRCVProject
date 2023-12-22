@@ -8,9 +8,9 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
-import java.io.EOFException;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.NoSuchElementException;
 
 import static org.junit.Assert.*;
 
@@ -37,11 +37,11 @@ public class PostingListTest {
 
         if (compression == CompressionType.COMPRESSED) {
             ((PostingListCompressedImpl) postingList).setCompressedDocIds(
-                    new EliasFano().encode(postingList.getDocIdsDecompressedList())
+                    new EliasFano().encode(postingList.getDocIdsList())
             );
 
             ((PostingListCompressedImpl) postingList).setCompressedTermFrequencies(
-                    new Simple9(true).encode(postingList.getTermFrequenciesDecompressedList())
+                    new Simple9(true).encode(postingList.getTermFrequenciesList())
             );
         }
     }
@@ -51,22 +51,22 @@ public class PostingListTest {
      * we are at the end of the list
      */
     @Test
-    public void testNextEOF() throws EOFException {
+    public void testNextEOF() {
         for (int i = 0; i < postingLength; i++)
             postingList.next();
 
-        assertThrows(EOFException.class, postingList::next);
+        assertThrows(NoSuchElementException.class, postingList::next);
     }
 
     @Test
-    public void testNextGEQEOF() throws EOFException {
+    public void testNextGEQEOF() {
         postingList.nextGEQ(postingLength - 1);     // Go to last posting
 
-        assertThrows(EOFException.class, postingList::next);
+        assertThrows(NoSuchElementException.class, postingList::next);
     }
 
     @Test
-    public void testNext() throws EOFException {
+    public void testNext() {
         for (int i = 0; i <= postingLength / 2; i++)
             postingList.next();
 
@@ -74,14 +74,14 @@ public class PostingListTest {
     }
 
     @Test
-    public void testNextGEQ() throws EOFException {
+    public void testNextGEQ() {
         postingList.nextGEQ(postingLength / 2);
 
         assertEquals(postingList.docId(), postingLength / 2);
     }
 
     @Test
-    public void testHasNext() throws EOFException {
+    public void testHasNext() {
         assertTrue(postingList.hasNext());
 
         postingList.nextGEQ(postingLength / 2);
@@ -92,7 +92,7 @@ public class PostingListTest {
     }
 
     @Test
-    public void testAddPosting() throws EOFException {
+    public void testAddPosting() {
         int docId = postingLength - 1;      // docId of last posting
         postingList.nextGEQ(docId);
 
@@ -104,7 +104,7 @@ public class PostingListTest {
     }
 
     @Test
-    public void testReset() throws EOFException {
+    public void testReset() {
         postingList.nextGEQ(postingLength / 2);
         postingList.reset();
         postingList.next();

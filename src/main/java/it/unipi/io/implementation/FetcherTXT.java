@@ -58,8 +58,9 @@ public class FetcherTXT implements Fetcher {
             globalReaderDOC.close();
 
             logger.info("Fetcher correctly closed");
+            opened = false;
 
-        } catch (IOException exception) {
+        } catch (Exception exception) {
             logger.warn("Error in closing the fetcher", exception);
         }
     }

@@ -3,6 +3,7 @@ package it.unipi.index;
 import it.unipi.encoding.CompressionType;
 import it.unipi.encoding.Tokenizer;
 import it.unipi.io.DocumentStream;
+import it.unipi.io.implementation.DumperBinary;
 import it.unipi.model.*;
 import it.unipi.io.Dumper;
 import it.unipi.scoring.Scorer;
@@ -24,7 +25,7 @@ public class InMemoryIndexing implements AutoCloseable {
     private final Tokenizer tokenizer;
 
     public InMemoryIndexing(CompressionType compression) {
-        vocabulary = Vocabulary.getInstance();
+        vocabulary = Vocabulary.getInstance(compression);
         documentIndex = DocumentIndex.getInstance();
 
         dumper = Dumper.getInstance(compression);
@@ -68,27 +69,35 @@ public class InMemoryIndexing implements AutoCloseable {
             return;
         List<String> tokenized = tokenizer.tokenizeBySpace(document.getText());
 
-        for (String token : tokenized) {
+        for (String token : tokenized)
             vocabulary.addEntry(token, document.getId());
-        }
 
         documentIndex.addDocument(document.getId(), tokenized.size());
     }
 
     void dumpVocabulary() throws IOException {
-        computeTermsPartialUpperBound();
+        Scorer scorer = Scorer.getScorer(documentIndex);
+        // Compute upper bound of each term
+        for (Map.Entry<String, VocabularyEntry> entry : vocabulary.getEntries())
+            entry.getValue().computeUpperBound(scorer);
 
         dumper.dumpVocabulary(vocabulary);
     }
 
     void dumpVocabularyLine(Map.Entry<String, VocabularyEntry> entry) throws IOException {
         // Onto the vocabulary
-        // Term | DF | UpperBound | OffsetID | OffsetTF | DocLen | TFLen
+        // Term | DF | OffsetID | OffsetTF | DocLen | TFLen
         dumper.dumpVocabularyEntry(entry);
     }
 
     void dumpDocumentIndex() throws IOException {
         dumper.dumpDocumentIndex(documentIndex);
+    }
+
+    void flushDocumentIndex() throws IOException {
+        // Flush entries in document index buffer if any
+        if (dumper instanceof DumperBinary dumperBinary)
+            dumperBinary.flushDocumentIndexBuffer();
     }
 
     void dumpDocumentIndexLine(Map.Entry<Integer, DocumentIndexEntry> entry) throws IOException {
@@ -101,29 +110,5 @@ public class InMemoryIndexing implements AutoCloseable {
 
     public DocumentIndex getDocumentIndex() {
         return documentIndex;
-    }
-
-    private void computeTermsPartialUpperBound() {
-
-        for (Map.Entry<String, VocabularyEntry> entry: vocabulary.getEntries()) {
-            VocabularyEntry vocabularyEntry = entry.getValue();
-            Posting bestPosting = getMaxPosting(vocabularyEntry.getPostingList());
-
-            double partialTermUB = Scorer.partialTF(bestPosting);
-            vocabularyEntry.setUpperBound(partialTermUB);
-        }
-    }
-
-    private Posting getMaxPosting(PostingList postingList) {
-        postingList.reset();
-
-        Posting bestPosting = postingList.next();
-        while (postingList.hasNext()) {
-            Posting next = postingList.next();
-            if (bestPosting.compareTo(next) < 0)
-                bestPosting = next;
-        }
-
-        return bestPosting;
     }
 }

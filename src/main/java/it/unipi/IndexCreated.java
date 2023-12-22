@@ -8,13 +8,14 @@ import it.unipi.scoring.ScoringType;
 import it.unipi.utils.Constants;
 import it.unipi.scoring.DocumentScore;
 
+import java.io.IOException;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.PriorityQueue;
 
 public class IndexCreated {
-    public static void main(String[] args){
+    public static void main(String[] args) throws IOException {
         // Return how many documents and how many words are indexed
         int numDocs;
         int numWords;
@@ -23,7 +24,7 @@ public class IndexCreated {
         Constants.setPath(Path.of("./data"));
         MaxScore max = new MaxScore(Constants.vocabulary, Constants.documentIndex, Tokenizer.getInstance());
 
-        DocumentStream stream = DocumentStream.getInstance();
+        DocumentStream stream = new DocumentStream();
 
         for(int i = 0; i < 2; i++) {
             long start = System.currentTimeMillis();

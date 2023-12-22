@@ -1,5 +1,6 @@
 package it.unipi.model;
 
+import it.unipi.encoding.CompressionType;
 import it.unipi.model.implementation.VocabularyImpl;
 
 import java.util.Map;
@@ -20,5 +21,9 @@ public interface Vocabulary {
 
     static Vocabulary getInstance() {
         return new VocabularyImpl();
+    }
+
+    static Vocabulary getInstance(CompressionType compression) {
+        return new VocabularyImpl(compression);
     }
 }

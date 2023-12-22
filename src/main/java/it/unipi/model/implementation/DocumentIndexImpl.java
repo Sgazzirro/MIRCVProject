@@ -4,11 +4,15 @@ import it.unipi.io.Fetcher;
 import it.unipi.model.DocumentIndex;
 import it.unipi.model.DocumentIndexEntry;
 import it.unipi.utils.Constants;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.Serializable;
 import java.util.*;
 
 public class DocumentIndexImpl implements DocumentIndex, Serializable {
+
+    private static final Logger logger = LoggerFactory.getLogger(DocumentIndex.class);
 
     private int totalLength;
     private int numDocuments;
@@ -45,15 +49,24 @@ public class DocumentIndexImpl implements DocumentIndex, Serializable {
     @Override
     public int getLength(int docId) {
         if (!table.containsKey(docId)) {
-            fetcher.start(Constants.getPath());
-            DocumentIndexEntry entry = fetcher.loadDocEntry(docId);
-            fetcher.end();
+            String errorMessage = "Could not fetch docId " + docId + " from document index";
 
-            if (entry != null) {
-                table.put(docId, entry);
-                return entry.getDocumentLength();
+            try {
+                fetcher.start(Constants.getPath());
+                DocumentIndexEntry entry = fetcher.loadDocEntry(docId);
+                fetcher.close();
+
+                if (entry != null) {
+                    table.put(docId, entry);
+                    return entry.getDocumentLength();
+                }
+            } catch (Exception e) {
+                logger.error(errorMessage, e);
             }
+
+            throw new RuntimeException(errorMessage);
         }
+
         return table.get(docId).getDocumentLength();
     }
 
@@ -61,12 +74,18 @@ public class DocumentIndexImpl implements DocumentIndex, Serializable {
     public double getAverageLength() {
         // Check whether the document index metadata have not been loaded in memory
         if (numDocuments == 0 && !table.isEmpty()) {
-            fetcher.start();
-            int[] stats = fetcher.getDocumentIndexStats();
-            fetcher.end();
+            try {
+                fetcher.start();
+                int[] stats = fetcher.getDocumentIndexStats();
+                fetcher.close();
 
-            numDocuments = stats[0];
-            totalLength  = stats[1];
+                numDocuments = stats[0];
+                totalLength  = stats[1];
+
+            } catch (Exception e) {
+                logger.error("Could not fetch document index stats", e);
+                throw new RuntimeException("Could not fetch document index stats");
+            }
         }
 
         return (double) totalLength / numDocuments;

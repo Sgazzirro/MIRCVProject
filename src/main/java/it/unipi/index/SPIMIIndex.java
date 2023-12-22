@@ -2,17 +2,21 @@ package it.unipi.index;
 
 import it.unipi.encoding.CompressionType;
 import it.unipi.io.DocumentStream;
-import it.unipi.io.Dumper;
 import it.unipi.io.Fetcher;
 import it.unipi.model.*;
 import it.unipi.model.implementation.PostingListImpl;
+import it.unipi.scoring.Scorer;
 import it.unipi.utils.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.*;
 import java.nio.file.Path;
 import java.util.*;
 
 public class SPIMIIndex {
+
+    private static final Logger logger = LoggerFactory.getLogger(SPIMIIndex.class);
 
     /**
      * The stream that generates one Document at a time
@@ -23,27 +27,21 @@ public class SPIMIIndex {
      */
     private final InMemoryIndexing globalIndexer;
     /**
-     * The block_size is number of bytes allowed to be used before creating a new block
+     * The limit is the percentage of memory allowed to be used before dumping the current block and creating a new one
      * Notice that, even in case of going ahead this threshold, the current document is however processed
      */
-    private long block_size = 80;
+    private int limit = 80;
 
     /**
-     * The next number of block to write. Since the index of the blocks starts at 0, this is
+     * The number of the block being currently written. Since the index of the blocks starts at 0, this is
      * by fact the number of blocks written at the moment
      */
-    private int next_block = 0;
+    private int blocksProcessed = 0;
 
     /**
      * Set to true when the DocumentStream no more generates documents
      */
-    private boolean finish = false;
-
-    /**
-     * The indexer demand to invert the current block. Compression is not
-     * predicted at this stage
-     */
-    private final InMemoryIndexing blockIndexer;
+    private boolean finished = false;
 
     /**
      * Describes the mode in which we are operating
@@ -55,30 +53,19 @@ public class SPIMIIndex {
     private final CompressionType compression;
 
 
-
-    public SPIMIIndex(CompressionType compression, DocumentStream s, InMemoryIndexing i) {
-        // Parameter Allocation
-        // -------------------
+    public SPIMIIndex(CompressionType compression, DocumentStream stream) {
+        // Compression of blocks (we never write compressed blocks for merging ease)
+        this.stream = stream;
+        this.globalIndexer = new InMemoryIndexing(compression);
         this.compression = (compression == CompressionType.DEBUG) ? compression : CompressionType.BINARY;
-        stream = s;
-        globalIndexer = i;
-        // -------------------
-
-        // Creation of the block indexer
-        // -------------------
-        DocumentIndex di = DocumentIndex.getInstance();
-        Vocabulary v = Vocabulary.getInstance();
-        Dumper d = Dumper.getInstance(this.compression);
-        blockIndexer = new InMemoryIndexing(v, d, di);
-        // -------------------
     }
 
     /**
-     * Sets the estimation of bytes allowed for the current block
-     * @param limit the limit of bytes allowed for the block
+     * Sets the percentage of memory allowed for the current block
+     * @param limit the percentage of used memory allowed for the block
      */
     public void setLimit(int limit) {
-        block_size = limit;
+        this.limit = limit;
     }
 
     /**
@@ -86,14 +73,8 @@ public class SPIMIIndex {
      * @return whether the stream has still some documents
      */
     boolean finished() {
-        return finish;
+        return finished;
     }
-
-    /**
-     * Returns the current number of blocks
-     * @return the next block number to generate
-     */
-    int getNext_block(){return next_block;}
 
     /**
      * Memory check for the current block
@@ -102,8 +83,7 @@ public class SPIMIIndex {
      */
     boolean availableMemory(long usedMemory) {
         // Returns if usedMemory is less than a threshold
-        double threshold = ((double) block_size / 100) * Runtime.getRuntime().maxMemory();
-        // threshold = Math.min(threshold, 1e9);
+        double threshold = ((double) limit / 100) * Runtime.getRuntime().maxMemory();
 
         return usedMemory <= threshold;
     }
@@ -112,51 +92,50 @@ public class SPIMIIndex {
      * Builds the inverted index
      * @param path the directory in which we want to store all needed file
      */
-    public void buildIndexSPIMI(Path path) {
+    public void buildIndex(Path path) {
+        try {
+            Path blocksPath = path.resolve("blocks/");
 
-        Path blocksPath = path.resolve("blocks/");
+            // Preliminary flush of files
+            IOUtils.deleteDirectory(blocksPath);
+            IOUtils.createDirectory(blocksPath);
 
-        // Preliminary flush of files
-        IOUtils.deleteDirectory(blocksPath);
-        IOUtils.createDirectory(blocksPath);
+            // 1) create and invert a block. The block is then dumped in secondary memory
+            while (!finished())
+                invertBlock(blocksPath.resolve("" + blocksProcessed));
 
-        // 1) create and invert a block. The block is then dumped in secondary memory
-        // ---------------------
-        while (!finished()) {
-            invertBlock(blocksPath.resolve("" + next_block));
+            // 2) Initialize one reader for each block
+            List<Fetcher> blockFetchers = new ArrayList<>();
+            for (int i = 0; i < blocksProcessed; i++) {
+                Fetcher blockFetcher = Fetcher.getFetcher(compression);
+                blockFetcher.start(blocksPath.resolve("" + i));
+
+                blockFetchers.add(blockFetcher);
+            }
+
+            globalIndexer.setup(path);
+
+            // 3) Merge all document indexes
+            Constants.N = mergeDocumentIndexes(blockFetchers);
+
+            // 4) Merge all vocabularies (with relative posting lists)
+            mergeVocabularies(blockFetchers);
+
+            // 5) Close all fetchers
+            for (int i = 0; i < blocksProcessed; i++)
+                try {
+                    blockFetchers.get(i).close();
+                } catch (Exception e) {
+                    logger.warn("Something went wrong closing block indexers", e);
+                }
+
+            globalIndexer.close();
+
+        } catch (IOException ioException) {
+            logger.error("Fatal error when building the index", ioException);
+            System.exit(1);
         }
-        // ---------------------
-
-        // 2) Initialize one reader for each block
-        // ---------------------
-        List<Fetcher> readVocBuffers = new ArrayList<>();
-        for (int i = 0; i < next_block; i++) {
-            Fetcher f = Fetcher.getFetcher(compression);
-            f.start(blocksPath.resolve("" + i));
-
-            readVocBuffers.add(f);
-        }
-        // ---------------------
-
-        globalIndexer.setup(path);
-
-        // 3) Merge all document indexes
-        // ---------------------
-        int N = concatenateDocIndexes(readVocBuffers);
-        // ---------------------
-
-        // 4) Merge all vocabularies (with relative posting lists)
-        // ---------------------
-        mergeAllBlocks(readVocBuffers, N);
-        // ---------------------
-
-        for(int i = 0; i < next_block; i++)
-            readVocBuffers.get(i).end();
-        globalIndexer.close();
-
-        Constants.N = N;
     }
-
 
     /**
      * Creates, Inverts and Dumps a block
@@ -167,71 +146,78 @@ public class SPIMIIndex {
         Runtime.getRuntime().gc();
         long usedMemory = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
 
-        // Set up the indexer for this block
-        blockIndexer.setup(blockPath);
+        try (
+                InMemoryIndexing blockIndexer = new InMemoryIndexing(compression)
+        ) {
+            // Set up the indexer for this block
+            if (!blockIndexer.setup(blockPath))
+                throw new IOException("Could not open directory for dumping the blocks");
 
-        // 1) Process documents until memory limit reached
-        int docProcessed = 0;
-        // ---------------------
-        while (availableMemory(usedMemory)) {
-            // Write the block if we reached a certain (high) number of entries
-            if (docProcessed++ == Constants.MAX_ENTRIES_PER_SPIMI_BLOCK) {
-                System.out.println("Max number of entries per block reached (" + Constants.MAX_ENTRIES_PER_SPIMI_BLOCK + ")");
-                break;
+            // 1) Process documents until memory limit reached
+            int docProcessed = 0;
+
+            while (availableMemory(usedMemory)) {
+                // Write the block if we reached a certain (high) number of entries
+                if (docProcessed++ == Constants.MAX_ENTRIES_PER_SPIMI_BLOCK) {
+                    logger.info("Max number of entries per block reached (" + Constants.MAX_ENTRIES_PER_SPIMI_BLOCK + ")");
+                    break;
+                }
+
+                // Get the next document
+                Optional<Document> doc = Optional.ofNullable(stream.nextDoc());
+                if (doc.isEmpty()) {
+                    // When I have finished, I set the flag
+                    finished = true;
+                    break;
+                }
+                blockIndexer.processDocument(doc.get());
+                usedMemory = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
+                // System.out.println("USED MEMORY : " + (usedMemory - startMemory));
             }
 
-            // Get the next document
-            Optional<Document> doc = Optional.ofNullable(stream.nextDoc());
-            if (doc.isEmpty()) {
-                // When I have finished, I set the flag
-                finish = true;
-                break;
-            }
-            blockIndexer.processDocument(doc.get());
-            usedMemory = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
-            // System.out.println("USED MEMORY : " + (usedMemory - startMemory));
+            logger.info("Block " + blocksProcessed + " correctly created, waiting for dump...");
+            // ---------------------
+
+            // 2.1) Dump the block
+            blockIndexer.dumpDocumentIndex();
+            blockIndexer.dumpVocabulary();
+
+        } catch (IOException ioException) {
+            logger.error("Fatal error happened while inverting block");
+            logger.error("Block " + blocksProcessed, ioException);
         }
-        // ---------------------
-        System.out.println("BLOCK CREATED");
-        // ---------------------
-        // 2.0) set the partial term upper bound
-        blockIndexer.computePartialTermUB();
 
-        // 2.1) Dump the block
-        // ---------------------
-        blockIndexer.dumpVocabulary();
-        blockIndexer.dumpDocumentIndex();
-        // ---------------------
-
-        // Reset the block indexer
-        blockIndexer.close();
-        next_block++;
+        blocksProcessed++;
     }
 
-    private Integer concatenateDocIndexes(List<Fetcher> readers) {
+    private int mergeDocumentIndexes(List<Fetcher> readers) throws IOException {
         // 1) We accumulate length and total number of documents from blocks
-        //      This information is the first thing to dump
-        // ------------------------------------
+        //    This information is the first thing to dump
         int N = 0;
         int L = 0;
-        for (int i = 0; i < next_block; i++) {
-            int[] info = readers.get(i).getDocumentIndexStats();
-            N += info[0];
-            L += info[1];
+        for (int i = 0; i < blocksProcessed; i++) {
+            int[] documentIndexStats = readers.get(i).getDocumentIndexStats();
+
+            N += documentIndexStats[0];
+            L += documentIndexStats[1];
         }
-        globalIndexer.getDocIndex().setNumDocuments(N);
-        globalIndexer.getDocIndex().setTotalLength(L);
+
+        globalIndexer.getDocumentIndex().setNumDocuments(N);
+        globalIndexer.getDocumentIndex().setTotalLength(L);
         globalIndexer.dumpDocumentIndex();
         // ------------------------------------
 
-        // 2) We fetch one entry at a time from block by block and we dump it on the final file
-        // ------------------------------------
-        for (int i = 0; i < next_block; i++) {
+        // 2) We fetch one entry at a time from each block, and we dump it on the final file
+        for (int i = 0; i < blocksProcessed; i++) {
             Map.Entry<Integer, DocumentIndexEntry> entry;
+
             while ( (entry = readers.get(i).loadDocEntry()) != null )
+
                 globalIndexer.dumpDocumentIndexLine(entry);
         }
         // ------------------------------------
+        globalIndexer.flushDocumentIndex();     // Flush residual entries in buffer
+
         return N;
     }
 
@@ -239,32 +225,29 @@ public class SPIMIIndex {
      * Read
      * @param readVocBuffers the list of blocks readers
      */
-    void mergeAllBlocks(List<Fetcher> readVocBuffers, Integer numDocuments) {
+    private void mergeVocabularies(List<Fetcher> readVocBuffers) throws IOException {
         // Key idea to merge all blocks together
         // To do the merging, we open all block files simultaneously
         // We maintain small read buffers for blocks we are reading
         // and a write buffer for the final merged index we are writing.
         // In each iteration, we select the lowest termID that has not been processed yet
         // using a priority queue or a similar data structure.
-        // All postings lists for this termID are read and merged, and the merged list is written back to disk.
+        // All posting lists for this termID are read and merged, and the merged list is written back to disk.
         // Each read buffer is refilled from its file when necessary.
-        //List<Fetcher> readVocBuffers = new ArrayList<>();
+
         List<Boolean> processed = new ArrayList<>();
-        int next_block = getNext_block();
-
-
-        for (int i = 0; i < next_block; i++) {
+        for (int i = 0; i < blocksProcessed; i++)
             processed.add(true);
-        }
 
         int blocksClosed = 0;
-        boolean[] closed = new boolean[next_block];
+        boolean[] closed = new boolean[blocksProcessed];
 
-        String[] terms = new String[next_block];
-        VocabularyEntry[] entries = new VocabularyEntry[next_block];
+        String[] terms = new String[blocksProcessed];
+        VocabularyEntry[] entries = new VocabularyEntry[blocksProcessed];
+
         String lowestTerm;
         while (true) {
-            for (int k = 0; k < next_block; k++) {
+            for (int k = 0; k < blocksProcessed; k++) {
                 if (closed[k])
                     continue;
 
@@ -273,8 +256,11 @@ public class SPIMIIndex {
                     // Term | TermFrequency | UpperBound | #Posting | Offset
                     Map.Entry<String, VocabularyEntry> entry = readVocBuffers.get(k).loadVocEntry();
                     if (entry == null) {
-                        System.out.println("CLOSED BLOCKS: " + blocksClosed);
                         blocksClosed++;
+
+                        logger.info("Block " + k + " has been dumped");
+                        logger.info("Total number of closed blocks: " + blocksClosed);
+
                         closed[k] = true;
                         continue;
                     }
@@ -283,27 +269,27 @@ public class SPIMIIndex {
                     entries[k] = entry.getValue();
                 }
             }
-            if (blocksClosed == next_block)
+            if (blocksClosed == blocksProcessed)
                 break;
 
             lowestTerm = null;
             // Get the lowest lexicographically term
-            for (int k = 0; k < next_block; k++) {
+            for (int k = 0; k < blocksProcessed; k++) {
                 if (lowestTerm == null) {
                     if (closed[k])
                         continue;
                     else
                         lowestTerm = terms[k];
                 }
-                if (lowestTerm.compareTo(terms[k]) > 0 && !closed[k]) {
+                if (!closed[k] && lowestTerm.compareTo(terms[k]) > 0)
                     lowestTerm = terms[k];
-                }
             }
+
             // Merge entries with equal terms
             // Mark as processed correspondent blocks
             List<VocabularyEntry> toMerge = new ArrayList<>();
-            for (int k = 0; k < next_block; k++) {
-                if (lowestTerm.compareTo(terms[k]) == 0 && !closed[k]) {
+            for (int k = 0; k < blocksProcessed; k++) {
+                if (terms[k].equals(lowestTerm) && !closed[k]) {
                     toMerge.add(entries[k]);
                     processed.set(k, true);
                 } else
@@ -311,12 +297,8 @@ public class SPIMIIndex {
             }
 
             // Write the merge onto the output file
-            try {
-                VocabularyEntry entry = mergeEntries(toMerge, numDocuments);
-                globalIndexer.dumpVocabularyLine(new AbstractMap.SimpleEntry<>(lowestTerm, entry));
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
+            VocabularyEntry entry = mergeEntries(toMerge);
+            globalIndexer.dumpVocabularyLine(new AbstractMap.SimpleEntry<>(lowestTerm, entry));
         }
 
     }
@@ -327,31 +309,27 @@ public class SPIMIIndex {
      * @param toMerge the list of vocabulary entries to merge
      * @return a merged entry
      */
-    VocabularyEntry mergeEntries(List<VocabularyEntry> toMerge, int numDocuments) {
+    private VocabularyEntry mergeEntries(List<VocabularyEntry> toMerge) {
         VocabularyEntry mergedEntry = new VocabularyEntry();
         PostingListImpl mergedList = new PostingListImpl(mergedEntry);
 
         int frequency = 0;
-        double upperBound = 0.0;
 
         for (VocabularyEntry vocabularyEntry : toMerge) {
-
             // Merge the (decompressed) posting lists of the entries
             mergedList.mergePosting(vocabularyEntry.getPostingList());
 
-            // Update term frequency and upper bound
+            // Update term frequency
             frequency += vocabularyEntry.getDocumentFrequency();
-            if (vocabularyEntry.getUpperBound() > upperBound)
-                upperBound = vocabularyEntry.getUpperBound();
         }
 
-        // final term upper bound computation
-        double toMultiply = Math.log10( ((double) numDocuments) / mergedList.getDocIdsDecompressedList().size());
-        upperBound *= toMultiply;
-
         mergedEntry.setPostingList(mergedList);
-        mergedEntry.setUpperBound(upperBound);
         mergedEntry.setDocumentFrequency(frequency);
+
+        // final term upper bound computation
+        Scorer scorer = Scorer.getScorer(globalIndexer.getDocumentIndex());
+        mergedEntry.computeUpperBound(scorer);
+
         return mergedEntry;
     }
 }

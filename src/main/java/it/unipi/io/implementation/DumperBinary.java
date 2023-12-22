@@ -77,6 +77,7 @@ public class DumperBinary implements Dumper {
             documentIndexWriter.close();
 
             logger.info("Dumper correctly closed");
+            opened = false;
 
         } catch (IOException exception) {
             logger.warn("Error in closing the dumper", exception);
@@ -99,8 +100,8 @@ public class DumperBinary implements Dumper {
         
         PostingList postingList = vocabularyEntry.getPostingList();
 
-        List<Integer> docIdList = postingList.getDocIdsDecompressedList();
-        List<Integer> termFrequencyList = postingList.getTermFrequenciesDecompressedList();
+        List<Integer> docIdList = postingList.getDocIdsList();
+        List<Integer> termFrequencyList = postingList.getTermFrequenciesList();
         
         if (!opened)
             throw new IOException("Dumper must be opened");
@@ -155,19 +156,21 @@ public class DumperBinary implements Dumper {
 
     @Override
     public void dumpDocumentIndex(DocumentIndex docIndex) throws IOException {
-        int numEntries;
-
         // Write document index info (length and number of documents
         ByteBuffer buffer = ByteBuffer.allocate(2 * Integer.BYTES);
+
         buffer.putInt(docIndex.getTotalLength());
-        numEntries = docIndex.getNumDocuments();
+        int numEntries = docIndex.getNumDocuments();
         buffer.putInt(numEntries);
-        if (documentIndexWriter.write(buffer.flip()) != 2 * Integer.BYTES)
+
+        if (documentIndexWriter.write(buffer.flip()) != 2 * Integer.BYTES) {
             logger.error("Fatal error in dumping document index metadata: " +
                     "document index has not been correctly written to file");
+            System.exit(1);
+        }
 
         // Dump all entries
-        docIndexBuffer = ByteBuffer.allocate(numEntries * 2 * Integer.BYTES);    // For each entry we have 2 integers
+        docIndexBuffer = ByteBuffer.allocate(numEntries * Constants.DOCUMENT_INDEX_ENTRY_BYTES_SIZE);
         for (Map.Entry<Integer, DocumentIndexEntry> entry : docIndex.getEntries())
             dumpDocumentIndexEntry(entry, docIndexBuffer);
 
@@ -196,11 +199,16 @@ public class DumperBinary implements Dumper {
         dumpDocumentIndexEntry(entry, docIndexBuffer);
     }
 
-    private void flushDocumentIndexBuffer() throws IOException {
+    public void flushDocumentIndexBuffer() throws IOException {
+        if (docIndexBuffer == null)
+            return;
+
         // Dump left over entries in buffer
-        if (documentIndexWriter.write(docIndexBuffer.flip()) != docIndexBufferSize)
+        if (documentIndexWriter.write(docIndexBuffer.flip()) != docIndexBufferSize * Integer.BYTES) {
             logger.error("Fatal error in dumping document index: " +
                     "document index has not been correctly written to file");
+            System.exit(1);
+        }
 
         // Clear the buffer
         docIndexBuffer = null;

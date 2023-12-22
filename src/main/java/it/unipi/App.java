@@ -48,19 +48,26 @@ public class App
         }
 
 */
+
         Constants.setCompression(CompressionType.COMPRESSED);
-        DocumentStream ds = DocumentStream.getInstance();
-        DocumentIndex di = DocumentIndex.getInstance();
-        Vocabulary v = Vocabulary.getInstance();
-        Dumper d = Dumper.getInstance(CompressionType.COMPRESSED);
-        Path indexPath = Paths.get("./data/compressedNOTHING10K");
+        DocumentStream ds = new DocumentStream();
+
+        Path indexPath = Paths.get("./data/debug");
         Constants.setPath(indexPath);
-        InMemoryIndexing memoryIndexing = new InMemoryIndexing(v, d, di);
 
-        SPIMIIndex spimi = new SPIMIIndex(CompressionType.COMPRESSED, ds, memoryIndexing);
+        SPIMIIndex spimi = new SPIMIIndex(CompressionType.COMPRESSED, ds);
+        spimi.buildIndex(indexPath);
+
+        //memoryIndexing.buildIndex(ds, indexPath);
+
+        /*      MULTI-THREAD SPIMI
+        Vocabulary vocabulary = Vocabulary.getInstance();
+        DocumentIndex documentIndex = DocumentIndex.getInstance();
+
+        MultiThreadSPIMI spimi = new MultiThreadSPIMI(vocabulary, documentIndex, CompressionType.COMPRESSED);
+        Path indexPath = Paths.get("./data").resolve("multi_thread");
         spimi.buildIndexSPIMI(indexPath);
-
-
+         */
     }
 
 }

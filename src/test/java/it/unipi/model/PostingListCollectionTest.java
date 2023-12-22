@@ -12,6 +12,7 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
 import java.io.EOFException;
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collection;
 
@@ -44,7 +45,7 @@ public class PostingListCollectionTest {
     private final VocabularyEntry entry;
     private final PostingList postingList;
 
-    public PostingListCollectionTest(String term) {
+    public PostingListCollectionTest(String term) throws IOException {
         fetcher = Fetcher.getFetcher(CompressionType.COMPRESSED);
         fetcher.start();
 
@@ -62,8 +63,8 @@ public class PostingListCollectionTest {
     }
 
     @AfterClass
-    public static void tearDown() {
-        fetcher.end();
+    public static void tearDown() throws Exception {
+        fetcher.close();
     }
 
     @Test

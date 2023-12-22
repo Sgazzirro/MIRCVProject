@@ -1,17 +1,10 @@
 package it.unipi;
 
 import it.unipi.encoding.*;
-import it.unipi.encoding.implementation.TokenizerImpl;
-import it.unipi.io.Fetcher;
-import it.unipi.model.Vocabulary;
-import it.unipi.model.VocabularyEntry;
-import it.unipi.model.implementation.DocumentIndexImpl;
-import it.unipi.model.implementation.VocabularyImpl;
 import it.unipi.scoring.MaxScore;
 import it.unipi.scoring.*;
 import it.unipi.utils.Constants;
 
-import javax.print.Doc;
 import java.io.*;
 import java.nio.file.Path;
 import java.util.ArrayList;

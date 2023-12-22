@@ -79,8 +79,9 @@ public class FetcherBinary implements Fetcher {
             documentIndexReader.close();
 
             logger.info("Fetcher correctly closed");
+            opened = false;
 
-        } catch (IOException exception) {
+        } catch (Exception exception) {
             logger.warn("Error in closing the fetcher", exception);
         }
     }

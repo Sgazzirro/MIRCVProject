@@ -1,8 +1,10 @@
 package it.unipi.model;
 
 import it.unipi.encoding.CompressionType;
+import it.unipi.scoring.Scorer;
 import it.unipi.utils.Constants;
 
+import java.util.Map;
 import java.util.Objects;
 
 public class VocabularyEntry {
@@ -26,6 +28,10 @@ public class VocabularyEntry {
 
     public VocabularyEntry() {
         this.postingList = PostingList.getInstance(Constants.getCompression(), this);
+    }
+
+    public VocabularyEntry(CompressionType compression) {
+        this.postingList = PostingList.getInstance(compression, this);
     }
 
     public void addPosting(int docId, int termFrequency) {
@@ -101,6 +107,10 @@ public class VocabularyEntry {
 
     public void setTouched(long touched) {
         this.touched = touched;
+    }
+
+    public void computeUpperBound(Scorer scorer) {
+        upperBound = scorer.computeUpperBound(postingList);
     }
 
     @Override

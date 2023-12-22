@@ -1,11 +1,14 @@
 package it.unipi.utils;
 
 import it.unipi.encoding.CompressionType;
+import it.unipi.index.SPIMIIndex;
 import it.unipi.model.DocumentIndex;
 import it.unipi.model.Vocabulary;
 import it.unipi.model.implementation.DocumentIndexImpl;
 import it.unipi.model.implementation.VocabularyImpl;
 import it.unipi.scoring.ScoringType;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.print.Doc;
 import java.io.*;
@@ -14,6 +17,8 @@ import java.nio.file.Paths;
 import java.util.*;
 
 public class Constants {
+
+    private static final Logger logger = LoggerFactory.getLogger(Constants.class);
 
     public static final String COLLECTION_FILE = "data/collection.tar.gz";
     public static final String TEST_COLLECTION_FILE = "data/test_collection.tsv";
@@ -31,10 +36,12 @@ public class Constants {
     public static final List<String> STOPWORDS = IOUtils.loadStopwords();
 
     public static int BLOCK_SIZE = 10000;
+    public static int NUM_THREADS_SPIMI = 8;
     public static int MAX_ENTRIES_PER_SPIMI_BLOCK = 1_000_000;
-    public static final int BYTES_STORED_STRING = 32;
 
     public static int N = 8841823;
+
+    public static final int BYTES_STORED_STRING = 32;
     public static final int VOCABULARY_ENTRY_BYTES_SIZE =
             BYTES_STORED_STRING + 3*Integer.BYTES + Double.BYTES + 2*Long.BYTES;
     public static final int DOCUMENT_INDEX_ENTRY_BYTES_SIZE =
@@ -60,9 +67,7 @@ public class Constants {
 
     public static void setCompression(CompressionType compression) {
         Constants.currentCompression = compression;
-
-        vocabulary = Vocabulary.getInstance();
-        documentIndex = DocumentIndex.getInstance();
+        logger.info("Compression set to " + compression);
     }
 
     public static Path getPath() {
@@ -90,13 +95,14 @@ public class Constants {
     public static PriorityQueue<Map.Entry<String, Long>> influencers =
             new PriorityQueue<>(Comparator.comparing(Map.Entry::getValue));
 
-    private static int SIZE_INFLUENCERS = 1000;
+    private static final int SIZE_INFLUENCERS = 1000;
+
     public static double MEMORY_USED(){
         return (double) ((Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory()) / Runtime.getRuntime().maxMemory());
     }
 
     public static void CACHE(String token, Long touches){
-        if(!CACHING)
+        if (!CACHING)
             return;
         // FIXME: Strange things will happen
 
@@ -131,11 +137,10 @@ public class Constants {
             System.out.println("QUI CI VADO");
             vocabulary = new VocabularyImpl(influencersR);
         }
-        else {
-            vocabulary = new VocabularyImpl();
-            documentIndex = new DocumentIndexImpl();
-        }
+        else
+            vocabulary = Vocabulary.getInstance();
 
+        documentIndex = DocumentIndex.getInstance();
     }
 
     public static void onExit(){

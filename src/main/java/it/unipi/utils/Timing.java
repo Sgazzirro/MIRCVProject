@@ -1,19 +1,17 @@
 package it.unipi.utils;
 
 import it.unipi.encoding.CompressionType;
+import it.unipi.encoding.Tokenizer;
 import it.unipi.encoding.implementation.TokenizerImpl;
+import it.unipi.model.Vocabulary;
 import it.unipi.scoring.DocumentScore;
 import it.unipi.scoring.MaxScore;
 import it.unipi.scoring.ScoringType;
-import opennlp.tools.parser.Cons;
 
 import java.io.BufferedReader;
-import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.PriorityQueue;
 
 public class Timing {
@@ -55,15 +53,16 @@ public class Timing {
 
         Constants.CACHING = false;
         Constants.startSession();
+
         queries = 0;
         try(
-                BufferedReader readerQ = new BufferedReader(new FileReader("./data/evaluation/msmarco-test2019-queries.tsv"));
+                BufferedReader readerQ = new BufferedReader(new FileReader("./data/evaluation/msmarco-test2019-queries.tsv"))
         ){
             String query;
-            MaxScore scorer = new MaxScore(Constants.vocabulary, Constants.documentIndex, new TokenizerImpl(true, true));
+            MaxScore scorer = new MaxScore(Constants.vocabulary, Constants.documentIndex, Tokenizer.getInstance());
 
             start = System.currentTimeMillis();
-            while((query = readerQ.readLine()) != null){
+            while((query = readerQ.readLine()) != null) {
                 System.out.println(query);
                 if(queries++ == 100)
                     break;
@@ -85,10 +84,10 @@ public class Timing {
         Constants.startSession();
         queries = 0;
         try(
-                BufferedReader readerQ = new BufferedReader(new FileReader("./data/evaluation/msmarco-test2019-queries.tsv"));
+                BufferedReader readerQ = new BufferedReader(new FileReader("./data/evaluation/msmarco-test2019-queries.tsv"))
         ){
             String query;
-            MaxScore scorer = new MaxScore(Constants.vocabulary, Constants.documentIndex, new TokenizerImpl(true, true));
+            MaxScore scorer = new MaxScore(Constants.vocabulary, Constants.documentIndex, Tokenizer.getInstance());
 
             start = System.currentTimeMillis();
             while((query = readerQ.readLine()) != null){
@@ -96,6 +95,7 @@ public class Timing {
                     break;
                 PriorityQueue<DocumentScore> scoring = scorer.score(query.split("\t")[1], 300, "disjunctive");
             }
+
             end = System.currentTimeMillis();
 
         }
