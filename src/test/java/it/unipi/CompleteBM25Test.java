@@ -2,10 +2,8 @@ package it.unipi;
 
 import it.unipi.encoding.CompressionType;
 import it.unipi.encoding.Tokenizer;
-import it.unipi.index.InMemoryIndexing;
 import it.unipi.index.SPIMIIndex;
 import it.unipi.io.DocumentStream;
-import it.unipi.io.Dumper;
 import it.unipi.model.Document;
 import it.unipi.model.DocumentIndex;
 import it.unipi.model.Vocabulary;
@@ -19,27 +17,26 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
+import java.io.IOException;
 import java.util.PriorityQueue;
 
 import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
-public class CompleteTestBM25 {
+public class CompleteBM25Test {
+
     @Mock
     static DocumentStream ds;
-
-    @InjectMocks
-    InMemoryIndexing indexerSingleBlock;
 
     Vocabulary vocabulary;
     DocumentIndex documentIndex;
 
     @Before
-    public void setup() {
+    public void setup() throws IOException  {
+
         Constants.setScoring(ScoringType.BM25);
         Constants.setPath(Constants.testPath);
 
@@ -53,25 +50,26 @@ public class CompleteTestBM25 {
                 new Document("3\trabbit recip recip duck"),
                 null
         );
-        CompressionType compression = CompressionType.COMPRESSED;
+        CompressionType compression = CompressionType.BINARY;
         Constants.setCompression(compression);
+
         // Dumping
-        indexerSingleBlock = new InMemoryIndexing(Vocabulary.getInstance(), Dumper.getInstance(compression), DocumentIndex.getInstance());
-        new SPIMIIndex(compression, ds, indexerSingleBlock).buildIndexSPIMI(Constants.testPath);
-        vocabulary = Vocabulary.getInstance();
+        new SPIMIIndex(compression, ds).buildIndex(Constants.testPath);
+        vocabulary = Vocabulary.getInstance(compression);
         documentIndex = DocumentIndex.getInstance();
     }
 
     @Test
-    public void testQueryDuck(){
+    public void testQueryDuck() {
         String query = "duck";
         MaxScore maxScore = new MaxScore(vocabulary, documentIndex, Tokenizer.getInstance());
 
         PriorityQueue<DocumentScore> results = maxScore.score(query, 10, "disjunctive");
         Assert.assertEquals(results.size(), 4);
 
-        for(int i=0; i<4; i++){
+        for (int i=0; i<4; i++) {
             DocumentScore documentScore = results.poll();
+            Assert.assertNotNull(documentScore);
             Assert.assertEquals(0.0, documentScore.score, 0.01);
         }
         Assert.assertNull(results.poll());
@@ -87,6 +85,8 @@ public class CompleteTestBM25 {
 
         DocumentScore documentScore2 = results.poll();
         DocumentScore documentScore1 = results.poll();
+        Assert.assertNotNull(documentScore1);
+        Assert.assertNotNull(documentScore2);
 
         Assert.assertEquals(documentScore1.score, 1/(Constants.BM25_k*((1-Constants.BM25_b)+Constants.BM25_b*(4/((float)15/4)))+1)*Math.log10(2.0), 0.01);
         Assert.assertEquals(documentScore2.score, 1/(Constants.BM25_k*((1-Constants.BM25_b)+Constants.BM25_b*(4/((float)15/4)))+1)*Math.log10(2.0), 0.01);
@@ -113,6 +113,8 @@ public class CompleteTestBM25 {
 
         DocumentScore documentScore2 = results.poll();
         DocumentScore documentScore1 = results.poll();
+        Assert.assertNotNull(documentScore1);
+        Assert.assertNotNull(documentScore2);
 
         double scoreRabbit = 1/(Constants.BM25_k*((1-Constants.BM25_b)+Constants.BM25_b*(4/((float)15/4)))+1)*Math.log10(2.0);
         double scoreRecip2 = 1/(Constants.BM25_k*((1-Constants.BM25_b)+Constants.BM25_b*(4/((float)15/4)))+1)*Math.log10(2.0);
@@ -126,6 +128,6 @@ public class CompleteTestBM25 {
 
     @After
     public void flush() {
-        IOUtils.deleteDirectory(Constants.testPath);
+        // IOUtils.deleteDirectory(Constants.testPath);
     }
 }

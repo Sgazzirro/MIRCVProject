@@ -1,10 +1,8 @@
 package it.unipi.model.implementation;
 
-import it.unipi.model.Posting;
 import it.unipi.model.PostingList;
 import it.unipi.model.VocabularyEntry;
 
-import java.io.*;
 import java.util.*;
 
 
@@ -14,88 +12,65 @@ import java.util.*;
  */
 public class PostingListImpl extends PostingList {
 
-    private List<Integer> docIdsDecompressedList;
-    private List<Integer> termFrequenciesDecompressedList;
+    private List<Integer> docIdsList;
+    private List<Integer> termFrequenciesList;
     private int pointer = -1;
 
     // Used when building the index
     public PostingListImpl(VocabularyEntry entry) {
         super(entry);
 
-        this.docIdsDecompressedList = new ArrayList<>();
-        this.termFrequenciesDecompressedList = new ArrayList<>();
+        this.docIdsList = new ArrayList<>();
+        this.termFrequenciesList = new ArrayList<>();
     }
 
     /**
      * Concatenate the passed list to the current one, assuming that no sorting is required
+     *
      * @param toMerge the posting list we have to merge to the current
-     * @return the length of the new list
      */
-    public int mergePosting(PostingList toMerge) {
-        //if (!(toMerge instanceof PostingListImpl))
-        //    throw new RuntimeException("Cannot merge PostingLists with different implementations");
-
-        docIdsDecompressedList.addAll(toMerge.getDocIdsDecompressedList());
-        termFrequenciesDecompressedList.addAll(toMerge.getTermFrequenciesDecompressedList());
-        return docIdsDecompressedList.size();
+    public void mergePosting(PostingList toMerge) {
+        docIdsList.addAll(toMerge.getDocIdsList());
+        termFrequenciesList.addAll(toMerge.getTermFrequenciesList());
     }
 
-    public List<Integer> getTermFrequenciesDecompressedList() {
-        return termFrequenciesDecompressedList;
+    public List<Integer> getTermFrequenciesList() {
+        return termFrequenciesList;
     }
 
-    public List<Integer> getDocIdsDecompressedList() {
-        return docIdsDecompressedList;
+    public List<Integer> getDocIdsList() {
+        return docIdsList;
     }
-/*
-    @Override
-    public boolean equals(Object o) {
-        System.out.println("DENTRO LA EQUALS DELLA IMPL");
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        PostingListImpl that = (PostingListImpl) o;
-        try {
-            while (hasNext()) {
-                next();
-                that.next();
-                if (docId() != that.docId() || termFrequency() != that.termFrequency())
-                    return false;
-            }
-        } catch (EOFException eofException){
-            eofException.printStackTrace();
-        }
-        return true;
-    }
-*/
+
     @Override
     public int docId() {
-        return docIdsDecompressedList.get(pointer);
+        return docIdsList.get(pointer);
     }
 
     @Override
     public int termFrequency() {
-        return termFrequenciesDecompressedList.get(pointer);
+        return termFrequenciesList.get(pointer);
     }
 
     @Override
-    public Posting next() {
+    public void next() {
         if (!hasNext())
             throw new NoSuchElementException();
 
         pointer++;
-        return new Posting(termFrequency(), docId());
     }
 
     public boolean hasNext() {
-        return pointer < docIdsDecompressedList.size() - 1;
+        return pointer < docIdsList.size() - 1;
     }
 
     @Override
-    public void nextGEQ(int docId) throws EOFException{
-        do {
+    public void nextGEQ(int docId) {
+        if (pointer == -1 && hasNext())
             next();
-        } while (this.docId() < docId);
 
+        while (this.docId() < docId)
+            next();
     }
 
     @Override
@@ -106,30 +81,30 @@ public class PostingListImpl extends PostingList {
     @Override
     public boolean addPosting(int docId, int termFrequency) {
         // Documents are supposed to be read sequentially with respect to docId
-        if (docIdsDecompressedList == null)
-            docIdsDecompressedList = new ArrayList<>();
-        if (termFrequenciesDecompressedList == null)
-            termFrequenciesDecompressedList = new ArrayList<>();
+        if (docIdsList == null)
+            docIdsList = new ArrayList<>();
+        if (termFrequenciesList == null)
+            termFrequenciesList = new ArrayList<>();
 
-        int lastIndex = docIdsDecompressedList.size()-1;
+        int lastIndex = docIdsList.size()-1;
 
-        if (docIdsDecompressedList.isEmpty() || docIdsDecompressedList.get(lastIndex) != docId) {
-            docIdsDecompressedList.add(docId);
-            termFrequenciesDecompressedList.add(termFrequency);
+        if (docIdsList.isEmpty() || docIdsList.get(lastIndex) != docId) {
+            docIdsList.add(docId);
+            termFrequenciesList.add(termFrequency);
             return true;
         } else {
-            termFrequenciesDecompressedList.set(lastIndex, termFrequenciesDecompressedList.get(lastIndex) + termFrequency);
+            termFrequenciesList.set(lastIndex, termFrequenciesList.get(lastIndex) + termFrequency);
             return false;
         }
     }
 
     @Override
     public String toString() {
-        return "DocIdList: " + docIdsDecompressedList + " TermFrequencyList: " + termFrequenciesDecompressedList;
+        return "DocIdList: " + docIdsList + " TermFrequencyList: " + termFrequenciesList;
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(docIdsDecompressedList, termFrequenciesDecompressedList);
+        return Objects.hash(docIdsList, termFrequenciesList);
     }
 }

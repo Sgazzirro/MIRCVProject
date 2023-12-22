@@ -3,12 +3,10 @@ package it.unipi.model.implementation;
 import it.unipi.encoding.Encoder;
 import it.unipi.encoding.implementation.EliasFano;
 import it.unipi.encoding.implementation.Simple9;
-import it.unipi.model.Posting;
 import it.unipi.model.PostingList;
 import it.unipi.model.VocabularyEntry;
 import it.unipi.utils.*;
 
-import java.io.EOFException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
@@ -55,7 +53,7 @@ public class PostingListCompressedImpl extends PostingList {
     }
 
     @Override
-    public Posting next() {
+    public void next() {
         long docIdsLength = rootEntry.getDocIdsLength();
         if (docIdsBlockPointer == docIdsLength &&
                 blockPointer == docIdsDecompressedList.size() - 1)
@@ -67,12 +65,10 @@ public class PostingListCompressedImpl extends PostingList {
             loadNextBlock();
             blockPointer = 0;
         }
-
-        return new Posting(termFrequency(), docId());
     }
 
     @Override
-    public void nextGEQ(int docId) throws EOFException {
+    public void nextGEQ(int docId) {
         while (true) {
             // If we are in the correct block advance the pointer to the right place
             if (docIdsDecompressedList.get(docIdsDecompressedList.size() - 1) >= docId) {
@@ -89,7 +85,7 @@ public class PostingListCompressedImpl extends PostingList {
             long docIdsEndOffset = rootEntry.getDocIdsLength();
             if (docIdsBlockPointer == docIdsEndOffset &&
                     docIdsDecompressedList.get(docIdsDecompressedList.size() - 1) < docId)
-                throw new EOFException();
+                throw new NoSuchElementException();
 
             // Else get the next block
             loadNextBlock();
@@ -129,7 +125,7 @@ public class PostingListCompressedImpl extends PostingList {
 
         // Remove fictitious 0 frequencies
         int first0Index = Math.min(Constants.BLOCK_SIZE, termFrequenciesDecompressedList.size());
-        first0Index = Math.min(first0Index, rootEntry.getDocumentFrequency());
+        // first0Index = Math.min(first0Index, rootEntry.getDocumentFrequency());
         termFrequenciesDecompressedList.subList(
                 first0Index,
                 termFrequenciesDecompressedList.size()
@@ -137,12 +133,12 @@ public class PostingListCompressedImpl extends PostingList {
     }
 
     @Override
-    public List<Integer> getTermFrequenciesDecompressedList() {
+    public List<Integer> getTermFrequenciesList() {
         return termFrequenciesDecompressedList;
     }
 
     @Override
-    public List<Integer> getDocIdsDecompressedList() {
+    public List<Integer> getDocIdsList() {
         return docIdsDecompressedList;
     }
 

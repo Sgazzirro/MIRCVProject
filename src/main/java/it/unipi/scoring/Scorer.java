@@ -1,32 +1,37 @@
 package it.unipi.scoring;
 
-import it.unipi.model.Posting;
+import it.unipi.model.DocumentIndex;
 import it.unipi.model.PostingList;
+import it.unipi.scoring.implementation.BM25Scorer;
+import it.unipi.scoring.implementation.TFIDFScorer;
 import it.unipi.utils.Constants;
 
-public class Scorer {
+public abstract class Scorer {
 
-    private static double TFIDFPartialTF(Posting posting) {
-        return 1 + Math.log10(posting.getTf());
+    protected abstract double partialScore(PostingList postingList);
+
+    public double score(PostingList postingList) {
+        return partialScore(postingList) * postingList.vocabularyEntry().idf();
     }
 
-    private static double BM25PartialTF(Posting posting) {
-        int docLength           = Constants.documentIndex.getLength(posting.getDocId());
-        double averageDocLength = Constants.documentIndex.getAverageLength();
+    public double computeUpperBound(PostingList postingList) {
+        postingList.reset();
 
-        return posting.getTf() / ( Constants.BM25_k *
-                ( (1 - Constants.BM25_b) + Constants.BM25_b * docLength / averageDocLength) +
-                posting.getTf() );
+        double partialUpperBound = 0;
+        while (postingList.hasNext()) {
+            postingList.next();
+            double partialScore = partialScore(postingList);
+            if (partialScore > partialUpperBound)
+                partialUpperBound = partialScore;
+        }
+
+        return partialUpperBound * postingList.vocabularyEntry().idf();
     }
 
-    public static double partialTF(Posting posting) {
+    public static Scorer getScorer(DocumentIndex documentIndex) {
         return switch (Constants.getScoring()) {
-            case TFIDF -> TFIDFPartialTF(posting);
-            case BM25 -> BM25PartialTF(posting);
+            case TFIDF -> new TFIDFScorer();
+            case BM25 -> new BM25Scorer(documentIndex);
         };
-    }
-
-    public static double score(Posting posting, double idf) {
-        return partialTF(posting) * idf;
     }
 }

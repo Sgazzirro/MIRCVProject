@@ -8,8 +8,9 @@ import it.unipi.scoring.Scorer;
 import java.io.EOFException;
 import java.util.Iterator;
 import java.util.List;
+import java.util.NoSuchElementException;
 
-public abstract class PostingList implements Iterator<Posting> {
+public abstract class PostingList {
 
     protected VocabularyEntry rootEntry;
 
@@ -29,14 +30,6 @@ public abstract class PostingList implements Iterator<Posting> {
     public abstract int termFrequency();
 
     /**
-     * Function that computes the score (according to the class settings) of that term in that document
-     * @return the score of the current posting
-     */
-    public double score() {
-        return Scorer.score(new Posting(termFrequency(), docId()), rootEntry.idf());
-    }
-
-    /**
      * @return whether the list has another posting or not
      */
     public abstract boolean hasNext();
@@ -44,14 +37,14 @@ public abstract class PostingList implements Iterator<Posting> {
     /**
      * Moves sequentially the posting list to the next posting
      */
-    public abstract Posting next();
+    public abstract void next();
 
     /**
      * Moves the iterator toward the next posting
      * with a document ID which is greater or equal than the specified one
      * @param docId the ID of the document we would like to reach
      */
-    public abstract void nextGEQ(int docId) throws EOFException;
+    public abstract void nextGEQ(int docId);
 
     /**
      * Add a posting to the current list. If the posting already exists, increment the frequency
@@ -70,9 +63,9 @@ public abstract class PostingList implements Iterator<Posting> {
 
     public abstract boolean addPosting(int docId, int freq);
 
-    public abstract List<Integer> getTermFrequenciesDecompressedList();
+    public abstract List<Integer> getTermFrequenciesList();
 
-    public abstract List<Integer> getDocIdsDecompressedList();
+    public abstract List<Integer> getDocIdsList();
 
     @Override
     public boolean equals(Object o) {

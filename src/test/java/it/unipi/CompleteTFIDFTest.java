@@ -2,9 +2,7 @@ package it.unipi;
 
 import it.unipi.encoding.CompressionType;
 import it.unipi.encoding.Tokenizer;
-import it.unipi.index.InMemoryIndexing;
 import it.unipi.index.SPIMIIndex;
-import it.unipi.io.Dumper;
 import it.unipi.io.DocumentStream;
 import it.unipi.model.Document;
 import it.unipi.model.DocumentIndex;
@@ -15,27 +13,25 @@ import it.unipi.scoring.ScoringType;
 import it.unipi.utils.*;
 import org.junit.*;
 import org.junit.runner.RunWith;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
+import java.io.IOException;
 import java.util.PriorityQueue;
 
 import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
-public class CompleteTestTFIDF {
+public class CompleteTFIDFTest {
+
     @Mock
     static DocumentStream ds;
-
-    @InjectMocks
-    InMemoryIndexing indexerSingleBlock;
 
     Vocabulary vocabulary;
     DocumentIndex documentIndex;
 
     @Before
-    public void setup() {
+    public void setup() throws IOException {
         Constants.setPath(Constants.testPath);
         Constants.setScoring(ScoringType.TFIDF);
 
@@ -49,12 +45,12 @@ public class CompleteTestTFIDF {
                 new Document("3\trabbit recip recip duck"),
                 null
         );
-        CompressionType compression = CompressionType.COMPRESSED;
+        CompressionType compression = CompressionType.BINARY;
         Constants.setCompression(compression);
+
         // Dumping
-        indexerSingleBlock = new InMemoryIndexing(Vocabulary.getInstance(), Dumper.getInstance(compression), DocumentIndex.getInstance());
-        new SPIMIIndex(compression, ds, indexerSingleBlock).buildIndexSPIMI(Constants.testPath);
-        vocabulary = Vocabulary.getInstance();
+        new SPIMIIndex(compression, ds).buildIndex(Constants.testPath);
+        vocabulary = Vocabulary.getInstance(compression);
         documentIndex = DocumentIndex.getInstance();
     }
 
@@ -68,7 +64,8 @@ public class CompleteTestTFIDF {
 
         for(int i=0; i<4; i++){
             DocumentScore documentScore = results.poll();
-            Assert.assertEquals(0.0, documentScore.score, 0.01);
+            Assert.assertNotNull(documentScore);
+            Assert.assertEquals(0.0, documentScore.score, 1e-6);
         }
         Assert.assertNull(results.poll());
     }
@@ -83,9 +80,11 @@ public class CompleteTestTFIDF {
 
         DocumentScore documentScore2 = results.poll();
         DocumentScore documentScore1 = results.poll();
+        Assert.assertNotNull(documentScore1);
+        Assert.assertNotNull(documentScore2);
 
-        Assert.assertEquals(documentScore1.score, Math.log10(2.0), 0.01);
-        Assert.assertEquals(documentScore2.score, Math.log10(2.0), 0.01);
+        Assert.assertEquals(documentScore1.score, Math.log10(2.0), 1e-6);
+        Assert.assertEquals(documentScore2.score, Math.log10(2.0), 1e-6);
 
         Assert.assertNull(results.poll());
     }
@@ -100,9 +99,11 @@ public class CompleteTestTFIDF {
 
         DocumentScore documentScore1 = results.poll();
         DocumentScore documentScore2 = results.poll();
+        Assert.assertNotNull(documentScore1);
+        Assert.assertNotNull(documentScore2);
 
-        Assert.assertEquals(documentScore2.score, (1+Math.log10(2.0))*Math.log10(2.0), 0.01);
-        Assert.assertEquals(documentScore1.score, Math.log10(2.0), 0.01);
+        Assert.assertEquals(documentScore2.score, (1+Math.log10(2.0))*Math.log10(2.0), 1e-6);
+        Assert.assertEquals(documentScore1.score, Math.log10(2.0), 1e-6);
 
         Assert.assertNull(results.poll());
     }
@@ -126,9 +127,11 @@ public class CompleteTestTFIDF {
 
         DocumentScore documentScore2 = results.poll();
         DocumentScore documentScore1 = results.poll();
+        Assert.assertNotNull(documentScore1);
+        Assert.assertNotNull(documentScore2);
 
-        Assert.assertEquals(documentScore1.score, (1+Math.log10(2.0))*Math.log10(2.0)+Math.log10(2.0), 0.01);
-        Assert.assertEquals(documentScore2.score, 2*Math.log10(2.0), 0.01);
+        Assert.assertEquals(documentScore1.score, (1 + Math.log10(2.0)) * Math.log10(2.0) + Math.log10(2.0), 1e-6);
+        Assert.assertEquals(documentScore2.score, 2 * Math.log10(2.0), 1e-6);
 
         Assert.assertNull(results.poll());
     }
@@ -145,9 +148,11 @@ public class CompleteTestTFIDF {
 
             DocumentScore documentScore2 = results.poll();
             DocumentScore documentScore1 = results.poll();
+            Assert.assertNotNull(documentScore1);
+            Assert.assertNotNull(documentScore2);
 
-            Assert.assertEquals(documentScore1.score,(1+Math.log10(2.0))*Math.log10(2.0)+Math.log10(2.0) , 0.01);
-            Assert.assertEquals(documentScore2.score, 2 * Math.log10(2.0), 0.01);
+            Assert.assertEquals(documentScore1.score,(1+Math.log10(2.0))*Math.log10(2.0)+Math.log10(2.0) , 1e-6);
+            Assert.assertEquals(documentScore2.score, 2 * Math.log10(2.0), 1e-6);
 
             Assert.assertNull(results.poll());
 
@@ -163,9 +168,11 @@ public class CompleteTestTFIDF {
 
         DocumentScore documentScore2 = results.poll();
         DocumentScore documentScore1 = results.poll();
+        Assert.assertNotNull(documentScore1);
+        Assert.assertNotNull(documentScore2);
 
-        Assert.assertEquals(documentScore1.score, ((1+Math.log10(2.0))*Math.log10(2.0) + Math.log10(2.0)), 0.01);
-        Assert.assertEquals(documentScore2.score, 2*Math.log10(2.0), 0.01);
+        Assert.assertEquals(documentScore1.score, ((1+Math.log10(2.0))*Math.log10(2.0) + Math.log10(2.0)), 1e-6);
+        Assert.assertEquals(documentScore2.score, 2*Math.log10(2.0), 1e-6);
 
         Assert.assertNull(results.poll());
     }
@@ -192,9 +199,11 @@ public class CompleteTestTFIDF {
 
             DocumentScore documentScore2 = results.poll();
             DocumentScore documentScore1 = results.poll();
+            Assert.assertNotNull(documentScore1);
+            Assert.assertNotNull(documentScore2);
 
-            Assert.assertEquals(documentScore1.score, Math.log10(2.0), 0.01);
-            Assert.assertEquals(documentScore2.score, Math.log10(2.0), 0.01);
+            Assert.assertEquals(documentScore1.score, Math.log10(2.0), 1e-6);
+            Assert.assertEquals(documentScore2.score, Math.log10(2.0), 1e-6);
 
             Assert.assertNull(results.poll());
 
@@ -209,7 +218,10 @@ public class CompleteTestTFIDF {
 
         PriorityQueue<DocumentScore> results = maxScore.score(query, 10, "conjunctive");
 
-        Assert.assertEquals(results.poll().score, Math.log10(4.0), 0.01);
+        DocumentScore documentScore = results.poll();
+        Assert.assertNotNull(documentScore);
+
+        Assert.assertEquals(documentScore.score, Math.log10(4.0), 1e-6);
 
         Assert.assertNull(results.poll());
     }
