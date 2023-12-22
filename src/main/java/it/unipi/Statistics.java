@@ -50,7 +50,7 @@ public class Statistics {
 
         return variance;
     }
-    public static void main(String[] args){
+    public static void main(String[] args) throws IOException {
         Constants.setCompression(CompressionType.COMPRESSED);
         Constants.setPath(Path.of("./data"));
         Constants.setScoring(ScoringType.TFIDF);
@@ -67,7 +67,7 @@ public class Statistics {
 
             collectionFrequencies.add(entryDOC.getValue().getDocumentLength());
         }
-        fetcher.end();
+        fetcher.close();
         /*
         filterAndAvg(collectionFrequencies, 0);
         filterAndAvg(collectionFrequencies, 5);

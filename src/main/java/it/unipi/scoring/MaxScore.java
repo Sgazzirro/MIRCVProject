@@ -6,10 +6,10 @@ import it.unipi.model.PostingList;
 import it.unipi.model.Vocabulary;
 import it.unipi.model.VocabularyEntry;
 import it.unipi.utils.Constants;
+import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.*;
-import java.util.logging.Logger;
 
 public class MaxScore {
 
@@ -38,7 +38,6 @@ public class MaxScore {
         TreeMap<Double, PostingList> treeMap = new TreeMap<>();
 
         ////////////////// DISJUNCTIVE MODE ///////////////////////
-        if (mode.equals("disjunctive")) {
         int IOCalls = 0;
         if(mode.equals("disjunctive")) {
             for (String token : queryTokens) {
