@@ -27,10 +27,10 @@ public class Constants {
     public static final String TF_POSTING_FILENAME = "term_frequencies.bin";
 
     // Stopwords downloaded from https://raw.githubusercontent.com/stopwords-iso/stopwords-en/master/stopwords-en.txt
-    public static final Path STOPWORDS_FILE = Paths.get("data/", "400stops.txt");
+    public static final Path STOPWORDS_FILE = Paths.get("data/", "stopwords-en.txt");
     public static final List<String> STOPWORDS = IOUtils.loadStopwords();
 
-    public static int BLOCK_SIZE = 100;
+    public static int BLOCK_SIZE = 10000;
     public static int MAX_ENTRIES_PER_SPIMI_BLOCK = 1_000_000;
     public static final int BYTES_STORED_STRING = 32;
 
