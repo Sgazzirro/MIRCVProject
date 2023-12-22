@@ -20,7 +20,7 @@ public class InMemoryIndexing {
     public InMemoryIndexing(Vocabulary voc, Dumper d, DocumentIndex di){
         vocabulary = voc;
         dumper = d;
-        tokenizer = Tokenizer.getInstance(false, false);
+        tokenizer = Tokenizer.getInstance();
         docIndex = di;
     }
 

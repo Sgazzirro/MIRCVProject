@@ -30,7 +30,7 @@ public class Constants {
     public static final Path STOPWORDS_FILE = Paths.get("data/", "stopwords-en.txt");
     public static final List<String> STOPWORDS = IOUtils.loadStopwords();
 
-    public static int BLOCK_SIZE = 10000;
+    public static int BLOCK_SIZE = 5000;
     public static int MAX_ENTRIES_PER_SPIMI_BLOCK = 1_000_000;
     public static final int BYTES_STORED_STRING = 32;
 
@@ -100,7 +100,7 @@ public class Constants {
             return;
         // FIXME: Strange things will happen
 
-        if(influencers.size() == SIZE_INFLUENCERS && influencers.peek().getValue() < touches) {
+        if(influencers.size() >= SIZE_INFLUENCERS && influencers.peek().getValue() < touches) {
             influencers.poll();
         }
         if(saved.containsKey(token)){

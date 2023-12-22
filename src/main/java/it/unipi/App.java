@@ -53,7 +53,7 @@ public class App
         DocumentIndex di = DocumentIndex.getInstance();
         Vocabulary v = Vocabulary.getInstance();
         Dumper d = Dumper.getInstance(CompressionType.COMPRESSED);
-        Path indexPath = Paths.get("./data/compressedNOTHING10K");
+        Path indexPath = Paths.get("./data/compressed1000S1K");
         Constants.setPath(indexPath);
         InMemoryIndexing memoryIndexing = new InMemoryIndexing(v, d, di);
 

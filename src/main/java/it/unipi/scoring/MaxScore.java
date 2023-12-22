@@ -32,8 +32,11 @@ public class MaxScore{
         TreeMap<Double, PostingList> treeMap = new TreeMap<>();
 
         ////////////////// DISJUNCTIVE MODE ///////////////////////
+        int accessiIO = 0;
         if(mode.equals("disjunctive")) {
             for (String token : queryTokens) {
+                if(!vocabulary.isPresent(token))
+                    accessiIO++;
                 VocabularyEntry entry = vocabulary.getEntry(token);
                 if (entry != null)
                     treeMap.put(entry.getUpperBound(), entry.getPostingList());
@@ -42,6 +45,7 @@ public class MaxScore{
                 return null;
 
             PriorityQueue<DocumentScore> result = maxScore(new ArrayList<>(treeMap.values()), new ArrayList<>(treeMap.keySet()), numResults);
+            System.out.println("ACCESSI IO : " + accessiIO);
             return result;
         }
         ////////////////// CONJUNCTIVE MODE ///////////////////////
