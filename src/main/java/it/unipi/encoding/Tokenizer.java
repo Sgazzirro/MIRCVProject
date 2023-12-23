@@ -26,7 +26,7 @@ public class Tokenizer {
             this.stemmer = new PorterStemmer();
     }
 
-    public List<String> tokenizeBySpace(String content) {
+    public List<String> tokenize(String content) {
         // Remove HTML tags
         String cleanedHTML = content.replaceAll("<[^>]+>", "");
         // Remove punctuation

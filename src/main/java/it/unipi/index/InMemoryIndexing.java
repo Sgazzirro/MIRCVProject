@@ -67,7 +67,7 @@ public class InMemoryIndexing implements AutoCloseable {
     public void processDocument(Document document) {
         if (document == null || document.getText().isEmpty())
             return;
-        List<String> tokenized = tokenizer.tokenizeBySpace(document.getText());
+        List<String> tokenized = tokenizer.tokenize(document.getText());
 
         for (String token : tokenized)
             vocabulary.addEntry(token, document.getId());

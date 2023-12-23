@@ -23,6 +23,23 @@ public class IOUtils {
         }
     }
 
+    /**
+     * Clean directory before the creation of the index by deleting old files
+     * @param path directory to clean before indexing
+     */
+    public static void cleanPath(Path path) {
+        File[] filesToDelete = new File[] {
+                path.resolve(Constants.VOCABULARY_FILENAME).toFile(),
+                path.resolve(Constants.DOCUMENT_INDEX_FILENAME).toFile(),
+                path.resolve(Constants.DOC_IDS_POSTING_FILENAME).toFile(),
+                path.resolve(Constants.TF_POSTING_FILENAME).toFile()
+        };
+
+        for (File file : filesToDelete)
+            if (file.exists() && !file.delete())
+                logger.warn("Cannot delete " + file);
+    }
+
     public static void createDirectory(Path dirPath) {
         // Create working directory if not exists
         try {

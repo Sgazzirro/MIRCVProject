@@ -28,7 +28,7 @@ public class MaxScore {
         // Stupid check but better safe than sorry
         numResults = Math.min(numResults, Constants.N);
 
-        List<String> queryTokens = tokenizer.tokenizeBySpace(query);
+        List<String> queryTokens = tokenizer.tokenize(query);
         TreeMap<Double, PostingList> treeMap = new TreeMap<>();
 
         ////////////////// DISJUNCTIVE MODE ///////////////////////

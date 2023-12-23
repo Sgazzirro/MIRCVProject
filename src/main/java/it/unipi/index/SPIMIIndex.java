@@ -92,11 +92,12 @@ public class SPIMIIndex {
      */
     public void buildIndex(Path path) {
         try {
-            // Preliminary flush of files
-            IOUtils.deleteDirectory(path);
-            IOUtils.createDirectory(path);
-
             Path blocksPath = path.resolve("blocks/");
+
+            // Preliminary flush of files
+            IOUtils.cleanPath(path);
+            IOUtils.deleteDirectory(blocksPath);
+            IOUtils.createDirectory(blocksPath);
 
             // 1) create and invert a block. The block is then dumped in secondary memory
             while (!finished())
