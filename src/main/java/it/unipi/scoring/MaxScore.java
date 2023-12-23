@@ -6,27 +6,21 @@ import it.unipi.model.PostingList;
 import it.unipi.model.Vocabulary;
 import it.unipi.model.VocabularyEntry;
 import it.unipi.utils.Constants;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.*;
 
 public class MaxScore {
 
-    private static final Logger logger = LoggerFactory.getLogger(MaxScore.class);
+    // private static final Logger logger = LoggerFactory.getLogger(MaxScore.class);
 
     private final Vocabulary vocabulary;
-    private final DocumentIndex documentIndex;
-    private final Tokenizer tokenizer;
-
     private final Scorer scorer;
+    private final Tokenizer tokenizer;
 
     public MaxScore(Vocabulary vocabulary, DocumentIndex documentIndex, Tokenizer tokenizer) {
         this.vocabulary = vocabulary;
-        this.documentIndex = documentIndex;
+        this.scorer = Scorer.getScorer(documentIndex);
         this.tokenizer = tokenizer;
-
-        scorer = Scorer.getScorer(documentIndex);
     }
 
 
@@ -41,7 +35,7 @@ public class MaxScore {
         int IOCalls = 0;
         if(mode.equals("disjunctive")) {
             for (String token : queryTokens) {
-                if(!vocabulary.isPresent(token))
+                if(vocabulary.isNotPresent(token))
                     IOCalls++;
                 VocabularyEntry entry = vocabulary.getEntry(token);
                 if (entry != null)
@@ -49,8 +43,8 @@ public class MaxScore {
             }
             if (treeMap.isEmpty())
                 return null;
-            
-            logger.info("IO calls in maxscore: " + IOCalls);
+
+            System.out.println("IO calls in maxScore: " + IOCalls);
             return maxScore(new ArrayList<>(treeMap.values()), new ArrayList<>(treeMap.keySet()), numResults);
         }
         ////////////////// CONJUNCTIVE MODE ///////////////////////
@@ -81,7 +75,7 @@ public class MaxScore {
             DocumentScore documentScore = new DocumentScore(p.get(0).docId(), score);
             if (scores.size() < K)
                 scores.add(documentScore);
-            else if (scores.peek().score < score) {
+            else if (scores.peek().score() < score) {
                 scores.add(documentScore);
                 scores.poll();
             }
@@ -154,13 +148,13 @@ public class MaxScore {
             }
 
             DocumentScore ds = new DocumentScore(current, score);
-            if (scores.isEmpty() || scores.size() < K || scores.peek().score < score) {
+            if (scores.isEmpty() || scores.size() < K || scores.peek().score() < score) {
                 scores.add(ds);
                 if (scores.size() > K)  // Keep only top K results
                     scores.poll();
 
                 assert scores.peek() != null;
-                theta = scores.peek().score;
+                theta = scores.peek().score();
                 while (pivot < p.size() && ub.get(pivot) < theta)
                     pivot++;
             }

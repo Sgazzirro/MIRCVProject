@@ -1,11 +1,7 @@
 package it.unipi.io.implementation;
 
 import it.unipi.encoding.Encoder;
-import it.unipi.encoding.implementation.EliasFano;
-import it.unipi.encoding.implementation.Simple9;
 import it.unipi.utils.Constants;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.*;
 import java.nio.ByteBuffer;
@@ -15,19 +11,14 @@ import java.util.List;
 
 public class DumperCompressed extends DumperBinary {
 
-    private static final Logger logger = LoggerFactory.getLogger(DumperBinary.class);
-
-    private final Encoder docIdsEncoder = new EliasFano();
-    private final Encoder tfEncoder = new Simple9(true);
-
     @Override
     protected int dumpDocIds(List<Integer> docIdList) throws IOException {
-        return dumpEncodedList(docIdList, docIdsEncoder, docIdsWriter);
+        return dumpEncodedList(docIdList, Encoder.getDocIdsEncoder(), docIdsWriter);
     }
 
     @Override
     protected int dumpTermFrequencies(List<Integer> termFrequencyList) throws IOException {
-        return dumpEncodedList(termFrequencyList, tfEncoder, termFreqWriter);
+        return dumpEncodedList(termFrequencyList, Encoder.getTermFrequenciesEncoder(), termFreqWriter);
     }
 
     private int dumpEncodedList(List<Integer> list, Encoder encoder, FileChannel writer) throws IOException {

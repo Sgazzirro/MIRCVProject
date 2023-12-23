@@ -5,17 +5,14 @@ import it.unipi.encoding.Tokenizer;
 import it.unipi.model.DocumentIndex;
 import it.unipi.model.Vocabulary;
 import it.unipi.utils.*;
-import org.apache.commons.io.FileUtils;
-import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.io.File;
-import java.io.IOException;
 import java.util.Objects;
 import java.util.PriorityQueue;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 
 public class MaxScoreTest {
 
@@ -28,13 +25,13 @@ public class MaxScoreTest {
         Constants.setCompression(CompressionType.DEBUG);
         Constants.N = 2;
 
-        vocabulary = Vocabulary.getInstance();
+        vocabulary = new Vocabulary();
         vocabulary.addEntry("a", 1);
         vocabulary.addEntry("b",1);
         vocabulary.addEntry("a", 2);
         vocabulary.addEntry("c", (int) Math.pow(2,30));
 
-        documentIndex = DocumentIndex.getInstance();
+        documentIndex = new DocumentIndex();
         documentIndex.addDocument(1, 2);
         documentIndex.addDocument(2, 1);
         documentIndex.addDocument((int) Math.pow(2, 30), 1);
@@ -54,11 +51,15 @@ public class MaxScoreTest {
         PriorityQueue<DocumentScore> results = maxScore.score("a", numResults, "disjunctive");
         assertEquals(2, results.size());
 
-        assert results.peek() != null;
-        assertEquals(1, results.peek().docId);
-        assertEquals(0, Objects.requireNonNull(results.poll()).score, 0.1);
-        assertEquals(2, results.peek().docId);
-        assertEquals(0, Objects.requireNonNull(results.poll()).score, 0.1);
+        DocumentScore documentScore2 = results.poll();
+        DocumentScore documentScore1 = results.poll();
+        assertNotNull(documentScore1);
+        assertNotNull(documentScore2);
+
+        assertEquals(2, documentScore1.docId());
+        assertEquals(1, documentScore2.docId());
+        assertEquals(0, documentScore1.score(), 0.1);
+        assertEquals(0, documentScore2.score(), 0.1);
     }
 
     @Test
@@ -69,8 +70,8 @@ public class MaxScoreTest {
         assertEquals(1, results.size());
 
         assert results.peek() != null;
-        assertEquals(1, results.peek().docId);
-        assertEquals(Math.log10(2), Objects.requireNonNull(results.poll()).score, 0.1);
+        assertEquals(1, results.peek().docId());
+        assertEquals(Math.log10(2), Objects.requireNonNull(results.poll()).score(), 0.1);
     }
 
     @Test
@@ -81,17 +82,7 @@ public class MaxScoreTest {
         assertEquals(1, results.size());
 
         assert results.peek() != null;
-        assertEquals((int)Math.pow(2,30), results.peek().docId);
-        assertEquals(Math.log10(2), Objects.requireNonNull(results.poll()).score, 0.1);
-    }
-
-
-    @After
-    public void flush() {
-        try{
-            FileUtils.deleteDirectory(new File("./data/test/"));
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        assertEquals((int)Math.pow(2,30), results.peek().docId());
+        assertEquals(Math.log10(2), Objects.requireNonNull(results.poll()).score(), 0.1);
     }
 }

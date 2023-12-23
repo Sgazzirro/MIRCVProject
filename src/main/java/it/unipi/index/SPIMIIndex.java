@@ -44,20 +44,18 @@ public class SPIMIIndex {
     private boolean finished = false;
 
     /**
-     * Describes the mode in which we are operating
-     * DEBUG: Both globalIndexer and blockIndexer operates in ASCII mode
-     * BINARY: Both globalIndexer and blockIndexer write binary objects
-     * COMPRESSED: blockIndexer writes binary objects, the globalIndexer writes a compressed
-     *              representation of doc_ids and term_frequencies lists
+     * Describes the compression mode of the blocks
      */
-    private final CompressionType compression;
+    private final CompressionType blockCompression;
 
 
     public SPIMIIndex(CompressionType compression, DocumentStream stream) {
-        // Compression of blocks (we never write compressed blocks for merging ease)
+        Constants.setCompression(compression);
         this.stream = stream;
         this.globalIndexer = new InMemoryIndexing(compression);
-        this.compression = (compression == CompressionType.DEBUG) ? compression : CompressionType.BINARY;
+
+        // Compression of blocks (we never write compressed blocks for merging ease)
+        this.blockCompression = (compression == CompressionType.DEBUG) ? compression : CompressionType.BINARY;
     }
 
     /**
@@ -107,7 +105,7 @@ public class SPIMIIndex {
             // 2) Initialize one reader for each block
             List<Fetcher> blockFetchers = new ArrayList<>();
             for (int i = 0; i < blocksProcessed; i++) {
-                Fetcher blockFetcher = Fetcher.getFetcher(compression);
+                Fetcher blockFetcher = Fetcher.getFetcher(blockCompression);
                 blockFetcher.start(blocksPath.resolve("" + i));
 
                 blockFetchers.add(blockFetcher);
@@ -129,6 +127,8 @@ public class SPIMIIndex {
                     logger.warn("Something went wrong closing block indexers", e);
                 }
 
+            // Delete blocks temp directory
+            IOUtils.deleteDirectory(blocksPath);
             globalIndexer.close();
 
         } catch (IOException ioException) {
@@ -147,7 +147,7 @@ public class SPIMIIndex {
         long usedMemory = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
 
         try (
-                InMemoryIndexing blockIndexer = new InMemoryIndexing(compression)
+                InMemoryIndexing blockIndexer = new InMemoryIndexing(blockCompression)
         ) {
             // Set up the indexer for this block
             if (!blockIndexer.setup(blockPath))
@@ -159,7 +159,7 @@ public class SPIMIIndex {
             while (availableMemory(usedMemory)) {
                 // Write the block if we reached a certain (high) number of entries
                 if (docProcessed++ == Constants.MAX_ENTRIES_PER_SPIMI_BLOCK) {
-                    logger.info("Max number of entries per block reached (" + Constants.MAX_ENTRIES_PER_SPIMI_BLOCK + ")");
+                    logger.debug("Max number of entries per block reached (" + Constants.MAX_ENTRIES_PER_SPIMI_BLOCK + ")");
                     break;
                 }
 
@@ -175,12 +175,13 @@ public class SPIMIIndex {
                 // System.out.println("USED MEMORY : " + (usedMemory - startMemory));
             }
 
-            logger.info("Block " + blocksProcessed + " correctly created, waiting for dump...");
+            logger.debug("Block " + blocksProcessed + " correctly created, waiting for dump...");
             // ---------------------
 
             // 2.1) Dump the block
             blockIndexer.dumpDocumentIndex();
             blockIndexer.dumpVocabulary();
+            logger.info("Block " + blocksProcessed + " dumped");
 
         } catch (IOException ioException) {
             logger.error("Fatal error happened while inverting block");
@@ -212,7 +213,6 @@ public class SPIMIIndex {
             Map.Entry<Integer, DocumentIndexEntry> entry;
 
             while ( (entry = readers.get(i).loadDocEntry()) != null )
-
                 globalIndexer.dumpDocumentIndexLine(entry);
         }
         // ------------------------------------
@@ -258,8 +258,8 @@ public class SPIMIIndex {
                     if (entry == null) {
                         blocksClosed++;
 
-                        logger.info("Block " + k + " has been dumped");
-                        logger.info("Total number of closed blocks: " + blocksClosed);
+                        logger.debug("Merge for block " + k + " completed");
+                        logger.debug("Total number of closed blocks: " + blocksClosed);
 
                         closed[k] = true;
                         continue;

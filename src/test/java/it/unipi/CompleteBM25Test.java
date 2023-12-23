@@ -55,8 +55,8 @@ public class CompleteBM25Test {
 
         // Dumping
         new SPIMIIndex(compression, ds).buildIndex(Constants.testPath);
-        vocabulary = Vocabulary.getInstance(compression);
-        documentIndex = DocumentIndex.getInstance();
+        vocabulary = new Vocabulary(compression);
+        documentIndex = new DocumentIndex();
     }
 
     @Test
@@ -70,7 +70,7 @@ public class CompleteBM25Test {
         for (int i=0; i<4; i++) {
             DocumentScore documentScore = results.poll();
             Assert.assertNotNull(documentScore);
-            Assert.assertEquals(0.0, documentScore.score, 0.01);
+            Assert.assertEquals(0.0, documentScore.score(), 0.01);
         }
         Assert.assertNull(results.poll());
     }
@@ -88,8 +88,8 @@ public class CompleteBM25Test {
         Assert.assertNotNull(documentScore1);
         Assert.assertNotNull(documentScore2);
 
-        Assert.assertEquals(documentScore1.score, 1/(Constants.BM25_k*((1-Constants.BM25_b)+Constants.BM25_b*(4/((float)15/4)))+1)*Math.log10(2.0), 0.01);
-        Assert.assertEquals(documentScore2.score, 1/(Constants.BM25_k*((1-Constants.BM25_b)+Constants.BM25_b*(4/((float)15/4)))+1)*Math.log10(2.0), 0.01);
+        Assert.assertEquals(documentScore1.score(), 1/(Constants.BM25_k*((1-Constants.BM25_b)+Constants.BM25_b*(4/((float)15/4)))+1)*Math.log10(2.0), 0.01);
+        Assert.assertEquals(documentScore2.score(), 1/(Constants.BM25_k*((1-Constants.BM25_b)+Constants.BM25_b*(4/((float)15/4)))+1)*Math.log10(2.0), 0.01);
 
         Assert.assertNull(results.poll());
     }
@@ -120,8 +120,8 @@ public class CompleteBM25Test {
         double scoreRecip2 = 1/(Constants.BM25_k*((1-Constants.BM25_b)+Constants.BM25_b*(4/((float)15/4)))+1)*Math.log10(2.0);
         double scoreRecip1 = 2/(Constants.BM25_k*((1-Constants.BM25_b)+Constants.BM25_b*(4/((float)15/4)))+2)*Math.log10(2.0);
 
-        Assert.assertEquals(documentScore1.score, scoreRabbit+scoreRecip1, 0.01);
-        Assert.assertEquals(documentScore2.score, scoreRabbit+scoreRecip2, 0.01);
+        Assert.assertEquals(documentScore1.score(), scoreRabbit+scoreRecip1, 0.01);
+        Assert.assertEquals(documentScore2.score(), scoreRabbit+scoreRecip2, 0.01);
 
         Assert.assertNull(results.poll());
     }

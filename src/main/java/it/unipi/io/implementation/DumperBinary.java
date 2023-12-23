@@ -46,7 +46,7 @@ public class DumperBinary implements Dumper {
                 docIdsOffset = termFreqOffset = 0;
 
                 opened = true;
-                logger.info("Dumper correctly initialized at path: " + path);
+                logger.trace("Dumper correctly initialized at path: " + path);
 
             } catch (IOException ie) {
                 logger.error("Could not start dumper", ie);
@@ -76,7 +76,7 @@ public class DumperBinary implements Dumper {
                 flushDocumentIndexBuffer();
             documentIndexWriter.close();
 
-            logger.info("Dumper correctly closed");
+            logger.trace("Dumper correctly closed");
             opened = false;
 
         } catch (IOException exception) {

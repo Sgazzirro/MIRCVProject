@@ -7,7 +7,7 @@ import it.unipi.utils.Constants;
 
 public class BM25Scorer extends Scorer {
 
-    private DocumentIndex documentIndex;
+    private final DocumentIndex documentIndex;
 
     public BM25Scorer(DocumentIndex documentIndex) {
         this.documentIndex = documentIndex;

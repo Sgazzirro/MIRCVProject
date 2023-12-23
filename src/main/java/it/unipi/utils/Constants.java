@@ -1,16 +1,12 @@
 package it.unipi.utils;
 
 import it.unipi.encoding.CompressionType;
-import it.unipi.index.SPIMIIndex;
 import it.unipi.model.DocumentIndex;
 import it.unipi.model.Vocabulary;
-import it.unipi.model.implementation.DocumentIndexImpl;
-import it.unipi.model.implementation.VocabularyImpl;
 import it.unipi.scoring.ScoringType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.print.Doc;
 import java.io.*;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -21,7 +17,6 @@ public class Constants {
     private static final Logger logger = LoggerFactory.getLogger(Constants.class);
 
     public static final String COLLECTION_FILE = "data/collection.tar.gz";
-    public static final String TEST_COLLECTION_FILE = "data/test_collection.tsv";
 
     public static final Path dataPath = Paths.get("./data/");
     public static final Path testPath = Paths.get("./data/", "test/");
@@ -93,7 +88,7 @@ public class Constants {
 
     public static Map<String, Map.Entry<String, Long>> saved = new HashMap<>();
     public static PriorityQueue<Map.Entry<String, Long>> influencers =
-            new PriorityQueue<>(Comparator.comparing(Map.Entry::getValue));
+            new PriorityQueue<>(Map.Entry.comparingByValue());
 
     private static final int SIZE_INFLUENCERS = 1000;
 
@@ -117,15 +112,14 @@ public class Constants {
 
     }
     public static void startSession(){
-        if(CACHING) {
-            PriorityQueue<Map.Entry<String, Long>> influencersR = new PriorityQueue<>(Comparator.comparing(Map.Entry::getValue, Comparator.reverseOrder()));
-            try(
-                    BufferedReader reader = new BufferedReader(new FileReader("./data/cache/influencers.txt"));
-                    ){
+        if (CACHING) {
+            PriorityQueue<Map.Entry<String, Long>> influencersR = new PriorityQueue<>(Map.Entry.comparingByValue(Comparator.reverseOrder()));
+            try (
+                    BufferedReader reader = new BufferedReader(new FileReader("./data/cache/influencers.txt"))
+            ) {
                 String influence;
 
-
-                while((influence = reader.readLine()) != null && MEMORY_USED() < 50){
+                while ( (influence = reader.readLine()) != null && MEMORY_USED() < 50 ) {
                     String[] params = influence.split(" ");
                     influencersR.offer(Map.entry(params[0], Long.parseLong(params[1])));
                     influencers.offer(Map.entry(params[0], Long.parseLong(params[1])));
@@ -135,12 +129,12 @@ public class Constants {
                 throw new RuntimeException(e);
             }
             System.out.println("QUI CI VADO");
-            vocabulary = new VocabularyImpl(influencersR);
+            vocabulary = new Vocabulary(influencersR);
         }
         else
-            vocabulary = Vocabulary.getInstance();
+            vocabulary = new Vocabulary();
 
-        documentIndex = DocumentIndex.getInstance();
+        documentIndex = new DocumentIndex();
     }
 
     public static void onExit(){
@@ -148,10 +142,9 @@ public class Constants {
             return;
         // Save influencers
         try(
-                BufferedWriter writer = new BufferedWriter(new FileWriter("./data/cache/influencers.txt", false));
-                ){
-
-            while(influencers.size() > 0){
+                BufferedWriter writer = new BufferedWriter(new FileWriter("./data/cache/influencers.txt", false))
+        ){
+            while (!influencers.isEmpty()) {
                 Map.Entry<String, Long> entry = influencers.poll();
                 writer.write(entry.getKey() + " " + entry.getValue() + "\n");
             }

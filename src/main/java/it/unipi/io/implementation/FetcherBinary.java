@@ -52,7 +52,7 @@ public class FetcherBinary implements Fetcher {
 
                 opened = true;
                 this.path = path;
-                logger.info("Fetcher correctly initialized at path: " + path);
+                logger.trace("Fetcher correctly initialized at path " + path);
 
             } catch (IOException ie) {
                 logger.error("Could not start fetcher", ie);
@@ -78,7 +78,7 @@ public class FetcherBinary implements Fetcher {
             termFreqReader.close();
             documentIndexReader.close();
 
-            logger.info("Fetcher correctly closed");
+            logger.trace("Fetcher correctly closed");
             opened = false;
 
         } catch (Exception exception) {
@@ -86,8 +86,7 @@ public class FetcherBinary implements Fetcher {
         }
     }
 
-    @Override
-    public void loadPosting(VocabularyEntry entry) throws IOException {
+    protected void loadPosting(VocabularyEntry entry) throws IOException {
         if (!opened)
             throw new IOException("Fetcher has not been started");
 
@@ -156,6 +155,26 @@ public class FetcherBinary implements Fetcher {
         }
     }
 
+    /** Used with the global reader, avoids restarting readers each time */
+    private void loadPostingGlobal(VocabularyEntry entry) throws IOException {
+        // TODO: 23/12/23 Test this method
+        if (!opened)
+            throw new IOException("Fetcher has not been started");
+
+        int docIdsLength = entry.getDocIdsLength();
+
+        DataInputStream disDocId = new DataInputStream(docIdsReader);
+        DataInputStream disTermFreq = new DataInputStream(termFreqReader);
+
+        // Don't move readers: beginning of new posting list is right after end of the previous one
+        for (int len = 0; len < docIdsLength; len += Integer.BYTES) {
+            int docId = disDocId.readInt();
+            int termFreq = disTermFreq.readInt();
+
+            entry.getPostingList().addPosting(docId, termFreq);
+        }
+    }
+
     @Override
     public Map.Entry<String, VocabularyEntry> loadVocEntry() throws IOException {
         if (!opened)
@@ -169,7 +188,7 @@ public class FetcherBinary implements Fetcher {
             return null;
 
         vocabularyEntry = ByteUtils.bytesToVocabularyEntry(vocabularyEntryBytes, compression);
-        loadPosting(vocabularyEntry);
+        loadPostingGlobal(vocabularyEntry);
 
         term = ByteUtils.bytesToString(vocabularyEntryBytes, 0, Constants.BYTES_STORED_STRING);
         return Map.entry(term, vocabularyEntry);

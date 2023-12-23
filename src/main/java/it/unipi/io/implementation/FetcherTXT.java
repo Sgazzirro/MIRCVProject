@@ -1,7 +1,9 @@
 package it.unipi.io.implementation;
 
+import it.unipi.encoding.CompressionType;
 import it.unipi.io.Fetcher;
 import it.unipi.model.DocumentIndexEntry;
+import it.unipi.model.PostingList;
 import it.unipi.model.VocabularyEntry;
 import it.unipi.utils.Constants;
 import org.slf4j.Logger;
@@ -15,25 +17,36 @@ public class FetcherTXT implements Fetcher {
 
     private static final Logger logger = LoggerFactory.getLogger(FetcherTXT.class);
 
-    BufferedReader globalReaderVOC;
-    BufferedReader globalReaderDOC;
-    boolean opened = false;
-    Path path;
+    private BufferedReader vocabularyReader;
+    private BufferedReader documentIndexReader;
+
+    private BufferedReader docIdsReader;
+    private BufferedReader termFreqReader;
+
+    private boolean opened = false;
+    private Path path;
 
     @Override
     public boolean start(Path path) {
         if (!opened) {
             try {
-                globalReaderVOC = new BufferedReader(
+                vocabularyReader = new BufferedReader(
                         new FileReader(path.resolve(Constants.VOCABULARY_FILENAME).toFile())
                 );
-                globalReaderDOC = new BufferedReader(
+                documentIndexReader = new BufferedReader(
                         new FileReader(path.resolve(Constants.DOCUMENT_INDEX_FILENAME).toFile())
+                );
+
+                docIdsReader = new BufferedReader(
+                        new FileReader(path.resolve(Constants.DOC_IDS_POSTING_FILENAME).toFile())
+                );
+                termFreqReader = new BufferedReader(
+                        new FileReader(path.resolve(Constants.TF_POSTING_FILENAME).toFile())
                 );
 
                 opened = true;
                 this.path = path;
-                logger.info("Fetcher correctly initialized at path: " + path);
+                logger.trace("Fetcher correctly initialized at path " + path);
 
             } catch (IOException ie) {
                 logger.error("Could not start fetcher", ie);
@@ -54,10 +67,10 @@ public class FetcherTXT implements Fetcher {
         }
 
         try {
-            globalReaderVOC.close();
-            globalReaderDOC.close();
+            vocabularyReader.close();
+            documentIndexReader.close();
 
-            logger.info("Fetcher correctly closed");
+            logger.trace("Fetcher correctly closed");
             opened = false;
 
         } catch (Exception exception) {
@@ -65,33 +78,30 @@ public class FetcherTXT implements Fetcher {
         }
     }
 
-    @Override
-    public void loadPosting(VocabularyEntry entry) throws IOException {
+    protected void loadPosting(VocabularyEntry entry) throws IOException {
         if (!opened)
             throw new IOException("Fetcher has not been started");
 
-        // The loading of a posting list uses two inner buffers
+        long docIdsOffset = entry.getDocIdsOffset();
+        long termFreqOffset = entry.getTermFreqOffset();
 
-        long[] offsets = new long[]{entry.getDocIdsOffset(), entry.getTermFreqOffset()};
         // In the TXT case, the length is the number of postings
         int len = entry.getDocIdsLength();
 
-        try (
-                BufferedReader readerIds = new BufferedReader(new FileReader(path.resolve(Constants.DOC_IDS_POSTING_FILENAME).toFile()));
-                BufferedReader readerTF = new BufferedReader(new FileReader(path.resolve(Constants.TF_POSTING_FILENAME).toFile()))
-        ) {
-            // Set the readers to the correct offsets (computed before)
-            if (readerIds.skip(offsets[0]) != offsets[0])
-                throw new IOException("Error in reading posting list doc ids");
-            if (readerTF.skip(offsets[1]) != offsets[1])
-                throw new IOException("Error in reading posting list term frequencies");
+        docIdsReader = new BufferedReader(new FileReader(path.resolve(Constants.DOC_IDS_POSTING_FILENAME).toFile()));
+        termFreqReader = new BufferedReader(new FileReader(path.resolve(Constants.TF_POSTING_FILENAME).toFile()));
 
-            for (int i = 0; i < len; i++)
-                entry.getPostingList().addPosting(
-                        Integer.parseInt(readerIds.readLine()),
-                        Integer.parseInt(readerTF.readLine())
-                );
-        }
+        // Set the readers to the correct offsets (computed before)
+        if (docIdsReader.skip(docIdsOffset) != docIdsOffset)
+            throw new IOException("Error in reading posting list doc ids");
+        if (termFreqReader.skip(termFreqOffset) != termFreqOffset)
+            throw new IOException("Error in reading posting list term frequencies");
+
+        for (int i = 0; i < len; i++)
+            entry.getPostingList().addPosting(
+                    Integer.parseInt(docIdsReader.readLine()),
+                    Integer.parseInt(termFreqReader.readLine())
+            );
     }
 
     public VocabularyEntry loadVocEntry(String term) throws IOException {
@@ -109,13 +119,13 @@ public class FetcherTXT implements Fetcher {
         // - line = null EOF reached, restart and parse the whole file
         // - line != null and comparison < 0, you have to restart and search until you come back to that term
         // - line != null and comparison > 0, you have to search until EOF (do nothing)
-        line = globalReaderVOC.readLine();
+        line = vocabularyReader.readLine();
         String toReach = null;
         if (line == null) {
             // CASE 1
-            globalReaderVOC.close();
-            globalReaderVOC = new BufferedReader(new FileReader(path.resolve(Constants.VOCABULARY_FILENAME).toFile()));
-            line = globalReaderVOC.readLine();
+            vocabularyReader.close();
+            vocabularyReader = new BufferedReader(new FileReader(path.resolve(Constants.VOCABULARY_FILENAME).toFile()));
+            line = vocabularyReader.readLine();
 
         } else {
             String termToCompare = line.split(",")[0];
@@ -124,9 +134,9 @@ public class FetcherTXT implements Fetcher {
             if (comparison < 0) {
                 // CASE 2
                 toReach = line.split(",")[0];
-                globalReaderVOC.close();
-                globalReaderVOC = new BufferedReader(new FileReader(path.resolve(Constants.VOCABULARY_FILENAME).toFile()));
-                line = globalReaderVOC.readLine();
+                vocabularyReader.close();
+                vocabularyReader = new BufferedReader(new FileReader(path.resolve(Constants.VOCABULARY_FILENAME).toFile()));
+                line = vocabularyReader.readLine();
             }
         }
 
@@ -137,16 +147,33 @@ public class FetcherTXT implements Fetcher {
                 return null;
 
             else if (params[0].equals(term)) {
-                result = VocabularyEntry.parseTXT(line);
+                result = parseVocabularyEntry(line);
                 loadPosting(result);
                 return result;
             }
-            line = globalReaderVOC.readLine();
+            line = vocabularyReader.readLine();
         } while (line != null);
 
         // We have not found this term
-        logger.info("Term " + term + " was not found in the vocabulary");
+        logger.debug("Term " + term + " was not found in the vocabulary");
         return null;
+    }
+
+    /** Used with the global reader, avoids restarting readers each time */
+    private void loadPostingGlobal(VocabularyEntry entry) throws IOException {
+        if (!opened)
+            throw new IOException("Fetcher has not been started");
+
+        // In the TXT case, the length is the number of postings
+        int len = entry.getDocIdsLength();
+
+        // Don't move readers: beginning of new posting list is right after end of the previous one
+        for (int i = 0; i < len; i++) {
+            entry.getPostingList().addPosting(
+                    Integer.parseInt(docIdsReader.readLine()),
+                    Integer.parseInt(termFreqReader.readLine())
+            );
+        }
     }
 
     @Override
@@ -154,19 +181,18 @@ public class FetcherTXT implements Fetcher {
         if (!opened)
             throw new IOException("Fetcher has not been started");
 
-        // The loading of an entry without arguments uses the global reader
         VocabularyEntry result;
         String term;
 
         // Read next line
-        String line = globalReaderVOC.readLine();
+        String line = vocabularyReader.readLine();
         if (line == null)
             return null;
 
         String[] params = line.split(",");
         term = params[0];
-        result = VocabularyEntry.parseTXT(line);
-        loadPosting(result);
+        result = parseVocabularyEntry(line);
+        loadPostingGlobal(result);
 
         return Map.entry(term, result);
     }
@@ -182,23 +208,23 @@ public class FetcherTXT implements Fetcher {
         // - line = null EOF reached, restart and parse the whole file
         // - line != null and comparison < 0, you have to restart and search until you come back to that term
         // - line != null and comparison > 0, you have to search until EOF (do nothing)
-        line = globalReaderDOC.readLine();
+        line = documentIndexReader.readLine();
         Long toReach = null;
 
         if (line == null) {
             // CASE 1
-            globalReaderDOC.close();
-            globalReaderDOC = new BufferedReader(new FileReader(path.resolve(Constants.DOCUMENT_INDEX_FILENAME).toFile()));
-            line = globalReaderDOC.readLine();
+            documentIndexReader.close();
+            documentIndexReader = new BufferedReader(new FileReader(path.resolve(Constants.DOCUMENT_INDEX_FILENAME).toFile()));
+            line = documentIndexReader.readLine();
 
         } else {
             boolean comparison = docId < Long.parseLong(line.split(",")[0]);
             if (comparison) {
                 // CASE 2
                 toReach = Long.parseLong(line.split(",")[0]);
-                globalReaderDOC.close();
-                globalReaderDOC = new BufferedReader(new FileReader(path.resolve(Constants.DOCUMENT_INDEX_FILENAME).toFile()));
-                line = globalReaderDOC.readLine();
+                documentIndexReader.close();
+                documentIndexReader = new BufferedReader(new FileReader(path.resolve(Constants.DOCUMENT_INDEX_FILENAME).toFile()));
+                line = documentIndexReader.readLine();
             }
         }
 
@@ -211,11 +237,11 @@ public class FetcherTXT implements Fetcher {
             if (Long.parseLong(params[0]) == docId) {
                 return DocumentIndexEntry.parseTXT(line);
             }
-            line = globalReaderDOC.readLine();
+            line = documentIndexReader.readLine();
         } while (line != null);
 
         // We have not found this docId in the document index
-        logger.info("Doc id " + docId + " was not found in the document index");
+        logger.debug("Doc id " + docId + " was not found in the document index");
         return null;
     }
 
@@ -229,7 +255,7 @@ public class FetcherTXT implements Fetcher {
         int docId;
 
         // Read next line
-        String line = globalReaderDOC.readLine();
+        String line = documentIndexReader.readLine();
         if (line == null)
             return null;
 
@@ -242,9 +268,29 @@ public class FetcherTXT implements Fetcher {
 
     @Override
     public int[] getDocumentIndexStats() throws IOException {
-        int l = Integer.parseInt(globalReaderDOC.readLine());
-        int N = Integer.parseInt(globalReaderDOC.readLine());
+        int l = Integer.parseInt(documentIndexReader.readLine());
+        int N = Integer.parseInt(documentIndexReader.readLine());
 
         return new int[] {N, l};
+    }
+
+    private static VocabularyEntry parseVocabularyEntry(String line) {
+        VocabularyEntry entry = new VocabularyEntry();
+        String[] params = line.split(",");
+
+        int documentFrequency = Integer.parseInt(params[1]);
+        double upperBound = Double.parseDouble(params[2]);
+
+        PostingList postingList = PostingList.getInstance(CompressionType.DEBUG, entry);
+        entry.setDocIdsOffset(Long.parseLong(params[3]));
+        entry.setTermFreqOffset(Long.parseLong(params[4]));
+        int length = Integer.parseInt(params[5]);
+        entry.setDocIdsLength(length);
+        entry.setTermFreqLength(length);
+
+        entry.setPostingList(postingList);
+        entry.setUpperBound(upperBound);
+        entry.setDocumentFrequency(documentFrequency);
+        return entry;
     }
 }

@@ -1,5 +1,8 @@
 package it.unipi.utils;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -8,6 +11,8 @@ import java.nio.file.Path;
 import java.util.List;
 
 public class IOUtils {
+
+    private static final Logger logger = LoggerFactory.getLogger(IOUtils.class);
 
     public static List<String> loadStopwords() {
         try {
@@ -25,18 +30,20 @@ public class IOUtils {
         } catch (IOException ignored) { }
     }
 
-    public static boolean deleteDirectory(Path directoryToBeDeleted) {
-        return deleteDirectory(directoryToBeDeleted.toFile());
+    public static void deleteDirectory(Path directoryToBeDeleted) {
+        deleteDirectory(directoryToBeDeleted.toFile());
     }
 
-    private static boolean deleteDirectory(File directoryToBeDeleted) {
+    private static void deleteDirectory(File directoryToBeDeleted) {
         File[] allContents = directoryToBeDeleted.listFiles();
         if (allContents != null) {
             for (File file : allContents) {
                 deleteDirectory(file);
             }
         }
-        return directoryToBeDeleted.delete();
+
+        if (directoryToBeDeleted.exists() && !directoryToBeDeleted.delete())
+            logger.warn("Cannot delete directory " + directoryToBeDeleted);
     }
 
 }

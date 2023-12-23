@@ -30,7 +30,7 @@ public class BinaryTest {
 
     @Test
     public void testFirstEntry() {
-        Vocabulary voc = Vocabulary.getInstance();
+        Vocabulary voc = new Vocabulary();
         String testTerm = "test";
 
         voc.addEntry(testTerm, 1);
@@ -60,7 +60,7 @@ public class BinaryTest {
 
     @Test
     public void testGenericEntry() {
-        String testTerm = "teseo";
+        String testTerm = "batman";
         VocabularyEntry entry = new VocabularyEntry();
 
         entry.addPosting(1, 1);
@@ -89,7 +89,7 @@ public class BinaryTest {
 
     @Test
     public void testSpecificEntry() {
-        Vocabulary voc = Vocabulary.getInstance();
+        Vocabulary voc = new Vocabulary();
         String testTerm = "test";
         String testTerm2 = "dog";
 
@@ -119,7 +119,7 @@ public class BinaryTest {
     @Test
     public void testNext2dot5Blocks() {
         Constants.BLOCK_SIZE=2;
-        Vocabulary voc = Vocabulary.getInstance();
+        Vocabulary voc = new Vocabulary();
         String test = "test";
         voc.addEntry(test, 1);
         voc.addEntry(test, 1);
@@ -151,7 +151,7 @@ public class BinaryTest {
     @Test
     public void testNextNotPresent() {
         Constants.BLOCK_SIZE=3;
-        Vocabulary voc = Vocabulary.getInstance();
+        Vocabulary voc = new Vocabulary();
         String test = "test";
         voc.addEntry(test, 1);
         voc.addEntry(test, 1);
@@ -189,7 +189,7 @@ public class BinaryTest {
     @Test
     public void testNextNotPresentOffsets() {
         Constants.BLOCK_SIZE=3;
-        Vocabulary voc = Vocabulary.getInstance();
+        Vocabulary voc = new Vocabulary();
         String test = "test";
         String test2= "test2";
         voc.addEntry(test2, 1);
@@ -207,8 +207,8 @@ public class BinaryTest {
 
             fetcher.start();
             Map.Entry<String, VocabularyEntry> output;
-                     fetcher.loadVocEntry();            // carica test2
-            output = fetcher.loadVocEntry();            // carica test
+                     fetcher.loadVocEntry();            // load test2
+            output = fetcher.loadVocEntry();            // load test
             fetcher.close();
 
             assertEquals(input.getKey(), output.getKey());
@@ -229,7 +229,7 @@ public class BinaryTest {
     @Test
     public void testNextGEQSameBlock(){
         Constants.BLOCK_SIZE=3;
-        Vocabulary voc = Vocabulary.getInstance();
+        Vocabulary voc = new Vocabulary();
         String test = "test";
         voc.addEntry(test, 1);
         voc.addEntry(test, 1);
@@ -273,7 +273,7 @@ public class BinaryTest {
     @Test
     public void testNextGEQDiffBlock(){
         Constants.BLOCK_SIZE=3;
-        Vocabulary voc = Vocabulary.getInstance();
+        Vocabulary voc = new Vocabulary();
         String test = "test";
         voc.addEntry(test, 1);
         voc.addEntry(test, 1);
@@ -315,7 +315,7 @@ public class BinaryTest {
     @Test
     public void testNextGEQLast(){
         Constants.BLOCK_SIZE=3;
-        Vocabulary voc = Vocabulary.getInstance();
+        Vocabulary voc = new Vocabulary();
         String test = "test";
         voc.addEntry(test, 1);
         voc.addEntry(test, 1);
@@ -358,7 +358,7 @@ public class BinaryTest {
     @Test
     public void testNextGEQNotPresent(){
         Constants.BLOCK_SIZE=3;
-        Vocabulary voc = Vocabulary.getInstance();
+        Vocabulary voc = new Vocabulary();
         String test = "test";
         voc.addEntry(test, 1);
         voc.addEntry(test, 1);

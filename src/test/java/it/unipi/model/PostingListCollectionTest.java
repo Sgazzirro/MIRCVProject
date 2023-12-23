@@ -5,13 +5,11 @@ import it.unipi.io.Fetcher;
 import it.unipi.utils.Constants;
 import opennlp.tools.stemmer.PorterStemmer;
 import org.junit.AfterClass;
-import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
-import java.io.EOFException;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collection;
@@ -68,7 +66,7 @@ public class PostingListCollectionTest {
     }
 
     @Test
-    public void testLength() throws EOFException {
+    public void testLength() {
         int length = entry.getDocumentFrequency();
 
         int cont = 0;

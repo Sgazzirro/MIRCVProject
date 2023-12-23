@@ -2,19 +2,14 @@ package it.unipi.utils;
 
 import it.unipi.encoding.CompressionType;
 import it.unipi.encoding.Tokenizer;
-import it.unipi.encoding.implementation.TokenizerImpl;
 import it.unipi.scoring.DocumentScore;
 import it.unipi.scoring.MaxScore;
 import it.unipi.scoring.ScoringType;
-import opennlp.tools.parser.Cons;
 
 import java.io.BufferedReader;
-import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.PriorityQueue;
 
 
@@ -28,7 +23,7 @@ public class Timing {
         long accumulated = 0;
         int queries = 0;
         try(
-                BufferedReader readerQ = new BufferedReader(new FileReader("./data/evaluation/queries.train.tsv"));
+                BufferedReader readerQ = new BufferedReader(new FileReader("./data/evaluation/queries.train.tsv"))
         ){
             String query;
 
@@ -40,7 +35,7 @@ public class Timing {
                 if(queries++ == maxRes)
                     break;
                 start = System.currentTimeMillis();
-                MaxScore scorer = new MaxScore(Constants.vocabulary, Constants.documentIndex, new TokenizerImpl(true, true));
+                MaxScore scorer = new MaxScore(Constants.vocabulary, Constants.documentIndex, Tokenizer.getInstance(true, true));
                 PriorityQueue<DocumentScore> scoring = scorer.score(query.split("\t")[1], 1, "disjunctive");
                 end = System.currentTimeMillis();
                 accumulated += (end - start);

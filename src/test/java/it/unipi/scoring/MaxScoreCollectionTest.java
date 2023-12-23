@@ -43,7 +43,7 @@ public class MaxScoreCollectionTest {
         Constants.setCompression(CompressionType.COMPRESSED);
         Constants.setPath(Path.of("./data"));
 
-        maxScore = new MaxScore(Vocabulary.getInstance(), DocumentIndex.getInstance(), Tokenizer.getInstance());
+        maxScore = new MaxScore(new Vocabulary(), new DocumentIndex(), Tokenizer.getInstance());
     }
 
     /**

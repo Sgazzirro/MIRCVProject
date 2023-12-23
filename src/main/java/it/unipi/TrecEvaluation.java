@@ -118,7 +118,7 @@ public class TrecEvaluation {
                 int rank = 1;
                 while(reverseMode.size() > 0){
                     DocumentScore first = reverseMode.poll();
-                    results.add(new Result(q.getQueryID(), String.valueOf(first.docId), rank, first.score));
+                    results.add(new Result(q.getQueryID(), String.valueOf(first.docId()), rank, first.score()));
                     rank++;
                 }
                 // TODO: Riempire la lista di risultati

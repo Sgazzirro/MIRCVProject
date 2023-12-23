@@ -11,7 +11,6 @@ import it.unipi.model.DocumentIndexEntry;
 import it.unipi.utils.*;
 import org.junit.*;
 import org.junit.runner.RunWith;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
@@ -44,8 +43,8 @@ public class SPIMICompleteTest {
     @BeforeClass
     public static void createResult() {
         Constants.setCompression(CompressionType.DEBUG);
-        correctVocabulary = Vocabulary.getInstance();
-        correctDocumentIndex = DocumentIndex.getInstance();
+        correctVocabulary = new Vocabulary();
+        correctDocumentIndex = new DocumentIndex();
 
         correctVocabulary.addEntry("duck", 0);
         correctVocabulary.addEntry("duck", 0);
@@ -114,7 +113,7 @@ public class SPIMICompleteTest {
         while ( (entry = fetcher.loadVocEntry()) != null )
             testOutput.put(entry.getKey(), entry.getValue());
 
-        DocumentIndex fetchedIndex = DocumentIndex.getInstance();
+        DocumentIndex fetchedIndex = new DocumentIndex();
         Map.Entry<Integer, DocumentIndexEntry> entryDI;
 
         fetcher.getDocumentIndexStats();      // Skip first two lines
@@ -144,7 +143,7 @@ public class SPIMICompleteTest {
             testOutput.put(entry.getKey(), entry.getValue());
 
 
-        DocumentIndex fetchedIndex = DocumentIndex.getInstance();
+        DocumentIndex fetchedIndex = new DocumentIndex();
         Map.Entry<Integer, DocumentIndexEntry> entryDI;
 
         fetcher.getDocumentIndexStats();      // Skip first two lines
@@ -174,7 +173,7 @@ public class SPIMICompleteTest {
         while ( (entry = fetcher.loadVocEntry()) != null )
             testOutput.put(entry.getKey(), entry.getValue());
 
-        DocumentIndex fetchedIndex = DocumentIndex.getInstance();
+        DocumentIndex fetchedIndex = new DocumentIndex();
         Map.Entry<Integer, DocumentIndexEntry> entryDI;
 
         fetcher.getDocumentIndexStats();      // Skip first two lines
@@ -203,7 +202,7 @@ public class SPIMICompleteTest {
             testOutput.put(entry.getKey(), entry.getValue());
 
         fetcher.getDocumentIndexStats();
-        DocumentIndex fetchedIndex = DocumentIndex.getInstance();
+        DocumentIndex fetchedIndex = new DocumentIndex();
         Map.Entry<Integer, DocumentIndexEntry> entryDI;
         while ( (entryDI = fetcher.loadDocEntry()) != null )
             fetchedIndex.addDocument(entryDI.getKey(),entryDI.getValue().getDocumentLength());
@@ -233,7 +232,7 @@ public class SPIMICompleteTest {
         }
 
         fetcher.getDocumentIndexStats();
-        DocumentIndex fetchedIndex = DocumentIndex.getInstance();
+        DocumentIndex fetchedIndex = new DocumentIndex();
         Map.Entry<Integer, DocumentIndexEntry> entryDI;
         while((entryDI = fetcher.loadDocEntry()) != null){
             fetchedIndex.addDocument(entryDI.getKey(),entryDI.getValue().getDocumentLength());
@@ -251,13 +250,8 @@ public class SPIMICompleteTest {
         Constants.setCompression(compression);
 
         // Dumping
-        try (
-                InMemoryIndexing indexerSingleBlock = new InMemoryIndexing(compression)
-        ){
-            SPIMIIndex indexer = new SPIMIIndex(compression, ds);
-            indexer.buildIndex(Constants.testPath);
-        }
-
+        SPIMIIndex indexer = new SPIMIIndex(compression, ds);
+        indexer.buildIndex(Constants.testPath);
 
 
         // Fetching
@@ -268,7 +262,7 @@ public class SPIMICompleteTest {
             testOutput.put(entry.getKey(), entry.getValue());
         }
         fetcher.getDocumentIndexStats();
-        DocumentIndex fetchedIndex = DocumentIndex.getInstance();
+        DocumentIndex fetchedIndex = new DocumentIndex();
         Map.Entry<Integer, DocumentIndexEntry> entryDI;
         while((entryDI = fetcher.loadDocEntry()) != null){
             fetchedIndex.addDocument(entryDI.getKey(),entryDI.getValue().getDocumentLength());
@@ -300,7 +294,7 @@ public class SPIMICompleteTest {
             testOutput.put(entry.getKey(), entry.getValue());
         }
         fetcher.getDocumentIndexStats();
-        DocumentIndex fetchedIndex = DocumentIndex.getInstance();
+        DocumentIndex fetchedIndex = new DocumentIndex();
         Map.Entry<Integer, DocumentIndexEntry> entryDI;
         while((entryDI = fetcher.loadDocEntry()) != null){
             fetchedIndex.addDocument(entryDI.getKey(),entryDI.getValue().getDocumentLength());

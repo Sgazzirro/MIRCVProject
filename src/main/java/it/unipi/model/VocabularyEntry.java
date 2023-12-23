@@ -4,12 +4,9 @@ import it.unipi.encoding.CompressionType;
 import it.unipi.scoring.Scorer;
 import it.unipi.utils.Constants;
 
-import java.util.Map;
 import java.util.Objects;
 
 public class VocabularyEntry {
-
-    private long touched;
 
     private int documentFrequency;
     private double upperBound;
@@ -19,12 +16,15 @@ public class VocabularyEntry {
     private int termFreqLength;
 
     private PostingList postingList;
+    private long touches;
 
-    public void touch(){
-        touched++;
-        return;
+    public void touch() {
+        touches++;
     }
-    public long getTouch(){return touched;}
+
+    public long getTouches() {
+        return touches;
+    }
 
     public VocabularyEntry() {
         this.postingList = PostingList.getInstance(Constants.getCompression(), this);
@@ -105,8 +105,8 @@ public class VocabularyEntry {
         this.postingList = postingList;
     }
 
-    public void setTouched(long touched) {
-        this.touched = touched;
+    public void setTouches(long touches) {
+        this.touches = touches;
     }
 
     public void computeUpperBound(Scorer scorer) {
@@ -137,25 +137,5 @@ public class VocabularyEntry {
     @Override
     public int hashCode() {
         return Objects.hash(documentFrequency, postingList);
-    }
-
-    public static VocabularyEntry parseTXT(String line) {
-        VocabularyEntry entry = new VocabularyEntry();
-        String[] params = line.split(",");
-
-        int documentFrequency = Integer.parseInt(params[1]);
-        double upperBound = Double.parseDouble(params[2]);
-
-        PostingList postingList = PostingList.getInstance(CompressionType.DEBUG, entry);
-        entry.setDocIdsOffset(Long.parseLong(params[3]));
-        entry.setTermFreqOffset(Long.parseLong(params[4]));
-        int length = Integer.parseInt(params[5]);
-        entry.setDocIdsLength(length);
-        entry.setTermFreqLength(length);
-
-        entry.setPostingList(postingList);
-        entry.setUpperBound(upperBound);
-        entry.setDocumentFrequency(documentFrequency);
-        return entry;
     }
 }

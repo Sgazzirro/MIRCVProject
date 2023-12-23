@@ -1,8 +1,7 @@
 package it.unipi.model;
 
 import it.unipi.encoding.CompressionType;
-import it.unipi.encoding.implementation.EliasFano;
-import it.unipi.encoding.implementation.Simple9;
+import it.unipi.encoding.Encoder;
 import it.unipi.model.implementation.PostingListCompressedImpl;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -22,6 +21,7 @@ public class PostingListTest {
     public static Collection<Object[]> compressionTypes() {
         return Arrays.asList(new Object[][] {
                 {CompressionType.DEBUG},
+                {CompressionType.BINARY},
                 {CompressionType.COMPRESSED}
         });
     }
@@ -37,11 +37,11 @@ public class PostingListTest {
 
         if (compression == CompressionType.COMPRESSED) {
             ((PostingListCompressedImpl) postingList).setCompressedDocIds(
-                    new EliasFano().encode(postingList.getDocIdsList())
+                    Encoder.getDocIdsEncoder().encode(postingList.getDocIdsList())
             );
 
             ((PostingListCompressedImpl) postingList).setCompressedTermFrequencies(
-                    new Simple9(true).encode(postingList.getTermFrequenciesList())
+                    Encoder.getTermFrequenciesEncoder().encode(postingList.getTermFrequenciesList())
             );
         }
     }
@@ -111,5 +111,4 @@ public class PostingListTest {
 
         assertEquals(postingList.docId(), 0);
     }
-
 }

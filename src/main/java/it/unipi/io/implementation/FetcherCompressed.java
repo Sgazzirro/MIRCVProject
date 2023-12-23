@@ -1,5 +1,6 @@
 package it.unipi.io.implementation;
 
+import it.unipi.model.DocumentIndexEntry;
 import it.unipi.model.PostingList;
 import it.unipi.model.VocabularyEntry;
 import it.unipi.model.implementation.PostingListCompressedImpl;
@@ -8,6 +9,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.*;
+import java.util.Map;
 
 public class FetcherCompressed extends FetcherBinary {
 
@@ -38,14 +40,13 @@ public class FetcherCompressed extends FetcherBinary {
         return fetchBytes(termFreqReader, startOffset, length);
     }
 
-
     @Override
-    public void loadPosting(VocabularyEntry entry) throws IOException {
+    protected void loadPosting(VocabularyEntry entry) throws IOException {
         PostingList postingList = entry.getPostingList();
 
         if (!(postingList instanceof PostingListCompressedImpl pList)) {
-            logger.error("FetcherCompressed: cannot dump uncompressed list");
-            throw new RuntimeException("Unsupported operation");
+            logger.error("Cannot fetch uncompressed list");
+            throw new UnsupportedOperationException("Load of uncompressed list");
         }
 
         pList.setCompressedDocIds(
@@ -56,5 +57,15 @@ public class FetcherCompressed extends FetcherBinary {
         );
 
         pList.loadNextBlock();
+    }
+
+    @Override
+    public Map.Entry<String, VocabularyEntry> loadVocEntry() {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public Map.Entry<Integer, DocumentIndexEntry> loadDocEntry() {
+        throw new UnsupportedOperationException();
     }
 }

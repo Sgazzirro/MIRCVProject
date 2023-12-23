@@ -22,6 +22,8 @@ public class IndexCreated {
         Constants.setCompression(CompressionType.COMPRESSED);
         Constants.setScoring(ScoringType.BM25);
         Constants.setPath(Path.of("./data"));
+        Constants.startSession();
+
         MaxScore max = new MaxScore(Constants.vocabulary, Constants.documentIndex, Tokenizer.getInstance());
 
         DocumentStream stream = new DocumentStream();
@@ -30,9 +32,9 @@ public class IndexCreated {
             long start = System.currentTimeMillis();
             // TODO - with numResults = 10 or 100 we get different results
             int numResults = 10;
-            boolean printFirstText = false;
+            boolean printFirstText = true;
 
-            PriorityQueue<DocumentScore> scoring = max.score("pizza and hamburger and coca in costa Rica", numResults, "disjunctive");
+            PriorityQueue<DocumentScore> scoring = max.score("average rainfall in Costa Rica", numResults, "disjunctive");
             List<DocumentScore> reverseMode = new ArrayList<>();
 
             while (!scoring.isEmpty()) {
@@ -43,14 +45,14 @@ public class IndexCreated {
             // Print how many different documents we got (for testing purposes)
             System.out.println("Results asked: " + numResults);
             System.out.println("Results obtained: " +
-                    reverseMode.stream().mapToInt(score -> score.docId).distinct().count());
+                    reverseMode.stream().mapToInt(DocumentScore::docId).distinct().count());
             System.out.println();
 
             for (DocumentScore first : reverseMode) {
-                System.out.println("ID : " + first.docId + " SCORE : " + first.score);
+                System.out.println("ID : " + first.docId() + " SCORE : " + first.score());
 
                 if (printFirstText) {
-                    System.out.println(stream.getDoc(first.docId).getText() + "\n");
+                    System.out.println(stream.getDoc(first.docId()).getText() + "\n");
                     printFirstText = false;
                 }
             }

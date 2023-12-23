@@ -50,8 +50,8 @@ public class CompleteTFIDFTest {
 
         // Dumping
         new SPIMIIndex(compression, ds).buildIndex(Constants.testPath);
-        vocabulary = Vocabulary.getInstance(compression);
-        documentIndex = DocumentIndex.getInstance();
+        vocabulary = new Vocabulary(compression);
+        documentIndex = new DocumentIndex();
     }
 
     @Test
@@ -65,7 +65,7 @@ public class CompleteTFIDFTest {
         for(int i=0; i<4; i++){
             DocumentScore documentScore = results.poll();
             Assert.assertNotNull(documentScore);
-            Assert.assertEquals(0.0, documentScore.score, 1e-6);
+            Assert.assertEquals(0.0, documentScore.score(), 1e-6);
         }
         Assert.assertNull(results.poll());
     }
@@ -83,8 +83,8 @@ public class CompleteTFIDFTest {
         Assert.assertNotNull(documentScore1);
         Assert.assertNotNull(documentScore2);
 
-        Assert.assertEquals(documentScore1.score, Math.log10(2.0), 1e-6);
-        Assert.assertEquals(documentScore2.score, Math.log10(2.0), 1e-6);
+        Assert.assertEquals(documentScore1.score(), Math.log10(2.0), 1e-6);
+        Assert.assertEquals(documentScore2.score(), Math.log10(2.0), 1e-6);
 
         Assert.assertNull(results.poll());
     }
@@ -102,8 +102,8 @@ public class CompleteTFIDFTest {
         Assert.assertNotNull(documentScore1);
         Assert.assertNotNull(documentScore2);
 
-        Assert.assertEquals(documentScore2.score, (1+Math.log10(2.0))*Math.log10(2.0), 1e-6);
-        Assert.assertEquals(documentScore1.score, Math.log10(2.0), 1e-6);
+        Assert.assertEquals(documentScore2.score(), (1+Math.log10(2.0))*Math.log10(2.0), 1e-6);
+        Assert.assertEquals(documentScore1.score(), Math.log10(2.0), 1e-6);
 
         Assert.assertNull(results.poll());
     }
@@ -130,8 +130,8 @@ public class CompleteTFIDFTest {
         Assert.assertNotNull(documentScore1);
         Assert.assertNotNull(documentScore2);
 
-        Assert.assertEquals(documentScore1.score, (1 + Math.log10(2.0)) * Math.log10(2.0) + Math.log10(2.0), 1e-6);
-        Assert.assertEquals(documentScore2.score, 2 * Math.log10(2.0), 1e-6);
+        Assert.assertEquals(documentScore1.score(), (1 + Math.log10(2.0)) * Math.log10(2.0) + Math.log10(2.0), 1e-6);
+        Assert.assertEquals(documentScore2.score(), 2 * Math.log10(2.0), 1e-6);
 
         Assert.assertNull(results.poll());
     }
@@ -142,8 +142,6 @@ public class CompleteTFIDFTest {
         MaxScore maxScore = new MaxScore(vocabulary, documentIndex, Tokenizer.getInstance());
 
         for(int i=0; i<2; i++) {
-            double start = System.currentTimeMillis();
-
             PriorityQueue<DocumentScore> results = maxScore.score(query, 10, "disjunctive");
 
             DocumentScore documentScore2 = results.poll();
@@ -151,12 +149,10 @@ public class CompleteTFIDFTest {
             Assert.assertNotNull(documentScore1);
             Assert.assertNotNull(documentScore2);
 
-            Assert.assertEquals(documentScore1.score,(1+Math.log10(2.0))*Math.log10(2.0)+Math.log10(2.0) , 1e-6);
-            Assert.assertEquals(documentScore2.score, 2 * Math.log10(2.0), 1e-6);
+            Assert.assertEquals(documentScore1.score(),(1 + Math.log10(2.0)) * Math.log10(2.0) + Math.log10(2.0) , 1e-6);
+            Assert.assertEquals(documentScore2.score(), 2 * Math.log10(2.0), 1e-6);
 
             Assert.assertNull(results.poll());
-
-            System.out.println("Iterazione: "+i+" Tempo impiegato: "+(System.currentTimeMillis()-start));
         }
     }
     @Test
@@ -171,8 +167,8 @@ public class CompleteTFIDFTest {
         Assert.assertNotNull(documentScore1);
         Assert.assertNotNull(documentScore2);
 
-        Assert.assertEquals(documentScore1.score, ((1+Math.log10(2.0))*Math.log10(2.0) + Math.log10(2.0)), 1e-6);
-        Assert.assertEquals(documentScore2.score, 2*Math.log10(2.0), 1e-6);
+        Assert.assertEquals(documentScore1.score(), ((1+Math.log10(2.0))*Math.log10(2.0) + Math.log10(2.0)), 1e-6);
+        Assert.assertEquals(documentScore2.score(), 2*Math.log10(2.0), 1e-6);
 
         Assert.assertNull(results.poll());
     }
@@ -193,8 +189,6 @@ public class CompleteTFIDFTest {
         MaxScore maxScore = new MaxScore(vocabulary, documentIndex, Tokenizer.getInstance());
 
         for(int i=0; i<2; i++) {
-            double start = System.currentTimeMillis();
-
             PriorityQueue<DocumentScore> results = maxScore.score(query, 10, "conjunctive");
 
             DocumentScore documentScore2 = results.poll();
@@ -202,12 +196,10 @@ public class CompleteTFIDFTest {
             Assert.assertNotNull(documentScore1);
             Assert.assertNotNull(documentScore2);
 
-            Assert.assertEquals(documentScore1.score, Math.log10(2.0), 1e-6);
-            Assert.assertEquals(documentScore2.score, Math.log10(2.0), 1e-6);
+            Assert.assertEquals(documentScore1.score(), Math.log10(2.0), 1e-6);
+            Assert.assertEquals(documentScore2.score(), Math.log10(2.0), 1e-6);
 
             Assert.assertNull(results.poll());
-
-            System.out.println("Iterazione: "+i+" Tempo impiegato: "+(System.currentTimeMillis()-start));
         }
     }
 
@@ -221,7 +213,7 @@ public class CompleteTFIDFTest {
         DocumentScore documentScore = results.poll();
         Assert.assertNotNull(documentScore);
 
-        Assert.assertEquals(documentScore.score, Math.log10(4.0), 1e-6);
+        Assert.assertEquals(documentScore.score(), Math.log10(4.0), 1e-6);
 
         Assert.assertNull(results.poll());
     }

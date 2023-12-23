@@ -28,7 +28,6 @@ public interface Fetcher extends AutoCloseable {
 
     VocabularyEntry loadVocEntry(String term) throws IOException;
     Map.Entry<String, VocabularyEntry> loadVocEntry() throws IOException;
-    void loadPosting(VocabularyEntry entry) throws IOException;
 
     DocumentIndexEntry loadDocEntry(long docId) throws IOException;
     Map.Entry<Integer, DocumentIndexEntry> loadDocEntry() throws IOException;

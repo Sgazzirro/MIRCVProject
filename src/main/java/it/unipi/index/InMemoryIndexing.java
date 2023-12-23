@@ -25,8 +25,8 @@ public class InMemoryIndexing implements AutoCloseable {
     private final Tokenizer tokenizer;
 
     public InMemoryIndexing(CompressionType compression) {
-        vocabulary = Vocabulary.getInstance(compression);
-        documentIndex = DocumentIndex.getInstance();
+        vocabulary = new Vocabulary(compression);
+        documentIndex = new DocumentIndex();
 
         dumper = Dumper.getInstance(compression);
         tokenizer = Tokenizer.getInstance();

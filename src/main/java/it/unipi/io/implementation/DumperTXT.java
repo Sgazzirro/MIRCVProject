@@ -23,14 +23,14 @@ public class DumperTXT implements Dumper {
 
     private static final Logger logger = LoggerFactory.getLogger(DumperTXT.class);
 
-    private BufferedWriter writerVOC;
-    private BufferedWriter writerDIX;
-    private BufferedWriter writerDIDS;
-    private BufferedWriter writerTF;
+    private BufferedWriter vocabularyWriter;
+    private BufferedWriter documentIndexWriter;
+    private BufferedWriter docIdsWriter;
+    private BufferedWriter termFreqWriter;
 
     private boolean opened = false;
-    private long writtenTF;
-    private long writtenDIDS;
+    private long termFreqOffset;
+    private long docIdsOffset;
 
     @Override
     public boolean start(Path path) {
@@ -38,15 +38,14 @@ public class DumperTXT implements Dumper {
             try {
                 IOUtils.createDirectory(path);
 
-                writerVOC  = new BufferedWriter(new FileWriter(path.resolve(Constants.VOCABULARY_FILENAME).toFile()));
-                writerDIX  = new BufferedWriter(new FileWriter(path.resolve(Constants.DOCUMENT_INDEX_FILENAME).toFile()));
-                writerDIDS = new BufferedWriter(new FileWriter(path.resolve(Constants.DOC_IDS_POSTING_FILENAME).toFile()));
-                writerTF   = new BufferedWriter(new FileWriter(path.resolve(Constants.TF_POSTING_FILENAME).toFile()));
-                writtenTF = 0;
-                writtenDIDS = 0;
+                vocabularyWriter = new BufferedWriter(new FileWriter(path.resolve(Constants.VOCABULARY_FILENAME).toFile()));
+                documentIndexWriter = new BufferedWriter(new FileWriter(path.resolve(Constants.DOCUMENT_INDEX_FILENAME).toFile()));
+                docIdsWriter = new BufferedWriter(new FileWriter(path.resolve(Constants.DOC_IDS_POSTING_FILENAME).toFile()));
+                termFreqWriter = new BufferedWriter(new FileWriter(path.resolve(Constants.TF_POSTING_FILENAME).toFile()));
+                termFreqOffset = docIdsOffset = 0;
 
                 opened = true;
-                logger.info("Dumper correctly initialized at path: " + path);
+                logger.trace("Dumper correctly initialized at path " + path);
 
             } catch (IOException ie) {
                 logger.error("Could not start dumper", ie);
@@ -67,12 +66,12 @@ public class DumperTXT implements Dumper {
         }
 
         try {
-            writerVOC.close();
-            writerDIDS.close();
-            writerDIX.close();
-            writerTF.close();
+            vocabularyWriter.close();
+            docIdsWriter.close();
+            documentIndexWriter.close();
+            termFreqWriter.close();
 
-            logger.info("Dumper correctly closed");
+            logger.trace("Dumper correctly closed");
             opened = false;
 
         } catch (IOException exception) {
@@ -105,12 +104,12 @@ public class DumperTXT implements Dumper {
                 offsets[1] + "," +
                 length + "\n";
 
-        writerVOC.write(result);
+        vocabularyWriter.write(result);
     }
 
     private long[] dumpPostings(PostingList postingList) throws IOException {
-        long offsetID = writtenDIDS;
-        long offsetTF = writtenTF;
+        long offsetID = docIdsOffset;
+        long offsetTF = termFreqOffset;
         int length = postingList.getDocIdsList().size();
 
         StringBuilder bufferID = new StringBuilder();
@@ -120,18 +119,18 @@ public class DumperTXT implements Dumper {
              bufferTF.append(postingList.getTermFrequenciesList().get(i)).append("\n");
         }
 
-        writerDIDS.write(String.valueOf(bufferID));
-        writerTF.write(String.valueOf(bufferTF));
-        writtenDIDS += bufferID.toString().getBytes().length;
-        writtenTF += bufferTF.toString().getBytes().length;
+        docIdsWriter.write(String.valueOf(bufferID));
+        termFreqWriter.write(String.valueOf(bufferTF));
+        docIdsOffset += bufferID.toString().getBytes().length;
+        termFreqOffset += bufferTF.toString().getBytes().length;
 
         return new long[] {offsetID, offsetTF};
     }
 
     @Override
     public void dumpDocumentIndex(DocumentIndex docIndex) throws IOException {
-        writerDIX.write(docIndex.getTotalLength() + "\n");
-        writerDIX.write(docIndex.getNumDocuments() + "\n");
+        documentIndexWriter.write(docIndex.getTotalLength() + "\n");
+        documentIndexWriter.write(docIndex.getNumDocuments() + "\n");
 
         StringBuilder result = new StringBuilder();
         for (Map.Entry<Integer, DocumentIndexEntry> entry : docIndex.getEntries()) {
@@ -142,12 +141,12 @@ public class DumperTXT implements Dumper {
             result.append(docId).append(",").append(docLength).append("\n");
         }
 
-        writerDIX.write(String.valueOf(result));
+        documentIndexWriter.write(String.valueOf(result));
     }
 
     @Override
     public void dumpDocumentIndexEntry(Map.Entry<Integer, DocumentIndexEntry> entry) throws IOException {
-        writerDIX.write(entry.getKey().toString() + "," + entry.getValue().getDocumentLength() + "\n");
+        documentIndexWriter.write(entry.getKey().toString() + "," + entry.getValue().getDocumentLength() + "\n");
     }
 }
 

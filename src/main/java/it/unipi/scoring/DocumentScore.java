@@ -2,14 +2,7 @@ package it.unipi.scoring;
 
 import java.util.Objects;
 
-public class DocumentScore implements Comparable<DocumentScore>{
-    public int docId;
-    public double score;
-
-    public DocumentScore(int docId, double score){
-        this.docId = docId;
-        this.score = score;
-    }
+public record DocumentScore(int docId, double score) implements Comparable<DocumentScore> {
 
     @Override
     public int compareTo(DocumentScore o) {

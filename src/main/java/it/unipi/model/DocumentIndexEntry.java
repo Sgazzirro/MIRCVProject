@@ -1,8 +1,5 @@
 package it.unipi.model;
 
-import it.unipi.encoding.CompressionType;
-import it.unipi.model.implementation.DocumentIndexImpl;
-
 public class DocumentIndexEntry {
 
     private int documentLength;
