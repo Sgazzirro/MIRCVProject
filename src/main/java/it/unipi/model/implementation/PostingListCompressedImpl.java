@@ -1,8 +1,6 @@
 package it.unipi.model.implementation;
 
 import it.unipi.encoding.Encoder;
-import it.unipi.encoding.implementation.EliasFano;
-import it.unipi.encoding.implementation.Simple9;
 import it.unipi.model.PostingList;
 import it.unipi.model.VocabularyEntry;
 import it.unipi.utils.*;
@@ -21,9 +19,6 @@ public class PostingListCompressedImpl extends PostingList {
     private int blockPointer;
     private int docIdsBlockPointer;                    // This represents the offset of the next docIdsBlock
     private int termFrequenciesBlockPointer;           // This represents the index of the actual block of term frequencies
-
-    private final Encoder docIdsEncoder = new EliasFano();
-    private final Encoder termFrequenciesEncoder = new Simple9(true);
 
     public PostingListCompressedImpl(VocabularyEntry entry) {
         super(entry);
@@ -115,13 +110,15 @@ public class PostingListCompressedImpl extends PostingList {
     }
 
     public void loadNextBlock() {
-        ByteBlock docIdsBlock = ByteUtils.fetchDocIdsBlock(compressedDocIds, 0, docIdsBlockPointer);
+        ByteBlock docIdsBlock = ByteUtils.fetchNextDocIdsBlock(compressedDocIds, docIdsBlockPointer);
         docIdsBlockPointer = docIdsBlock.offset();
-        docIdsDecompressedList = docIdsEncoder.decode(docIdsBlock.bytes());
+        docIdsDecompressedList = Encoder.getDocIdsEncoder()
+                .decode(docIdsBlock.bytes());
 
         ByteBlock termFrequenciesBlock = ByteUtils.fetchNextTermFrequenciesBlock(compressedTermFrequencies, termFrequenciesBlockPointer);
         termFrequenciesBlockPointer = termFrequenciesBlock.offset();
-        termFrequenciesDecompressedList = termFrequenciesEncoder.decode(termFrequenciesBlock.bytes());
+        termFrequenciesDecompressedList = Encoder.getTermFrequenciesEncoder()
+                .decode(termFrequenciesBlock.bytes());
 
         // Remove fictitious 0 frequencies
         int first0Index = docIdsDecompressedList.size();

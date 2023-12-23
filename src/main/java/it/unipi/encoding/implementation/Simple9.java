@@ -32,16 +32,6 @@ public class Simple9 extends Encoder {
             {28, 1,  0, 128*128*128*128-1}
     };
 
-    private final boolean useSkippingPointer;
-
-    public Simple9(boolean useSkippingPointer) {
-        this.useSkippingPointer = useSkippingPointer;
-    }
-
-    public Simple9() {
-        this(false);
-    }
-
     @Override
     public byte[] encode(List<Integer> intList) {
         // Encode a list of numbers using the Simple9 compression algorithm
@@ -67,15 +57,12 @@ public class Simple9 extends Encoder {
             blockList.add(block);
         }
 
-        if (useSkippingPointer) {
-            // Add a skipping pointer at the beginning with structure
-            //     number of bytes to skip
-            int byteToSkip;
-            byteToSkip = 4 + 4 * blockList.size();
+        // Add a skipping pointer at the beginning with structure
+        //     number of bytes to skip
+        int byteToSkip = 4 * blockList.size();
 
-            // Encode byteToSkip as the first block
-            blockList.add(0, byteToSkip);
-        }
+        // Encode byteToSkip as the first block
+        blockList.add(0, byteToSkip);
 
         byte[] byteArray = new byte[4 * blockList.size()];
         int offset = 0;
@@ -91,9 +78,8 @@ public class Simple9 extends Encoder {
     public List<Integer> decode(byte[] byteList) {
         List<Integer> intList = new ArrayList<>();
 
-        // Read 4 bytes at a time and skip the first 4 bytes if skipping pointer is used
-        int offset = (useSkippingPointer) ? 4 : 0;
-        for ( ; offset < byteList.length; offset += 4) {
+        // Read 4 bytes at a time (we assume there is no skipping pointer at the beginning)
+        for (int offset = 0; offset < byteList.length; offset += 4) {
             // Convert the 4 bytes to int
             int b = ByteUtils.bytesToInt(byteList, offset);
             // The first 4 bits represent the configuration of the block

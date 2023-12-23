@@ -19,7 +19,7 @@ public abstract class Encoder {
 
     public static Encoder getTermFrequenciesEncoder() {
         if (termFrequenciesEncoder == null)
-            termFrequenciesEncoder = new Simple9(true);
+            termFrequenciesEncoder = new Simple9();
 
         return termFrequenciesEncoder;
     }

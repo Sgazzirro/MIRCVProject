@@ -90,47 +90,33 @@ public class ByteUtils {
         return entry;
     }
 
-    public static ByteBlock fetchDocIdsBlock(byte[] compressedDocIds, int docId, int docIdsBlockOffset) {
+    public static ByteBlock fetchNextDocIdsBlock(byte[] compressedDocIds, int docIdsBlockOffset) {
         // skips unnecessary lists
         ByteBuffer buffer = ByteBuffer.wrap(compressedDocIds);
         buffer.position(docIdsBlockOffset);
 
-        while (true) {
-            // Read integers from the byte array
-            int U = buffer.getInt();
-            U = (U == 0) ? 1 : U;
-            int n = buffer.getInt();
-            docIdsBlockOffset += 2*Integer.BYTES;
+        // Read integers from the byte array
+        int U = buffer.getInt();
+        U = (U == 0) ? 1 : U;
+        int n = buffer.getInt();
 
-            // computing number of bytes to skip
-            int lowHalfLength = (int) Math.ceil(Math.log((float) U / n) / Math.log(2));
-            if (lowHalfLength < 0)
-                lowHalfLength = 0;
-            int highHalfLength = (int) Math.ceil(Math.log(U) / Math.log(2)) - lowHalfLength;
-            int nTotLowBits = lowHalfLength * n;
-            int nTotHighBits = (int) (n + Math.pow(2, highHalfLength));
-            int bytesToSkip = (int) Math.ceil((float) nTotLowBits / 8) + (int) Math.ceil((float) nTotHighBits / 8);
-            if (U < docId)
-                // I have to read the next block
-                buffer.position(buffer.position() + bytesToSkip);
-            else {
-                int numLowBytes = (int) Math.ceil((float) nTotLowBits/8);
-                int numHighBytes = (int) Math.ceil((float) nTotHighBits/8);
-                byte[] byteArray = new byte[4 + 4 + numLowBytes + numHighBytes];
-                ByteUtils.intToBytes(U, byteArray, 0);
-                ByteUtils.intToBytes(n, byteArray, 4);
-                if (numHighBytes != 0) {
-                    buffer.get(byteArray, 8, numHighBytes);
-                    docIdsBlockOffset += numHighBytes;
-                }
-                if (numLowBytes!=0) {
-                    buffer.get(byteArray, 8+numHighBytes, numLowBytes);
-                    docIdsBlockOffset += numLowBytes;
-                }
+        // computing number of bytes to read
+        int lowHalfLength = (int) Math.ceil(Math.log((float) U / n) / Math.log(2));
+        if (lowHalfLength < 0)
+            lowHalfLength = 0;
+        int highHalfLength = (int) Math.ceil(Math.log(U) / Math.log(2)) - lowHalfLength;
+        int nTotLowBits = lowHalfLength * n;
+        int nTotHighBits = (int) (n + Math.pow(2, highHalfLength));
+        int numLowBytes = (int) Math.ceil((float) nTotLowBits/8);
+        int numHighBytes = (int) Math.ceil((float) nTotHighBits/8);
 
-                return new ByteBlock(byteArray, docIdsBlockOffset);
-            }
-        }
+        buffer = ByteBuffer.wrap(compressedDocIds);
+        buffer.position(docIdsBlockOffset);
+        byte[] byteArray = new byte[2*Integer.BYTES + numLowBytes + numHighBytes];
+        buffer.get(byteArray);
+
+        docIdsBlockOffset += 2*Integer.BYTES + numLowBytes + numHighBytes;
+        return new ByteBlock(byteArray, docIdsBlockOffset);
     }
 
     public static ByteBlock fetchNextTermFrequenciesBlock(byte[] compressedTermFrequencies, int termFrequenciesBlockOffset) {
@@ -139,12 +125,10 @@ public class ByteUtils {
 
         // Read length of the block
         int length = buffer.getInt();
-
         byte[] byteArray = new byte[length];
-        ByteUtils.intToBytes(length, byteArray, 0);
 
-        buffer.get(byteArray, Integer.BYTES, length - Integer.BYTES);   // Do not consider the bytes of the length (already fetched)
-        termFrequenciesBlockOffset += length;   // Consider also the first 4 bytes describing the block length
+        buffer.get(byteArray, 0, length);   // Do not consider the bytes of the length (already fetched)
+        termFrequenciesBlockOffset += length + Integer.BYTES;   // Consider also the first 4 bytes describing the block length
 
         return new ByteBlock(byteArray, termFrequenciesBlockOffset);
     }

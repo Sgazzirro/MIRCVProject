@@ -88,6 +88,7 @@ public class DocumentStream {
 
         while (docId > 0) {
             br.readLine();
+            offset++;
             docId--;
         }
         return nextDoc();

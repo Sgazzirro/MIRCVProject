@@ -29,7 +29,6 @@ public class EliasFano extends Encoder {
         BitSet highBitset = new BitSet(nTotHighBits);
         BitSet lowBitset = new BitSet(nTotLowBits);
 
-
         // utility
         int index = 0;
         Map<Integer, Integer> clusterComp = new HashMap<>();

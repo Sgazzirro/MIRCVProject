@@ -22,13 +22,12 @@ public class Simple9Test {
 
     @Test
     public void testSkippingPointer() {
-        Simple9 simple9Skipping = new Simple9(true);
         List<Integer> list = Arrays.asList(1, 3, 6, 2, 10, 11, 2,
                 500, 128, 109);
-        byte[] bytes = simple9Skipping.encode(list);
+        byte[] bytes = simple9.encode(list);
         int bytesToSkip = ByteUtils.bytesToInt(bytes);
 
-        assertEquals(bytesToSkip, 4 + 2*4);
+        assertEquals(bytesToSkip, 2*4);
     }
 
     @Test
@@ -37,7 +36,7 @@ public class Simple9Test {
         for (int i = 0; i < 27; i++)
             list.add(1);
         byte[] bytes = simple9.encode(list);
-        int block = ByteUtils.bytesToInt(bytes);
+        int block = ByteUtils.bytesToInt(bytes, Integer.BYTES);
 
         assertEquals(getBinaryRepresentation(block), "00001111111111111111111111111110");
     }
@@ -46,7 +45,7 @@ public class Simple9Test {
     public void testEncodeSecondConfiguration() {
         List<Integer> list = Arrays.asList(1,2,3,1,1,3,3,2,1,2,1);
         byte[] bytes = simple9.encode(list);
-        int block = ByteUtils.bytesToInt(bytes);
+        int block = ByteUtils.bytesToInt(bytes, Integer.BYTES);
 
         assertEquals(getBinaryRepresentation(block), "00010110110101111110011001000000");
     }
@@ -55,7 +54,7 @@ public class Simple9Test {
     public void testFifthConfiguration() {
         List<Integer> list = Arrays.asList(6, 19, 31, 1, 10);
         byte[] bytes = simple9.encode(list);
-        int block = ByteUtils.bytesToInt(bytes);
+        int block = ByteUtils.bytesToInt(bytes, Integer.BYTES);
 
         assertEquals(getBinaryRepresentation(block), "01000011010011111110000101010000");
     }
@@ -64,7 +63,7 @@ public class Simple9Test {
     public void testLastConfiguration() {
         List<Integer> list = List.of(128 * 128);
         byte[] bytes = simple9.encode(list);
-        int block = ByteUtils.bytesToInt(bytes);
+        int block = ByteUtils.bytesToInt(bytes, Integer.BYTES);
 
         assertEquals(getBinaryRepresentation(block), "10000000000000000100000000000000");
     }
@@ -74,8 +73,8 @@ public class Simple9Test {
         List<Integer> list = Arrays.asList(1, 3, 6, 2, 10, 11, 2,
                 500, 128, 109);
         byte[] bytes = simple9.encode(list);
-        int block0 = ByteUtils.bytesToInt(bytes, 0);
-        int block1 = ByteUtils.bytesToInt(bytes, 4);
+        int block0 = ByteUtils.bytesToInt(bytes, Integer.BYTES);
+        int block1 = ByteUtils.bytesToInt(bytes, 2*Integer.BYTES);
 
         assertEquals(getBinaryRepresentation(block0), "00110001001101100010101010110010");
         assertEquals(getBinaryRepresentation(block1), "01101111101000100000000011011010");

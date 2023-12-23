@@ -33,10 +33,13 @@ public class DumperCompressed extends DumperBinary {
             buffers.add(ByteBuffer.wrap(byteList));
         }
 
-        int written_size = 0;
-        while (written_size != size)
-            written_size += (int) writer.write(buffers.toArray(new ByteBuffer[0]));
+        int written = 0;
+        for (ByteBuffer buffer : buffers)
+            written += writer.write(buffer);
 
-        return written_size;
+        if (written != size)
+            throw new IOException("Could not dump posting list");
+
+        return written;
     }
 }

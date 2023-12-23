@@ -13,10 +13,12 @@ public class Main {
 
     public static void main( String[] args ) throws IOException {
 
-        Path indexPath = Paths.get("./data");
+        Path indexPath = Paths.get("./data/compr_debug");
         Constants.setPath(indexPath);
 
-        DocumentStream stream = new DocumentStream();
+        // TEST
+        Constants.BLOCK_SIZE = 200;
+        DocumentStream stream = new DocumentStream(Constants.COLLECTION_FILE, 0, 100000);
 
         SPIMIIndex spimi = new SPIMIIndex(CompressionType.COMPRESSED, stream);
         spimi.buildIndex(indexPath);

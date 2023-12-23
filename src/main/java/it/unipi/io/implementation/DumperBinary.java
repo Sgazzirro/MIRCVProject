@@ -20,7 +20,7 @@ public class DumperBinary implements Dumper {
 
     private static final Logger logger = LoggerFactory.getLogger(DumperBinary.class);
 
-    protected FileChannel  vocabularyWriter;
+    protected FileChannel vocabularyWriter;
     protected FileChannel docIdsWriter;
     protected FileChannel termFreqWriter;
     protected FileChannel documentIndexWriter;

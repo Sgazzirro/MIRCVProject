@@ -4,9 +4,7 @@ import it.unipi.encoding.CompressionType;
 import it.unipi.io.Fetcher;
 import it.unipi.utils.Constants;
 import opennlp.tools.stemmer.PorterStemmer;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.*;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
@@ -38,7 +36,7 @@ public class PostingListCollectionTest {
                 .toList();
     }
 
-    private static Fetcher fetcher;
+    private final Fetcher fetcher;
 
     private final VocabularyEntry entry;
     private final PostingList postingList;
@@ -49,20 +47,6 @@ public class PostingListCollectionTest {
 
         entry = fetcher.loadVocEntry(term);
         postingList = entry.getPostingList();
-    }
-
-    @BeforeClass
-    public static void setUp() {
-        Constants.setCompression(CompressionType.COMPRESSED);
-        Constants.setPath(Constants.dataPath);
-
-        fetcher = Fetcher.getFetcher(CompressionType.COMPRESSED);
-        fetcher.start();
-    }
-
-    @AfterClass
-    public static void tearDown() throws Exception {
-        fetcher.close();
     }
 
     @Test
@@ -78,4 +62,14 @@ public class PostingListCollectionTest {
         assertEquals(length, cont);
     }
 
+    @BeforeClass
+    public static void setUp() {
+        Constants.setCompression(CompressionType.COMPRESSED);
+        Constants.setPath(Constants.dataPath.resolve("compr_debug"));
+    }
+
+    @After
+    public void tearDown() throws Exception {
+        fetcher.close();
+    }
 }
