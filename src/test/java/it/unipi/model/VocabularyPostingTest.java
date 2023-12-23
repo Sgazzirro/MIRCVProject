@@ -6,6 +6,7 @@ import it.unipi.io.Fetcher;
 import it.unipi.utils.Constants;
 import it.unipi.utils.IOUtils;
 import org.junit.After;
+import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -34,7 +35,7 @@ public class VocabularyPostingTest {
         Constants.setPath(Constants.testPath);
     }
 
-    private final Fetcher fetcher;
+    private Fetcher fetcher;
 
     private static final int LENGTH = 2;
 
@@ -51,9 +52,12 @@ public class VocabularyPostingTest {
         dumper.dumpVocabularyEntry(new AbstractMap.SimpleEntry<>("test1", entry));
         dumper.dumpVocabularyEntry(new AbstractMap.SimpleEntry<>("test2", entry));
         dumper.close();
+    }
 
-        fetcher = Fetcher.getFetcher(compression);
-        fetcher.start(Constants.testPath);
+    @Before
+    public void setFetcher() {
+        fetcher = Fetcher.getFetcher(Constants.getCompression());
+        fetcher.start(Constants.getPath());
     }
 
     @Test
@@ -78,7 +82,8 @@ public class VocabularyPostingTest {
     }
 
     @After
-    public void cleanUp() {
+    public void cleanUp() throws Exception {
+        fetcher.close();
         IOUtils.deleteDirectory(Constants.testPath);
     }
 }
