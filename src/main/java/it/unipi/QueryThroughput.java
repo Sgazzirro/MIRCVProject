@@ -19,8 +19,8 @@ import java.util.PriorityQueue;
 public class QueryThroughput {
     public static void main(String[] args){
         // Constants settings
-        Constants.setCompression(CompressionType.BINARY);
-        Constants.BLOCK_SIZE=100000;
+        Constants.setCompression(CompressionType.COMPRESSED);
+        Constants.BLOCK_SIZE=10000;
         Constants.setScoring(ScoringType.TFIDF);
         Constants.setPath(Path.of("./data"));
         int numResults = 10;
