@@ -20,7 +20,7 @@ public class IndexCreated {
         int numDocs;
         int numWords;
         Constants.setCompression(CompressionType.COMPRESSED);
-        Constants.setScoring(ScoringType.BM25);
+        Constants.setScoring(ScoringType.TFIDF);
         Constants.setPath(Path.of("./data"));
         Constants.startSession();
 

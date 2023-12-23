@@ -63,8 +63,7 @@ public class MaxScore {
     }
 
     private PriorityQueue<DocumentScore> conjunctiveScore(List<PostingList> p, int K){
-        if (K <= 0)
-            return null;
+        if (K <= 0) return new PriorityQueue<>();
 
         PriorityQueue<DocumentScore> scores = new PriorityQueue<>(K);
         while (nextConjunctive(p) == 0) {
@@ -88,9 +87,7 @@ public class MaxScore {
     }
 
     private PriorityQueue<DocumentScore> maxScore(List<PostingList> p, List<Double> sigma, int K) {
-        if (K <= 0)
-            return null;
-
+        if (K <= 0) return new PriorityQueue<>();
         PriorityQueue<DocumentScore> scores = new PriorityQueue<>(K);
         List<Double> ub = computeUB(p, sigma);
         double theta = 0;       // Current maxScore
