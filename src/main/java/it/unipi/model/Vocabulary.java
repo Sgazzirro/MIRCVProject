@@ -6,10 +6,7 @@ import it.unipi.utils.Constants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.Map;
-import java.util.NavigableMap;
-import java.util.PriorityQueue;
-import java.util.TreeMap;
+import java.util.*;
 
 import static it.unipi.utils.Constants.CACHE;
 import static it.unipi.utils.Constants.MEMORY_USED;
@@ -89,7 +86,20 @@ public class Vocabulary {
         return entry;
     }
 
-    public Iterable<Map.Entry<String, VocabularyEntry>> getEntries() {
-        return table.entrySet();
+    public Map<String, VocabularyEntry> getMapping() {
+        return table;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Vocabulary that = (Vocabulary) o;
+        return Objects.equals(table, that.table) && compression == that.compression;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(table, compression);
     }
 }

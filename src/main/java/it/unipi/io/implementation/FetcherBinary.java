@@ -90,24 +90,12 @@ public class FetcherBinary implements Fetcher {
         if (!opened)
             throw new IOException("Fetcher has not been started");
 
-        long docIdsOffset = entry.getDocIdsOffset(),
-                termFreqOffset = entry.getTermFreqOffset();
-        int docIdsLength = entry.getDocIdsLength();
-
+        long docIdsOffset   = entry.getDocIdsOffset();
+        long termFreqOffset = entry.getTermFreqOffset();
         docIdsReader.getChannel().position(docIdsOffset);
-        DataInputStream disDocId = new DataInputStream(docIdsReader);
-
         termFreqReader.getChannel().position(termFreqOffset);
-        DataInputStream disTermFreq = new DataInputStream(termFreqReader);
 
-
-        // load docIds and termFreq
-        for (int len = 0; len < docIdsLength; len += Integer.BYTES) {
-            int docId = disDocId.readInt();
-            int termFreq = disTermFreq.readInt();
-
-            entry.getPostingList().addPosting(docId, termFreq);
-        }
+        loadNextPosting(entry);
     }
 
     @Override
@@ -155,9 +143,7 @@ public class FetcherBinary implements Fetcher {
         }
     }
 
-    /** Used with the global reader, avoids restarting readers each time */
-    private void loadPostingGlobal(VocabularyEntry entry) throws IOException {
-        // TODO: 23/12/23 Test this method
+    protected void loadNextPosting(VocabularyEntry entry) throws IOException {
         if (!opened)
             throw new IOException("Fetcher has not been started");
 
@@ -188,7 +174,7 @@ public class FetcherBinary implements Fetcher {
             return null;
 
         vocabularyEntry = ByteUtils.bytesToVocabularyEntry(vocabularyEntryBytes, compression);
-        loadPostingGlobal(vocabularyEntry);
+        loadNextPosting(vocabularyEntry);
 
         term = ByteUtils.bytesToString(vocabularyEntryBytes, 0, Constants.BYTES_STORED_STRING);
         return Map.entry(term, vocabularyEntry);

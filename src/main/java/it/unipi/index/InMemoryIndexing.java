@@ -78,7 +78,7 @@ public class InMemoryIndexing implements AutoCloseable {
     void dumpVocabulary() throws IOException {
         Scorer scorer = Scorer.getScorer(documentIndex);
         // Compute upper bound of each term
-        for (Map.Entry<String, VocabularyEntry> entry : vocabulary.getEntries())
+        for (Map.Entry<String, VocabularyEntry> entry : vocabulary.getMapping().entrySet())
             entry.getValue().computeUpperBound(scorer);
 
         dumper.dumpVocabulary(vocabulary);

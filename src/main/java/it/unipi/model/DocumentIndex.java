@@ -7,6 +7,7 @@ import org.slf4j.LoggerFactory;
 
 import java.util.Map;
 import java.util.NavigableMap;
+import java.util.Objects;
 import java.util.TreeMap;
 
 public class DocumentIndex {
@@ -99,5 +100,18 @@ public class DocumentIndex {
 
     public Iterable<Map.Entry<Integer, DocumentIndexEntry>> getEntries() {
         return table.entrySet();
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        DocumentIndex that = (DocumentIndex) o;
+        return totalLength == that.totalLength && numDocuments == that.numDocuments && Objects.equals(table, that.table);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(totalLength, numDocuments, table);
     }
 }

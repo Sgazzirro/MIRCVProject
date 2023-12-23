@@ -85,9 +85,6 @@ public class FetcherTXT implements Fetcher {
         long docIdsOffset = entry.getDocIdsOffset();
         long termFreqOffset = entry.getTermFreqOffset();
 
-        // In the TXT case, the length is the number of postings
-        int len = entry.getDocIdsLength();
-
         docIdsReader = new BufferedReader(new FileReader(path.resolve(Constants.DOC_IDS_POSTING_FILENAME).toFile()));
         termFreqReader = new BufferedReader(new FileReader(path.resolve(Constants.TF_POSTING_FILENAME).toFile()));
 
@@ -97,11 +94,7 @@ public class FetcherTXT implements Fetcher {
         if (termFreqReader.skip(termFreqOffset) != termFreqOffset)
             throw new IOException("Error in reading posting list term frequencies");
 
-        for (int i = 0; i < len; i++)
-            entry.getPostingList().addPosting(
-                    Integer.parseInt(docIdsReader.readLine()),
-                    Integer.parseInt(termFreqReader.readLine())
-            );
+        loadNextPosting(entry);
     }
 
     public VocabularyEntry loadVocEntry(String term) throws IOException {
@@ -159,8 +152,7 @@ public class FetcherTXT implements Fetcher {
         return null;
     }
 
-    /** Used with the global reader, avoids restarting readers each time */
-    private void loadPostingGlobal(VocabularyEntry entry) throws IOException {
+    private void loadNextPosting(VocabularyEntry entry) throws IOException {
         if (!opened)
             throw new IOException("Fetcher has not been started");
 
@@ -192,7 +184,7 @@ public class FetcherTXT implements Fetcher {
         String[] params = line.split(",");
         term = params[0];
         result = parseVocabularyEntry(line);
-        loadPostingGlobal(result);
+        loadNextPosting(result);
 
         return Map.entry(term, result);
     }

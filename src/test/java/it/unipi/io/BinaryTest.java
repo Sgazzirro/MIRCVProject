@@ -441,6 +441,8 @@ public class BinaryTest {
                 fetcher.close();
 
                 // assert
+                System.out.println(input.getValue().getDocumentFrequency() == output.getValue().getDocumentFrequency());
+                System.out.println(input.getValue().getPostingList().equals(output.getValue().getPostingList()));
                 assertEquals(input.getKey(), output.getKey());
                 assertEquals(input.getValue(), output.getValue());
 

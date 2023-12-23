@@ -5,6 +5,7 @@ import it.unipi.model.implementation.PostingListImpl;
 import it.unipi.encoding.CompressionType;
 
 import java.util.List;
+import java.util.Objects;
 
 public abstract class PostingList {
 
@@ -71,5 +72,25 @@ public abstract class PostingList {
 
         entry.setPostingList(postingList);
         return postingList;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof PostingList that)) return false;
+
+        // This comparison works also if posting lists are of different implementations
+        // In this case it checks the equality of the part of the list loaded in memory
+        List<Integer> thisDocIds = getDocIdsList(), thatDocIds = that.getDocIdsList();
+        List<Integer> thisTermFreq = getTermFrequenciesList(), thatTermFreq = that.getTermFrequenciesList();
+        int comparisonLength = Math.min(thisDocIds.size(), thatDocIds.size());
+
+        return Objects.equals(thisDocIds.subList(0, comparisonLength), thatDocIds.subList(0, comparisonLength))
+                && Objects.equals(thisTermFreq.subList(0, comparisonLength), thatTermFreq.subList(0, comparisonLength));
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(getDocIdsList(), getTermFrequenciesList());
     }
 }

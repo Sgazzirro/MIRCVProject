@@ -34,11 +34,11 @@ public class SPIMICompleteTest {
      */
 
     @Mock
-    static DocumentStream ds;
+    private static DocumentStream ds;
 
-    static Vocabulary correctVocabulary;
-    static DocumentIndex correctDocumentIndex;
-    NavigableMap<String, VocabularyEntry> testOutput = new TreeMap<>();
+    private static Vocabulary correctVocabulary;
+    private static DocumentIndex correctDocumentIndex;
+    private final NavigableMap<String, VocabularyEntry> testOutput = new TreeMap<>();
 
     @BeforeClass
     public static void createResult() {
@@ -121,7 +121,7 @@ public class SPIMICompleteTest {
             fetchedIndex.addDocument(entryDI.getKey(),entryDI.getValue().getDocumentLength());
         fetcher.close();
 
-        assertEquals(correctVocabulary.getEntries(), testOutput.entrySet());
+        assertEquals(correctVocabulary.getMapping(), testOutput);
         assertEquals(correctDocumentIndex, fetchedIndex);
     }
 
@@ -152,7 +152,7 @@ public class SPIMICompleteTest {
         }
         fetcher.close();
 
-        assertTrue(Objects.equals(correctVocabulary.getEntries(), testOutput.entrySet()) && Objects.equals(correctDocumentIndex, fetchedIndex));
+        assertTrue(Objects.equals(correctVocabulary.getMapping(), testOutput) && Objects.equals(correctDocumentIndex, fetchedIndex));
     }
 
     @Test
@@ -181,7 +181,7 @@ public class SPIMICompleteTest {
             fetchedIndex.addDocument(entryDI.getKey(),entryDI.getValue().getDocumentLength());
 
         fetcher.close();
-        assertEquals(correctVocabulary.getEntries(), testOutput.entrySet());
+        assertEquals(correctVocabulary.getMapping(), testOutput);
         assertEquals(correctDocumentIndex, fetchedIndex);
     }
 
@@ -208,7 +208,7 @@ public class SPIMICompleteTest {
             fetchedIndex.addDocument(entryDI.getKey(),entryDI.getValue().getDocumentLength());
 
         fetcher.close();
-        assertEquals(correctVocabulary.getEntries(), testOutput.entrySet());
+        assertEquals(correctVocabulary.getMapping(), testOutput);
         assertEquals(correctDocumentIndex, fetchedIndex);
     }
 
@@ -239,7 +239,7 @@ public class SPIMICompleteTest {
         }
         fetcher.close();
 
-        Assert.assertEquals(correctVocabulary.getEntries(), testOutput.entrySet());
+        Assert.assertEquals(correctVocabulary.getMapping(), testOutput);
         Assert.assertEquals(correctDocumentIndex, fetchedIndex);
     }
 
@@ -258,25 +258,23 @@ public class SPIMICompleteTest {
         Fetcher fetcher = Fetcher.getFetcher(compression);
         fetcher.start(Constants.testPath);
         Map.Entry<String, VocabularyEntry> entry;
-        while((entry = fetcher.loadVocEntry()) != null){
+        while ( (entry = fetcher.loadVocEntry()) != null )
             testOutput.put(entry.getKey(), entry.getValue());
-        }
+
         fetcher.getDocumentIndexStats();
         DocumentIndex fetchedIndex = new DocumentIndex();
         Map.Entry<Integer, DocumentIndexEntry> entryDI;
-        while((entryDI = fetcher.loadDocEntry()) != null){
-            fetchedIndex.addDocument(entryDI.getKey(),entryDI.getValue().getDocumentLength());
-        }
+        while ( (entryDI = fetcher.loadDocEntry()) != null )
+            fetchedIndex.addDocument(entryDI.getKey(), entryDI.getValue().getDocumentLength());
+
         fetcher.close();
 
-        Assert.assertEquals(correctVocabulary.getEntries(), testOutput.entrySet());
-
+        Assert.assertEquals(correctVocabulary.getMapping(), testOutput);
         Assert.assertEquals(correctDocumentIndex, fetchedIndex);
     }
 
     @Test
     public void testBuildManyBlocks_COMPRESSED() throws Exception {
-
         CompressionType compression = CompressionType.COMPRESSED;
         Constants.setCompression(compression);
 
@@ -285,23 +283,22 @@ public class SPIMICompleteTest {
         spimi.setLimit(1);
         spimi.buildIndex(Constants.testPath);
 
-
         // Fetching
         Fetcher fetcher = Fetcher.getFetcher(compression);
         fetcher.start(Constants.testPath);
         Map.Entry<String, VocabularyEntry> entry;
-        while((entry = fetcher.loadVocEntry()) != null){
+        while ( (entry = fetcher.loadVocEntry() ) != null)
             testOutput.put(entry.getKey(), entry.getValue());
-        }
+
         fetcher.getDocumentIndexStats();
         DocumentIndex fetchedIndex = new DocumentIndex();
         Map.Entry<Integer, DocumentIndexEntry> entryDI;
-        while((entryDI = fetcher.loadDocEntry()) != null){
-            fetchedIndex.addDocument(entryDI.getKey(),entryDI.getValue().getDocumentLength());
-        }
+        while ( (entryDI = fetcher.loadDocEntry()) != null )
+            fetchedIndex.addDocument(entryDI.getKey(), entryDI.getValue().getDocumentLength());
+
         fetcher.close();
 
-        Assert.assertEquals(correctVocabulary.getEntries(), testOutput.entrySet());
+        Assert.assertEquals(correctVocabulary.getMapping(), testOutput);
         Assert.assertEquals(correctDocumentIndex, fetchedIndex);
     }
 

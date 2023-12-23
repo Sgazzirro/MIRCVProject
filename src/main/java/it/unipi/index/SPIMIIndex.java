@@ -111,13 +111,16 @@ public class SPIMIIndex {
                 blockFetchers.add(blockFetcher);
             }
 
+            logger.info("Starting merge of all blocks");
             globalIndexer.setup(path);
 
             // 3) Merge all document indexes
             Constants.N = mergeDocumentIndexes(blockFetchers);
+            logger.info("Document index correctly merged");
 
             // 4) Merge all vocabularies (with relative posting lists)
             mergeVocabularies(blockFetchers);
+            logger.info("Vocabulary correctly merged");
 
             // 5) Close all fetchers
             for (int i = 0; i < blocksProcessed; i++)
@@ -245,6 +248,11 @@ public class SPIMIIndex {
         String[] terms = new String[blocksProcessed];
         VocabularyEntry[] entries = new VocabularyEntry[blocksProcessed];
 
+        // For debug purposes
+        char currentLetter = '\0';
+        int  termsProcessed = 0;
+        logger.info("Starting vocabulary merge");
+
         String lowestTerm;
         while (true) {
             for (int k = 0; k < blocksProcessed; k++) {
@@ -299,6 +307,17 @@ public class SPIMIIndex {
             // Write the merge onto the output file
             VocabularyEntry entry = mergeEntries(toMerge);
             globalIndexer.dumpVocabularyLine(new AbstractMap.SimpleEntry<>(lowestTerm, entry));
+
+            termsProcessed++;
+
+            if (lowestTerm == null || lowestTerm.isEmpty())
+                continue;
+
+            char firstLetter = lowestTerm.charAt(0);
+            if (firstLetter != currentLetter && Character.isLetter(firstLetter)) {
+                currentLetter = firstLetter;
+                logger.debug((termsProcessed - 1) + " terms processed, dumping letter  -->  " + currentLetter);
+            }
         }
 
     }

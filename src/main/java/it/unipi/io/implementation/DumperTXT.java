@@ -81,7 +81,7 @@ public class DumperTXT implements Dumper {
 
     @Override
     public void dumpVocabulary(Vocabulary vocabulary) throws IOException {
-        for (Map.Entry<String, VocabularyEntry> entry : vocabulary.getEntries())
+        for (Map.Entry<String, VocabularyEntry> entry : vocabulary.getMapping().entrySet())
             dumpVocabularyEntry(entry);
     }
 

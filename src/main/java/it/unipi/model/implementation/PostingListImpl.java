@@ -102,9 +102,4 @@ public class PostingListImpl extends PostingList {
     public String toString() {
         return "DocIdList: " + docIdsList + " TermFrequencyList: " + termFrequenciesList;
     }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(docIdsList, termFrequenciesList);
-    }
 }

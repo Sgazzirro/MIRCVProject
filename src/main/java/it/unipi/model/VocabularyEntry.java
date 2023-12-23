@@ -115,7 +115,7 @@ public class VocabularyEntry {
 
     @Override
     public String toString() {
-        return "VocabularyEntryImpl{" +
+        return "VocabularyEntry{" +
                 "documentFrequency=" + documentFrequency +
                 ", upperBound=" + upperBound +
                 ", docIdsOffset=" + docIdsOffset +
