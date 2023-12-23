@@ -69,6 +69,8 @@ public class FetcherTXT implements Fetcher {
         try {
             vocabularyReader.close();
             documentIndexReader.close();
+            docIdsReader.close();
+            termFreqReader.close();
 
             logger.trace("Fetcher correctly closed");
             opened = false;

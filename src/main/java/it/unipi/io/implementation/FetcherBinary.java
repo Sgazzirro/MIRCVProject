@@ -90,11 +90,13 @@ public class FetcherBinary implements Fetcher {
         if (!opened)
             throw new IOException("Fetcher has not been started");
 
+        // Set file readers to the beginning of the posting to read
         long docIdsOffset   = entry.getDocIdsOffset();
         long termFreqOffset = entry.getTermFreqOffset();
         docIdsReader.getChannel().position(docIdsOffset);
         termFreqReader.getChannel().position(termFreqOffset);
 
+        // Read the posting
         loadNextPosting(entry);
     }
 
