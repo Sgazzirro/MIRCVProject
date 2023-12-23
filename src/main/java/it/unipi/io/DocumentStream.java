@@ -69,14 +69,17 @@ public class DocumentStream {
         Document doc = new Document();
 
         String line = br.readLine();
-        offset++;
         if (line == null)
             return null;
         String[] data = line.split("\t"); // Split the line into fields using the tab character
 
-        doc.setId(Integer.parseInt(data[0]));
+        if (offset == 0)
+            doc.setId(0);
+        else
+            doc.setId(Integer.parseInt(data[0]));
         doc.setText(data[1]);
 
+        offset++;
         return doc;
     }
 
