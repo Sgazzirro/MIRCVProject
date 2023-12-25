@@ -8,6 +8,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
 import java.util.zip.GZIPInputStream;
 
 public class DocumentStream {
@@ -75,8 +76,13 @@ public class DocumentStream {
 
         if (offset == 0)
             doc.setId(0);
-        else
-            doc.setId(Integer.parseInt(data[0]));
+        else {
+            try {
+                doc.setId(Integer.parseInt(data[0]));
+            } catch(NumberFormatException nfe){ // end of file reached
+                return null;
+            }
+        }
         doc.setText(data[1]);
 
         offset++;
