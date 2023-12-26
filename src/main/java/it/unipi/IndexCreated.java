@@ -26,7 +26,7 @@ public class IndexCreated {
 
         MaxScore max = new MaxScore(Constants.vocabulary, Constants.documentIndex, Tokenizer.getInstance());
 
-        DocumentStream stream = new DocumentStream();
+        DocumentStream stream = new DocumentStream(Constants.COLLECTION_FILE);
 
         for(int i = 0; i < 2; i++) {
             long start = System.currentTimeMillis();

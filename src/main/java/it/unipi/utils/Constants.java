@@ -16,18 +16,17 @@ public class Constants {
 
     private static final Logger logger = LoggerFactory.getLogger(Constants.class);
 
-    public static final String COLLECTION_FILE = "data/collection.tar.gz";
-
-    public static final Path dataPath = Paths.get("./data/");
-    public static final Path testPath = Paths.get("./data/", "test/");
+    public static final Path DATA_PATH = Paths.get("./data");
+    public static final Path TEST_PATH = DATA_PATH.resolve("test");
+    public static final File COLLECTION_FILE = DATA_PATH.resolve("collection.tar.gz").toFile();
 
     public static final String VOCABULARY_FILENAME = "vocabulary.bin";
     public static final String DOCUMENT_INDEX_FILENAME = "document_index.bin";
-    public static final String DOC_IDS_POSTING_FILENAME = "doc_ids.bin";
-    public static final String TF_POSTING_FILENAME = "term_frequencies.bin";
+    public static final String DOC_IDS_FILENAME = "doc_ids.bin";
+    public static final String TERM_FREQ_FILENAME = "term_frequencies.bin";
 
     // Stopwords downloaded from https://raw.githubusercontent.com/stopwords-iso/stopwords-en/master/stopwords-en.txt
-    public static final Path STOPWORDS_FILE = Paths.get("data/", "stopwords-en.txt");
+    public static final Path STOPWORDS_FILE = DATA_PATH.resolve("stopwords-en.txt");
     public static final List<String> STOPWORDS = IOUtils.loadStopwords();
 
     public static int BLOCK_SIZE = 10000;

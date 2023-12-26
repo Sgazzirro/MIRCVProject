@@ -31,8 +31,8 @@ public class IOUtils {
         File[] filesToDelete = new File[] {
                 path.resolve(Constants.VOCABULARY_FILENAME).toFile(),
                 path.resolve(Constants.DOCUMENT_INDEX_FILENAME).toFile(),
-                path.resolve(Constants.DOC_IDS_POSTING_FILENAME).toFile(),
-                path.resolve(Constants.TF_POSTING_FILENAME).toFile()
+                path.resolve(Constants.DOC_IDS_FILENAME).toFile(),
+                path.resolve(Constants.TERM_FREQ_FILENAME).toFile()
         };
 
         for (File file : filesToDelete)

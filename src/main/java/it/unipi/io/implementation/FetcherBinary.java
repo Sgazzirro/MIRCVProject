@@ -46,8 +46,8 @@ public class FetcherBinary implements Fetcher {
                         / Constants.DOCUMENT_INDEX_ENTRY_BYTES_SIZE;
 
                 vocabularyReader    = new FileInputStream(vocPath.toFile());
-                docIdsReader        = new FileInputStream(path.resolve(Constants.DOC_IDS_POSTING_FILENAME).toFile());
-                termFreqReader      = new FileInputStream(path.resolve(Constants.TF_POSTING_FILENAME).toFile());
+                docIdsReader        = new FileInputStream(path.resolve(Constants.DOC_IDS_FILENAME).toFile());
+                termFreqReader      = new FileInputStream(path.resolve(Constants.TERM_FREQ_FILENAME).toFile());
                 documentIndexReader = new FileInputStream(docPath.toFile());
 
                 opened = true;

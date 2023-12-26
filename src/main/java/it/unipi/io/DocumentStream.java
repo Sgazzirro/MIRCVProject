@@ -2,7 +2,6 @@ package it.unipi.io;
 
 
 import it.unipi.model.Document;
-import it.unipi.utils.Constants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -15,47 +14,43 @@ public class DocumentStream {
 
     protected static final Logger logger = LoggerFactory.getLogger(DocumentStream.class);
 
-    private BufferedReader br;
+    private BufferedReader reader;
 
-    private final String filename;
+    private final File file;
 
     private final int startDocId;   // docId of the first document to be processed     (0 by default)
     private final int endDocId;     // docId of the first document not to be processed (-1 by default -> EOF)
     private int offset;
 
-    public DocumentStream(String filename, int startDocId, int endDocId) throws IOException {
-        this.filename = filename;
+    public DocumentStream(File file, int startDocId, int endDocId) throws IOException {
+        this.file = file;
         this.startDocId = startDocId;
         this.endDocId = (endDocId >= 0) ? endDocId : Integer.MAX_VALUE;
         reset();
     }
 
-    public DocumentStream(String filename) throws IOException {
-        this(filename, 0, -1);
-    }
-
-    public DocumentStream() throws IOException {
-        this(Constants.COLLECTION_FILE, 0, -1);
+    public DocumentStream(File file) throws IOException {
+        this(file, 0, -1);
     }
 
     private void reset() throws IOException {
-        FileInputStream fileInput = new FileInputStream(filename);
+        FileInputStream fileInput = new FileInputStream(file);
 
         // Check if file is compressed
         InputStream inputStream = fileInput;
-        if (filename.endsWith(".tar.gz")) {
-            logger.info("Compressed file " + filename + " correctly decompressed");
+        if (file.getName().endsWith(".tar.gz")) {
+            logger.info("Compressed file " + file + " correctly decompressed");
             inputStream = new GZIPInputStream(fileInput);
         }
 
         // Forces Unicode decoding (it should be on by default)
         InputStreamReader reader = new InputStreamReader(inputStream, StandardCharsets.UTF_8);
-        br = new BufferedReader(reader);
+        this.reader = new BufferedReader(reader);
 
         // Set document stream start to startDocId
         offset = 0;
         while (offset < startDocId) {
-            br.readLine();
+            this.reader.readLine();
             offset++;
         }
 
@@ -69,7 +64,7 @@ public class DocumentStream {
 
         Document doc = new Document();
 
-        String line = br.readLine();
+        String line = reader.readLine();
         if (line == null)
             return null;
         String[] data = line.split("\t"); // Split the line into fields using the tab character
@@ -93,7 +88,7 @@ public class DocumentStream {
         reset();
 
         while (docId > 0) {
-            br.readLine();
+            reader.readLine();
             offset++;
             docId--;
         }

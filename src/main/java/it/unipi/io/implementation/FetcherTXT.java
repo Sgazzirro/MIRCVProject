@@ -38,10 +38,10 @@ public class FetcherTXT implements Fetcher {
                 );
 
                 docIdsReader = new BufferedReader(
-                        new FileReader(path.resolve(Constants.DOC_IDS_POSTING_FILENAME).toFile())
+                        new FileReader(path.resolve(Constants.DOC_IDS_FILENAME).toFile())
                 );
                 termFreqReader = new BufferedReader(
-                        new FileReader(path.resolve(Constants.TF_POSTING_FILENAME).toFile())
+                        new FileReader(path.resolve(Constants.TERM_FREQ_FILENAME).toFile())
                 );
 
                 opened = true;
@@ -87,8 +87,8 @@ public class FetcherTXT implements Fetcher {
         long docIdsOffset = entry.getDocIdsOffset();
         long termFreqOffset = entry.getTermFreqOffset();
 
-        docIdsReader = new BufferedReader(new FileReader(path.resolve(Constants.DOC_IDS_POSTING_FILENAME).toFile()));
-        termFreqReader = new BufferedReader(new FileReader(path.resolve(Constants.TF_POSTING_FILENAME).toFile()));
+        docIdsReader = new BufferedReader(new FileReader(path.resolve(Constants.DOC_IDS_FILENAME).toFile()));
+        termFreqReader = new BufferedReader(new FileReader(path.resolve(Constants.TERM_FREQ_FILENAME).toFile()));
 
         // Set the readers to the correct offsets (computed before)
         if (docIdsReader.skip(docIdsOffset) != docIdsOffset)

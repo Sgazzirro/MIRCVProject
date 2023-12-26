@@ -38,10 +38,10 @@ public class CompleteBM25Test {
     public void setup() throws IOException  {
 
         Constants.setScoring(ScoringType.BM25);
-        Constants.setPath(Constants.testPath);
+        Constants.setPath(Constants.TEST_PATH);
 
-        IOUtils.deleteDirectory(Constants.testPath);
-        IOUtils.createDirectory(Constants.testPath);
+        IOUtils.deleteDirectory(Constants.TEST_PATH);
+        IOUtils.createDirectory(Constants.TEST_PATH);
 
         when(ds.nextDoc()).thenReturn(
                 new Document("0\tduck duck duck"),
@@ -54,7 +54,7 @@ public class CompleteBM25Test {
         Constants.setCompression(compression);
 
         // Dumping
-        new SPIMIIndex(compression, ds).buildIndex(Constants.testPath);
+        new SPIMIIndex(compression, ds).buildIndex(Constants.TEST_PATH);
         vocabulary = new Vocabulary(compression);
         documentIndex = new DocumentIndex();
     }

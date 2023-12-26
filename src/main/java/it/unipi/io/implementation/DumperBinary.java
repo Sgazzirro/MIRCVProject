@@ -41,8 +41,8 @@ public class DumperBinary implements Dumper {
 
                 vocabularyWriter    = FileChannel.open(path.resolve(Constants.VOCABULARY_FILENAME),      StandardOpenOption.CREATE, StandardOpenOption.APPEND);
                 documentIndexWriter = FileChannel.open(path.resolve(Constants.DOCUMENT_INDEX_FILENAME),  StandardOpenOption.CREATE, StandardOpenOption.APPEND);
-                docIdsWriter        = FileChannel.open(path.resolve(Constants.DOC_IDS_POSTING_FILENAME), StandardOpenOption.CREATE, StandardOpenOption.APPEND);
-                termFreqWriter      = FileChannel.open(path.resolve(Constants.TF_POSTING_FILENAME),      StandardOpenOption.CREATE, StandardOpenOption.APPEND);
+                docIdsWriter        = FileChannel.open(path.resolve(Constants.DOC_IDS_FILENAME), StandardOpenOption.CREATE, StandardOpenOption.APPEND);
+                termFreqWriter      = FileChannel.open(path.resolve(Constants.TERM_FREQ_FILENAME),      StandardOpenOption.CREATE, StandardOpenOption.APPEND);
                 docIdsOffset = termFreqOffset = 0;
 
                 opened = true;

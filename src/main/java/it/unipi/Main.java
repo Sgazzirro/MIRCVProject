@@ -11,11 +11,10 @@ import java.nio.file.Path;
 public class Main {
 
     public static void main( String[] args ) throws IOException {
+        Path indexPath = Constants.DATA_PATH;
+        File collectionFile = Constants.COLLECTION_FILE;
 
-        Path indexPath = Constants.dataPath;
-        Constants.setPath(indexPath);
-
-        DocumentStream stream = new DocumentStream();
+        DocumentStream stream = new DocumentStream(collectionFile);
 
         SPIMIIndex spimi = new SPIMIIndex(CompressionType.COMPRESSED, stream);
         spimi.buildIndex(indexPath);

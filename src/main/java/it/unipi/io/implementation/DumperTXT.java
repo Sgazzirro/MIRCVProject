@@ -40,8 +40,8 @@ public class DumperTXT implements Dumper {
 
                 vocabularyWriter = new BufferedWriter(new FileWriter(path.resolve(Constants.VOCABULARY_FILENAME).toFile()));
                 documentIndexWriter = new BufferedWriter(new FileWriter(path.resolve(Constants.DOCUMENT_INDEX_FILENAME).toFile()));
-                docIdsWriter = new BufferedWriter(new FileWriter(path.resolve(Constants.DOC_IDS_POSTING_FILENAME).toFile()));
-                termFreqWriter = new BufferedWriter(new FileWriter(path.resolve(Constants.TF_POSTING_FILENAME).toFile()));
+                docIdsWriter = new BufferedWriter(new FileWriter(path.resolve(Constants.DOC_IDS_FILENAME).toFile()));
+                termFreqWriter = new BufferedWriter(new FileWriter(path.resolve(Constants.TERM_FREQ_FILENAME).toFile()));
                 termFreqOffset = docIdsOffset = 0;
 
                 opened = true;

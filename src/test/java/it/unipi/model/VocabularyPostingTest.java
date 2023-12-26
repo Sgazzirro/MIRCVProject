@@ -32,7 +32,7 @@ public class VocabularyPostingTest {
 
     @BeforeClass
     public static void setUp() {
-        Constants.setPath(Constants.testPath);
+        Constants.setPath(Constants.TEST_PATH);
     }
 
     private Fetcher fetcher;
@@ -48,7 +48,7 @@ public class VocabularyPostingTest {
             correctPostingList.addPosting(i, i+1);
 
         Dumper dumper = Dumper.getInstance(compression);
-        dumper.start(Constants.testPath);
+        dumper.start(Constants.TEST_PATH);
         dumper.dumpVocabularyEntry(new AbstractMap.SimpleEntry<>("test1", entry));
         dumper.dumpVocabularyEntry(new AbstractMap.SimpleEntry<>("test2", entry));
         dumper.close();
@@ -84,6 +84,6 @@ public class VocabularyPostingTest {
     @After
     public void cleanUp() throws Exception {
         fetcher.close();
-        IOUtils.deleteDirectory(Constants.testPath);
+        IOUtils.deleteDirectory(Constants.TEST_PATH);
     }
 }

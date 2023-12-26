@@ -65,7 +65,7 @@ public class PostingListCollectionTest {
     @BeforeClass
     public static void setUp() {
         Constants.setCompression(CompressionType.COMPRESSED);
-        Constants.setPath(Constants.dataPath);
+        Constants.setPath(Constants.DATA_PATH);
     }
 
     @After
