@@ -11,14 +11,26 @@ import java.util.List;
 
 public class DumperCompressed extends DumperBinary {
 
+    private final Encoder docIdsEncoder;
+    private final Encoder termFreqEncoder;
+
+    public DumperCompressed(Encoder docIdsEncoder, Encoder termFreqEncoder) {
+        this.docIdsEncoder = docIdsEncoder;
+        this.termFreqEncoder = termFreqEncoder;
+    }
+
+    public DumperCompressed() {
+        this(Encoder.getDocIdsEncoder(), Encoder.getTermFrequenciesEncoder());
+    }
+
     @Override
     protected int dumpDocIds(List<Integer> docIdList) throws IOException {
-        return dumpEncodedList(docIdList, Encoder.getDocIdsEncoder(), docIdsWriter);
+        return dumpEncodedList(docIdList, docIdsEncoder, docIdsWriter);
     }
 
     @Override
     protected int dumpTermFrequencies(List<Integer> termFrequencyList) throws IOException {
-        return dumpEncodedList(termFrequencyList, Encoder.getTermFrequenciesEncoder(), termFreqWriter);
+        return dumpEncodedList(termFrequencyList, termFreqEncoder, termFreqWriter);
     }
 
     private int dumpEncodedList(List<Integer> list, Encoder encoder, FileChannel writer) throws IOException {

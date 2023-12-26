@@ -1,9 +1,10 @@
 package it.unipi.model.implementation;
 
 import it.unipi.encoding.Encoder;
+import it.unipi.encoding.IntegerListBlock;
 import it.unipi.model.PostingList;
 import it.unipi.model.VocabularyEntry;
-import it.unipi.utils.*;
+import it.unipi.utils.ByteUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -19,6 +20,9 @@ public class PostingListCompressedImpl extends PostingList {
     private int blockPointer;
     private int docIdsBlockPointer;                    // This represents the offset of the next docIdsBlock
     private int termFrequenciesBlockPointer;           // This represents the index of the actual block of term frequencies
+
+    private static final Encoder docIdsEncoder = Encoder.getDocIdsEncoder();
+    private static final Encoder termFreqEncoder = Encoder.getTermFrequenciesEncoder();
 
     public PostingListCompressedImpl(VocabularyEntry entry) {
         super(entry);
@@ -42,7 +46,6 @@ public class PostingListCompressedImpl extends PostingList {
 
     @Override
     public boolean hasNext() {
-        //long docIdsEndOffset = getDocIdsOffset() + getDocIdsLength();
         long docIdsEndOffset = rootEntry.getDocIdsLength();
         return (blockPointer + 1 < docIdsDecompressedList.size()) || (docIdsBlockPointer < docIdsEndOffset);
     }
@@ -57,35 +60,53 @@ public class PostingListCompressedImpl extends PostingList {
         if (blockPointer + 1 < docIdsDecompressedList.size())
             blockPointer++;
         else {
-            loadNextBlock();
+            IntegerListBlock docIdsBlock = docIdsEncoder.getNextBlock(compressedDocIds, docIdsBlockPointer),
+                termFreqBlock = termFreqEncoder.getNextBlock(compressedTermFrequencies, termFrequenciesBlockPointer);
+
+            decompressBlock(docIdsBlock, termFreqBlock);
             blockPointer = 0;
         }
     }
 
     @Override
     public void nextGEQ(int docId) {
-        while (true) {
-            // If we are in the correct block advance the pointer to the right place
-            if (docIdsDecompressedList.get(docIdsDecompressedList.size() - 1) >= docId) {
-                for (int i = (blockPointer!=-1) ? blockPointer : 0; i < docIdsDecompressedList.size(); i++) {
-                    if (docIdsDecompressedList.get(i) >= docId) {
-                        blockPointer = i;
-                        return;
-                    }
+        // If we are in the correct block advance the pointer to the right place
+        if (docIdsDecompressedList.get(docIdsDecompressedList.size() - 1) >= docId) {
+            for (int i = (blockPointer!=-1) ? blockPointer : 0; i < docIdsDecompressedList.size(); i++) {
+                if (docIdsDecompressedList.get(i) >= docId) {
+                    blockPointer = i;
+                    return;
                 }
             }
-
-            // if we're in the last block, and it doesn't contain the docId
-            // long docIdsEndOffset = getDocIdsOffset() + getDocIdsLength();
-            long docIdsEndOffset = rootEntry.getDocIdsLength();
-            if (docIdsBlockPointer == docIdsEndOffset &&
-                    docIdsDecompressedList.get(docIdsDecompressedList.size() - 1) < docId)
-                throw new NoSuchElementException();
-
-            // Else get the next block
-            loadNextBlock();
-            blockPointer = 0;
         }
+
+        // if we're in the last block, and it doesn't contain the docId
+        long docIdsLength = rootEntry.getDocIdsLength();
+        if (docIdsBlockPointer == docIdsLength &&
+                docIdsDecompressedList.get(docIdsDecompressedList.size() - 1) < docId)
+            throw new NoSuchElementException();
+
+        // Else get the block containing the right docId
+        IntegerListBlock docIdsBlock, termFreqBlock;
+        while (true) {
+            docIdsBlock = docIdsEncoder.getNextBlock(compressedDocIds, docIdsBlockPointer);
+            termFreqBlock = termFreqEncoder.getNextBlock(compressedTermFrequencies, termFrequenciesBlockPointer);
+
+            // If this is the last block, or we are at the correct block, exit the loop
+            if (docIdsBlockPointer + docIdsBlock.length() == docIdsLength)
+                break;
+            if (docIdsBlock.upperbound() < docId)
+                break;
+
+            docIdsBlockPointer += docIdsBlock.length();
+            termFrequenciesBlockPointer += termFreqBlock.length();
+        }
+
+        decompressBlock(docIdsBlock, termFreqBlock);
+        blockPointer = 0;
+
+        // Once the block has been decompressed, call again the nextGEQ to advance the pointer to the correct posting
+        nextGEQ(docId);
     }
 
     @Override
@@ -93,7 +114,7 @@ public class PostingListCompressedImpl extends PostingList {
         docIdsBlockPointer = termFrequenciesBlockPointer = 0;
         blockPointer = -1;
 
-        loadNextBlock();
+        loadFirstBlock();
     }
 
     @Override
@@ -109,16 +130,23 @@ public class PostingListCompressedImpl extends PostingList {
         return false;
     }
 
-    public void loadNextBlock() {
-        ByteBlock docIdsBlock = ByteUtils.fetchNextDocIdsBlock(compressedDocIds, docIdsBlockPointer);
-        docIdsBlockPointer = docIdsBlock.offset();
-        docIdsDecompressedList = Encoder.getDocIdsEncoder()
-                .decode(docIdsBlock.bytes());
+    public void loadFirstBlock() {
+        IntegerListBlock docIdsBlock = docIdsEncoder.getNextBlock(compressedDocIds, 0);
+        IntegerListBlock termFreqBlock = termFreqEncoder.getNextBlock(compressedTermFrequencies, 0);
 
-        ByteBlock termFrequenciesBlock = ByteUtils.fetchNextTermFrequenciesBlock(compressedTermFrequencies, termFrequenciesBlockPointer);
-        termFrequenciesBlockPointer = termFrequenciesBlock.offset();
-        termFrequenciesDecompressedList = Encoder.getTermFrequenciesEncoder()
-                .decode(termFrequenciesBlock.bytes());
+        decompressBlock(docIdsBlock, termFreqBlock);
+    }
+
+    private void decompressBlock(IntegerListBlock docIdsBlock, IntegerListBlock termFreqBlock) {
+        docIdsDecompressedList = docIdsEncoder.decode(
+                ByteUtils.subArray(compressedDocIds, docIdsBlockPointer, docIdsBlock.length())
+        );
+        docIdsBlockPointer += docIdsBlock.length();
+
+        termFrequenciesDecompressedList = termFreqEncoder.decode(
+                ByteUtils.subArray(compressedTermFrequencies, termFrequenciesBlockPointer, termFreqBlock.length())
+        );
+        termFrequenciesBlockPointer += termFreqBlock.length();
 
         // Remove fictitious 0 frequencies
         int first0Index = docIdsDecompressedList.size();
