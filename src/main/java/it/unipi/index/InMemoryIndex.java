@@ -14,9 +14,9 @@ import java.io.*;
 import java.nio.file.Path;
 import java.util.*;
 
-public class InMemoryIndexing implements AutoCloseable {
+public class InMemoryIndex implements AutoCloseable {
 
-    private static final Logger logger = LoggerFactory.getLogger(InMemoryIndexing.class);
+    private static final Logger logger = LoggerFactory.getLogger(InMemoryIndex.class);
 
     private Vocabulary vocabulary;
     private DocumentIndex documentIndex;
@@ -24,7 +24,7 @@ public class InMemoryIndexing implements AutoCloseable {
     private final Dumper dumper;
     private final Tokenizer tokenizer;
 
-    public InMemoryIndexing(CompressionType compression) {
+    public InMemoryIndex(CompressionType compression) {
         vocabulary = new Vocabulary(compression);
         documentIndex = new DocumentIndex();
 
@@ -84,7 +84,7 @@ public class InMemoryIndexing implements AutoCloseable {
         dumper.dumpVocabulary(vocabulary);
     }
 
-    void dumpVocabularyLine(Map.Entry<String, VocabularyEntry> entry) throws IOException {
+    public void dumpVocabularyLine(Map.Entry<String, VocabularyEntry> entry) throws IOException {
         // Onto the vocabulary
         // Term | DF | OffsetID | OffsetTF | DocLen | TFLen
         dumper.dumpVocabularyEntry(entry);

@@ -25,7 +25,7 @@ public class SPIMIIndex {
     /**
      * The globalIndexer is demanded to dump the merged version of the index
      */
-    private final InMemoryIndexing globalIndexer;
+    private final InMemoryIndex globalIndexer;
     /**
      * The limit is the percentage of memory allowed to be used before dumping the current block and creating a new one
      * Notice that, even in case of going ahead this threshold, the current document is however processed
@@ -37,6 +37,7 @@ public class SPIMIIndex {
      * by fact the number of blocks written at the moment
      */
     private int blocksProcessed = 0;
+    private int docProcessed = 0;
 
     /**
      * Set to true when the DocumentStream no more generates documents
@@ -52,10 +53,19 @@ public class SPIMIIndex {
     public SPIMIIndex(CompressionType compression, DocumentStream stream) {
         Constants.setCompression(compression);
         this.stream = stream;
-        this.globalIndexer = new InMemoryIndexing(compression);
+        this.globalIndexer = new InMemoryIndex(compression);
 
         // Compression of blocks (we never write compressed blocks for merging ease)
         this.blockCompression = (compression == CompressionType.DEBUG) ? compression : CompressionType.BINARY;
+    }
+
+    public SPIMIIndex(InMemoryIndex globalIndexer, DocumentStream stream) {
+        Constants.setCompression(CompressionType.BINARY);
+        this.stream = stream;
+        this.globalIndexer = globalIndexer;
+
+        // Compression of blocks (we never write compressed blocks for merging ease)
+        this.blockCompression = CompressionType.BINARY;
     }
 
     /**
@@ -151,22 +161,15 @@ public class SPIMIIndex {
         long usedMemory = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
 
         try (
-                InMemoryIndexing blockIndexer = new InMemoryIndexing(blockCompression)
+                InMemoryIndex blockIndexer = new InMemoryIndex(blockCompression)
         ) {
             // Set up the indexer for this block
             if (!blockIndexer.setup(blockPath))
                 throw new IOException("Could not open directory for dumping the blocks");
 
             // 1) Process documents until memory limit reached
-            int docProcessed = 0;
-
+            int blockDocsProcessed = 0;
             while (availableMemory(usedMemory)) {
-                // Write the block if we reached a certain (high) number of entries
-                if (docProcessed++ == Constants.MAX_ENTRIES_PER_SPIMI_BLOCK) {
-                    logger.debug("Max number of entries per block reached (" + Constants.MAX_ENTRIES_PER_SPIMI_BLOCK + ")");
-                    break;
-                }
-
                 // Get the next document
                 Optional<Document> doc = Optional.ofNullable(stream.nextDoc());
                 if (doc.isEmpty()) {
@@ -175,8 +178,12 @@ public class SPIMIIndex {
                     break;
                 }
                 blockIndexer.processDocument(doc.get());
+
+                docProcessed++; blockDocsProcessed++;
+                if (docProcessed % Constants.MAX_ENTRIES_PER_SPIMI_BLOCK == 0)
+                    logger.debug(docProcessed + " documents processed");
+
                 usedMemory = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
-                // System.out.println("USED MEMORY : " + (usedMemory - startMemory));
             }
 
             logger.debug("Block " + blocksProcessed + " correctly created, waiting for dump...");
@@ -185,7 +192,7 @@ public class SPIMIIndex {
             // 2.1) Dump the block
             blockIndexer.dumpDocumentIndex();
             blockIndexer.dumpVocabulary();
-            logger.info("Block " + blocksProcessed + " dumped");
+            logger.info("Block " + blocksProcessed + " dumped (" + blockDocsProcessed + " documents)");
 
         } catch (IOException ioException) {
             logger.error("Fatal error happened while inverting block");
@@ -315,14 +322,12 @@ public class SPIMIIndex {
                 continue;
 
             char firstLetter = lowestTerm.charAt(0);
-            if (firstLetter != currentLetter && Character.isLetter(firstLetter)) {
+            if (firstLetter != currentLetter && 'a' <= firstLetter && firstLetter <= 'z') {
                 currentLetter = firstLetter;
-                logger.debug((termsProcessed - 1) + " terms processed, dumping letter  -->  " + currentLetter);
+                logger.debug("{} terms processed, dumping letter  {}", String.format("%7d", termsProcessed - 1), currentLetter);
             }
         }
-
     }
-
 
     /**
      * Merge the entries related to the same term in different blocks

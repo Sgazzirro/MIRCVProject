@@ -95,7 +95,7 @@ public class PostingListCompressedImpl extends PostingList {
             // If this is the last block, or we are at the correct block, exit the loop
             if (docIdsBlockPointer + docIdsBlock.length() == docIdsLength)
                 break;
-            if (docIdsBlock.upperbound() < docId)
+            if (docId < docIdsBlock.upperbound())
                 break;
 
             docIdsBlockPointer += docIdsBlock.length();

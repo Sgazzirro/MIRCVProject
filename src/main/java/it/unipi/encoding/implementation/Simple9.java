@@ -42,10 +42,11 @@ public class Simple9 extends Encoder {
     @Override
     public byte[] encode(List<Integer> intList) {
         List<Integer> listToEncode;
-        // Encode gaps if we have to encode doc ids
-        if (encoding == EncodingType.DOC_IDS)
+        // Encode gaps if we have to encode doc ids (and add 1 to the first docId to avoid the case docId = 0)
+        if (encoding == EncodingType.DOC_IDS) {
             listToEncode = Utils.computeGaps(intList);
-        else
+            listToEncode.set(0, listToEncode.get(0)+1);
+        } else
             listToEncode = intList;
 
         List<Integer> blockList = new ArrayList<>();
@@ -95,7 +96,8 @@ public class Simple9 extends Encoder {
     public List<Integer> decode(byte[] byteList) {
         List<Integer> intList = new ArrayList<>();
 
-        int num = 0, gap;
+        int num = -1,       // Subtract 1 to the first docId since we added 1 in encoding phase
+                gap;
 
         // Read 4 bytes at a time (starting after skipping pointer bytes)
         int offset = Integer.BYTES + ((encoding == EncodingType.DOC_IDS) ? Integer.BYTES : 0);

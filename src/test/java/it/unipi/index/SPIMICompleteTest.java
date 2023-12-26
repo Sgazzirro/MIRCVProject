@@ -99,7 +99,7 @@ public class SPIMICompleteTest {
         CompressionType compression = CompressionType.DEBUG;
 
         // Dumping
-        InMemoryIndexing indexerSingleBlock = new InMemoryIndexing(compression);
+        InMemoryIndex indexerSingleBlock = new InMemoryIndex(compression);
 
         indexerSingleBlock.setup(Constants.TEST_PATH);
         indexerSingleBlock.buildIndex(ds);

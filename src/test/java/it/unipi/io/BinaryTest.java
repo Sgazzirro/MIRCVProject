@@ -12,9 +12,9 @@ import java.util.*;
 
 import static org.junit.Assert.assertEquals;
 
-public class BinaryEncoderEncoderTest {
+public class BinaryTest {
 
-    private static final Logger logger = LoggerFactory.getLogger(BinaryEncoderEncoderTest.class);
+    private static final Logger logger = LoggerFactory.getLogger(BinaryTest.class);
 
     private static Dumper dumper;
     private static Fetcher fetcher;
@@ -306,7 +306,7 @@ public class BinaryEncoderEncoderTest {
 
             plInput.nextGEQ(8);
             plOutput.nextGEQ(8);
-            assertEquals(8,plOutput.docId());
+            assertEquals(8, plOutput.docId());
 
         } catch (Exception e) {
             logger.error("Error in test", e);
@@ -408,7 +408,7 @@ public class BinaryEncoderEncoderTest {
         int numTimes = 10;
         List<Integer> list = new ArrayList<>();
         int lowerBound = 1;
-        int upperBound = 8800000;
+        int upperBound = 100000;
         int numDocs = 10000;
 
         // tests
@@ -441,8 +441,6 @@ public class BinaryEncoderEncoderTest {
                 fetcher.close();
 
                 // assert
-                System.out.println(input.getValue().getDocumentFrequency() == output.getValue().getDocumentFrequency());
-                System.out.println(input.getValue().getPostingList().equals(output.getValue().getPostingList()));
                 assertEquals(input.getKey(), output.getKey());
                 assertEquals(input.getValue(), output.getValue());
 

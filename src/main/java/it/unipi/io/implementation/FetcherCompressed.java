@@ -41,6 +41,6 @@ public class FetcherCompressed extends FetcherBinary {
                 fetchBytes(termFreqReader, entry.getTermFreqLength())
         );
 
-        postingList.loadNextBlock();
+        postingList.loadFirstBlock();
     }
 }
