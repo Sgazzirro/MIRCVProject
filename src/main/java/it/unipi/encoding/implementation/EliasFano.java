@@ -1,11 +1,20 @@
 package it.unipi.encoding.implementation;
 
 import it.unipi.encoding.Encoder;
+import it.unipi.encoding.EncodingType;
+import it.unipi.encoding.IntegerListBlock;
 
 import java.nio.ByteBuffer;
 import java.util.*;
 
 public class EliasFano extends Encoder {
+
+    public EliasFano(EncodingType encodingType) {
+        super(encodingType);
+
+        if (encodingType == EncodingType.TERM_FREQUENCIES)
+            throw new UnsupportedOperationException("Cannot use Elias Fano to encode term frequencies (integer list must be increasing)");
+    }
 
     @Override
     public byte[] encode(List<Integer> list) {
@@ -141,9 +150,36 @@ public class EliasFano extends Encoder {
         return unaryBitset;
     }
 
-    public static void append(BitSet bitset1, BitSet bitset2, int len, int offset) {
+    private static void append(BitSet bitset1, BitSet bitset2, int len, int offset) {
         // appends bitset2 to bitset1, starting from offset for len bits
         for (int i = 0; i<len; i++)
             bitset1.set(offset++, bitset2.get(i));
+    }
+
+    @Override
+    public IntegerListBlock getNextBlock(byte[] compressedList, int blockOffset) {
+        // skips unnecessary lists
+        ByteBuffer buffer = ByteBuffer.wrap(compressedList);
+        buffer.position(blockOffset);
+
+        // Read integers from the byte array
+        int U = buffer.getInt();
+        U = (U == 0) ? 1 : U;
+        int n = buffer.getInt();
+
+        // computing number of bytes to read
+        int lowHalfLength = (int) Math.ceil(Math.log((float) U / n) / Math.log(2));
+        if (lowHalfLength < 0)
+            lowHalfLength = 0;
+        int highHalfLength = (int) Math.ceil(Math.log(U) / Math.log(2)) - lowHalfLength;
+        int nTotLowBits = lowHalfLength * n;
+        int nTotHighBits = (int) (n + Math.pow(2, highHalfLength));
+        int numLowBytes = (int) Math.ceil((float) nTotLowBits/8);
+        int numHighBytes = (int) Math.ceil((float) nTotHighBits/8);
+
+        return new IntegerListBlock(
+                2*Integer.BYTES + numLowBytes + numHighBytes,
+                U
+        );
     }
 }

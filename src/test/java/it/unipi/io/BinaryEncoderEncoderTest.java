@@ -12,9 +12,9 @@ import java.util.*;
 
 import static org.junit.Assert.assertEquals;
 
-public class BinaryTest {
+public class BinaryEncoderEncoderTest {
 
-    private static final Logger logger = LoggerFactory.getLogger(BinaryTest.class);
+    private static final Logger logger = LoggerFactory.getLogger(BinaryEncoderEncoderTest.class);
 
     private static Dumper dumper;
     private static Fetcher fetcher;
@@ -25,7 +25,7 @@ public class BinaryTest {
         fetcher = Fetcher.getFetcher(CompressionType.COMPRESSED);
 
         Constants.setCompression(CompressionType.COMPRESSED);
-        Constants.setPath(Constants.testPath);
+        Constants.setPath(Constants.TEST_PATH);
     }
 
     @Test
@@ -431,12 +431,12 @@ public class BinaryTest {
 
             try {
                 // dump
-                dumper.start(Constants.testPath);
+                dumper.start(Constants.TEST_PATH);
                 dumper.dumpVocabularyEntry(input);
                 dumper.close();
 
                 // fetch
-                fetcher.start(Constants.testPath);
+                fetcher.start(Constants.TEST_PATH);
                 Map.Entry<String, VocabularyEntry> output = fetcher.loadVocEntry();
                 fetcher.close();
 
@@ -451,13 +451,13 @@ public class BinaryTest {
             }
 
             list.clear();
-            IOUtils.deleteDirectory(Constants.testPath);
+            IOUtils.deleteDirectory(Constants.TEST_PATH);
         }
     }
 
     @After
     public void flush() {
-        IOUtils.deleteDirectory(Constants.testPath);
+        IOUtils.deleteDirectory(Constants.TEST_PATH);
     }
 
 

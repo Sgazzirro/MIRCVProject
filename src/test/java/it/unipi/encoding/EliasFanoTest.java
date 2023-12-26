@@ -9,7 +9,15 @@ import static org.junit.Assert.assertEquals;
 
 public class EliasFanoTest {
 
-    private final Encoder eliasFano = new EliasFano();
+    private final Encoder eliasFano = new EliasFano(EncodingType.DOC_IDS);
+
+    @Test
+    public void testBasic() {
+        List<Integer> list = List.of(1,2,3,4);
+        byte[] bytes = eliasFano.encode(list);
+
+        assertEquals(list, eliasFano.decode(bytes));
+    }
 
     @Test
     public void testEncodeDecode() {

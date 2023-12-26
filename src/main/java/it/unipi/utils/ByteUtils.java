@@ -11,13 +11,17 @@ import java.util.Arrays;
 
 public class ByteUtils {
 
-    public static void intToBytes(int i, byte[] bytes, int offset) {
-        // Convert the i in its byte representation and put it in the byte array starting from offset:
-        //     i -> bytes[offset], bytes[offset+1], bytes[offset+2], bytes[offset+3]
-        bytes[offset]   = (byte) (i >>> 24);
-        bytes[offset+1] = (byte) (i >>> 16);
-        bytes[offset+2] = (byte) (i >>> 8);
-        bytes[offset+3] = (byte) (i);
+    public static void intToBytes(byte[] bytes, int offset, int... numbers) {
+        // Convert number n in its byte representation and put it in the byte array starting from offset:
+        //     n -> bytes[offset], bytes[offset+1], bytes[offset+2], bytes[offset+3]
+        for (int n : numbers) {
+            bytes[offset]     = (byte) (n >>> 24);
+            bytes[offset + 1] = (byte) (n >>> 16);
+            bytes[offset + 2] = (byte) (n >>> 8);
+            bytes[offset + 3] = (byte) n;
+
+            offset += 4;
+        }
     }
 
     public static int bytesToInt(byte[] bytes, int offset) {
@@ -90,46 +94,9 @@ public class ByteUtils {
         return entry;
     }
 
-    public static ByteBlock fetchNextDocIdsBlock(byte[] compressedDocIds, int docIdsBlockOffset) {
-        // skips unnecessary lists
-        ByteBuffer buffer = ByteBuffer.wrap(compressedDocIds);
-        buffer.position(docIdsBlockOffset);
-
-        // Read integers from the byte array
-        int U = buffer.getInt();
-        U = (U == 0) ? 1 : U;
-        int n = buffer.getInt();
-
-        // computing number of bytes to read
-        int lowHalfLength = (int) Math.ceil(Math.log((float) U / n) / Math.log(2));
-        if (lowHalfLength < 0)
-            lowHalfLength = 0;
-        int highHalfLength = (int) Math.ceil(Math.log(U) / Math.log(2)) - lowHalfLength;
-        int nTotLowBits = lowHalfLength * n;
-        int nTotHighBits = (int) (n + Math.pow(2, highHalfLength));
-        int numLowBytes = (int) Math.ceil((float) nTotLowBits/8);
-        int numHighBytes = (int) Math.ceil((float) nTotHighBits/8);
-
-        buffer = ByteBuffer.wrap(compressedDocIds);
-        buffer.position(docIdsBlockOffset);
-        byte[] byteArray = new byte[2*Integer.BYTES + numLowBytes + numHighBytes];
-        buffer.get(byteArray);
-
-        docIdsBlockOffset += 2*Integer.BYTES + numLowBytes + numHighBytes;
-        return new ByteBlock(byteArray, docIdsBlockOffset);
-    }
-
-    public static ByteBlock fetchNextTermFrequenciesBlock(byte[] compressedTermFrequencies, int termFrequenciesBlockOffset) {
-        ByteBuffer buffer = ByteBuffer.wrap(compressedTermFrequencies);
-        buffer.position(termFrequenciesBlockOffset);
-
-        // Read length of the block
-        int length = buffer.getInt();
-        byte[] byteArray = new byte[length];
-
-        buffer.get(byteArray, 0, length);   // Do not consider the bytes of the length (already fetched)
-        termFrequenciesBlockOffset += length + Integer.BYTES;   // Consider also the first 4 bytes describing the block length
-
-        return new ByteBlock(byteArray, termFrequenciesBlockOffset);
+    public static byte[] subArray(byte[] src, int offset, int length) {
+        byte[] dst = new byte[length];
+        System.arraycopy(src, offset, dst, 0, length);
+        return dst;
     }
 }
