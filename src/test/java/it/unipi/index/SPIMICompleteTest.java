@@ -162,7 +162,7 @@ public class SPIMICompleteTest {
 
         // Dumping
         SPIMIIndex spimi = new SPIMIIndex(compression, ds);
-        spimi.setLimit(1);
+        spimi.setLimit(0.00001);
         spimi.buildIndex(Constants.TEST_PATH);
 
 

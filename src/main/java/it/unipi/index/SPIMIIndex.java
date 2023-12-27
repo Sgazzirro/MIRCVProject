@@ -30,7 +30,7 @@ public class SPIMIIndex {
      * The limit is the percentage of memory allowed to be used before dumping the current block and creating a new one
      * Notice that, even in case of going ahead this threshold, the current document is however processed
      */
-    private int limit = 80;
+    private double limit = 80;
 
     /**
      * The number of the block being currently written. Since the index of the blocks starts at 0, this is
@@ -72,7 +72,7 @@ public class SPIMIIndex {
      * Sets the percentage of memory allowed for the current block
      * @param limit the percentage of used memory allowed for the block
      */
-    public void setLimit(int limit) {
+    public void setLimit(double limit) {
         this.limit = limit;
     }
 
@@ -169,7 +169,7 @@ public class SPIMIIndex {
 
             // 1) Process documents until memory limit reached
             int blockDocsProcessed = 0;
-            while (availableMemory(usedMemory)) {
+            do {
                 // Get the next document
                 Optional<Document> doc = Optional.ofNullable(stream.nextDoc());
                 if (doc.isEmpty()) {
@@ -184,15 +184,22 @@ public class SPIMIIndex {
                     logger.debug(docProcessed + " documents processed");
 
                 usedMemory = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
-            }
+            } while (availableMemory(usedMemory));
 
             logger.debug("Block " + blocksProcessed + " correctly created, waiting for dump...");
             // ---------------------
 
             // 2.1) Dump the block
-            blockIndexer.dumpDocumentIndex();
-            blockIndexer.dumpVocabulary();
-            logger.info("Block " + blocksProcessed + " dumped (" + blockDocsProcessed + " documents)");
+            if(blockDocsProcessed > 0){
+                blockIndexer.dumpDocumentIndex();
+                blockIndexer.dumpVocabulary();
+                logger.info("Block " + blocksProcessed + " dumped (" + blockDocsProcessed + " documents)");
+            }
+            else{
+                logger.info("Empty Block");
+            }
+
+
 
         } catch (IOException ioException) {
             logger.error("Fatal error happened while inverting block");
