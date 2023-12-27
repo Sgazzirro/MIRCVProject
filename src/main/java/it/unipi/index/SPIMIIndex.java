@@ -91,7 +91,7 @@ public class SPIMIIndex {
      */
     boolean availableMemory(long usedMemory) {
         // Returns if usedMemory is less than a threshold
-        double threshold = ((double) limit / 100) * Runtime.getRuntime().maxMemory();
+        double threshold = limit / 100 * Runtime.getRuntime().maxMemory();
 
         return usedMemory <= threshold;
     }
@@ -158,7 +158,7 @@ public class SPIMIIndex {
     public void invertBlock(Path blockPath) {
         // Get memory state
         Runtime.getRuntime().gc();
-        long usedMemory = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
+        long usedMemory;
 
         try (
                 InMemoryIndex blockIndexer = new InMemoryIndex(blockCompression)
@@ -185,28 +185,24 @@ public class SPIMIIndex {
 
                 usedMemory = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
             } while (availableMemory(usedMemory));
-
-            logger.debug("Block " + blocksProcessed + " correctly created, waiting for dump...");
             // ---------------------
 
             // 2.1) Dump the block
-            if(blockDocsProcessed > 0){
+            if (blockDocsProcessed > 0) {
+                logger.debug("Block " + blocksProcessed + " correctly created, waiting for dump...");
+
                 blockIndexer.dumpDocumentIndex();
                 blockIndexer.dumpVocabulary();
                 logger.info("Block " + blocksProcessed + " dumped (" + blockDocsProcessed + " documents)");
-            }
-            else{
-                logger.info("Empty Block");
-            }
 
-
+                blocksProcessed++;
+            } else
+                logger.info("Empty Block, skipping...");
 
         } catch (IOException ioException) {
             logger.error("Fatal error happened while inverting block");
             logger.error("Block " + blocksProcessed, ioException);
         }
-
-        blocksProcessed++;
     }
 
     private int mergeDocumentIndexes(List<Fetcher> readers) throws IOException {
