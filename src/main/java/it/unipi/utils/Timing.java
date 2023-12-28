@@ -52,11 +52,12 @@ public class Timing {
 
     public static void main(String[] args){
         Constants.setCompression(CompressionType.COMPRESSED);
-        Constants.setPath(Path.of("./COMPRESSED100010K"));
+        Constants.setPath(Path.of("./COMPRESSEDELIAS100010K"));
         Constants.setScoring(ScoringType.TFIDF);
         long start, end;
         int queries = 0;
 
+        /*
         Constants.CACHING = true;
         Constants.startSession();
 
@@ -82,6 +83,8 @@ public class Timing {
 
         System.out.println("LEARNING INFLUENCERS : " + (end - start));
 
+         */
+
 
 
         // ------------------------------------------------------------------------------------------------------------------------------
@@ -90,16 +93,16 @@ public class Timing {
 
         System.gc();
 
-   //    TimeIT(false, true, 1);
-        //TimeIT(false, true,10);
-        //TimeIT(false, true, 100);
+       TimeIT(false, true, 1);
+        TimeIT(false, true,10);
+        TimeIT(false, true, 100);
 
-    //    TimeIT(true, false,1);
-      // TimeIT(true, false,10);
-      // TimeIT(true, false, 100);
-     // TimeIT(false, false,1);
-     //  TimeIT(false, false,10);
-      //TimeIT(false, false,100);
+        TimeIT(true, false,1);
+        TimeIT(true, false,10);
+       TimeIT(true, false, 100);
+      TimeIT(false, false,1);
+      TimeIT(false, false,10);
+      TimeIT(false, false,100);
 
 
 

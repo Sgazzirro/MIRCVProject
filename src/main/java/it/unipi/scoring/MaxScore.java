@@ -45,7 +45,6 @@ public class MaxScore {
             if (treeMap.isEmpty())
                 return null;
 
-            System.out.println("IO calls in maxScore: " + IOCalls);
             return maxScore(new ArrayList<>(treeMap.values()), new ArrayList<>(treeMap.keySet()), numResults);
         }
         ////////////////// CONJUNCTIVE MODE ///////////////////////
