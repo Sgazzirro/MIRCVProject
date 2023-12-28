@@ -23,6 +23,7 @@ public class QueryThroughput {
         Constants.BLOCK_SIZE=10000;
         Constants.setScoring(ScoringType.TFIDF);
         Constants.setPath(Path.of("./data"));
+        Constants.startSession();
         int numResults = 10;
 
         // charge queries in memory

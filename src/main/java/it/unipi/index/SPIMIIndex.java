@@ -177,12 +177,12 @@ public class SPIMIIndex {
                     finished = true;
                     break;
                 }
-                blockIndexer.processDocument(doc.get());
-
-                docProcessed++; blockDocsProcessed++;
-                if (docProcessed % Constants.MAX_ENTRIES_PER_SPIMI_BLOCK == 0)
-                    logger.debug(docProcessed + " documents processed");
-
+                if(blockIndexer.processDocument(doc.get())) {
+                    docProcessed++;
+                    blockDocsProcessed++;
+                    if (docProcessed % Constants.MAX_ENTRIES_PER_SPIMI_BLOCK == 0)
+                        logger.debug(docProcessed + " documents processed");
+                }
                 usedMemory = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
             } while (availableMemory(usedMemory));
             // ---------------------

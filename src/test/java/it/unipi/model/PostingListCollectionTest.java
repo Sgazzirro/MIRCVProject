@@ -20,7 +20,6 @@ import static org.junit.Assert.*;
  */
 @RunWith(Parameterized.class)
 public class PostingListCollectionTest {
-
     // Test over different compression types
     @Parameterized.Parameters
     public static Collection<Object[]> terms() {

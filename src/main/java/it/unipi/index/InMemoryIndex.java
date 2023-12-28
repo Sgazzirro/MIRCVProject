@@ -64,15 +64,17 @@ public class InMemoryIndex implements AutoCloseable {
         }
     }
 
-    public void processDocument(Document document) {
+    public boolean processDocument(Document document) {
         if (document == null || document.getText().isEmpty())
-            return;
+            return false;
         List<String> tokenized = tokenizer.tokenize(document.getText());
+        if(tokenized==null) return false;
 
         for (String token : tokenized)
             vocabulary.addEntry(token, document.getId());
 
         documentIndex.addDocument(document.getId(), tokenized.size());
+        return true;
     }
 
     void dumpVocabulary() throws IOException {
