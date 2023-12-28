@@ -31,13 +31,19 @@ public class Tokenizer {
         String cleanedHTML = content.replaceAll("<[^>]+>", "");
         // Remove punctuation
         String removedPunctuation = cleanedHTML.replaceAll("\\p{Punct}", " ");
+        // Remove eventual whitespaces at the start
+        String trimmed = removedPunctuation.trim();
 
-        Stream<String> stream = Arrays.stream(removedPunctuation.toLowerCase().split("\\s+"));
+        // empty doc after pre-processing
+        if(trimmed.equals("")) return null;
+
+        Stream<String> stream = Arrays.stream(trimmed.toLowerCase().split("\\s+"));
         if (removeStopwords)
             stream = stream.filter(s -> !Constants.STOPWORDS.contains(s));
         if (applyStemming)
             stream = stream.map(s -> stemmer.stem(s));
 
+        // Collect the stream into a list
         return stream.collect(Collectors.toList());
     }
 

@@ -29,6 +29,7 @@ public class MaxScore {
         numResults = Math.min(numResults, Constants.N);
 
         List<String> queryTokens = tokenizer.tokenize(query);
+        if(queryTokens==null) return new PriorityQueue<>(); // empty queue
         TreeMap<Double, PostingList> treeMap = new TreeMap<>();
 
         ////////////////// DISJUNCTIVE MODE ///////////////////////

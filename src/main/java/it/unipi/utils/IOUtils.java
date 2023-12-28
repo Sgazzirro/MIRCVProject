@@ -1,5 +1,6 @@
 package it.unipi.utils;
 
+import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -52,15 +53,11 @@ public class IOUtils {
     }
 
     private static void deleteDirectory(File directoryToBeDeleted) {
-        File[] allContents = directoryToBeDeleted.listFiles();
-        if (allContents != null) {
-            for (File file : allContents) {
-                deleteDirectory(file);
-            }
+        try {
+            FileUtils.deleteDirectory(directoryToBeDeleted);
+        } catch(IOException ie){
+            ie.printStackTrace();
         }
-
-        if (directoryToBeDeleted.exists() && !directoryToBeDeleted.delete())
-            logger.warn("Cannot delete directory " + directoryToBeDeleted);
     }
 
 }
