@@ -41,7 +41,8 @@ public class Vocabulary {
         for (Map.Entry<String, Long> entry : init.stream().toList()){
             if (MEMORY_USED() > 50)
                 break;
-            getEntry(entry.getKey()).setTouches(entry.getValue());
+            VocabularyEntry loaded = getEntry(entry.getKey());
+            loaded.setTouches(entry.getValue());
         }
     }
 

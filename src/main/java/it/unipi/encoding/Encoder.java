@@ -1,5 +1,6 @@
 package it.unipi.encoding;
 
+import it.unipi.encoding.implementation.EliasFano;
 import it.unipi.encoding.implementation.Simple9;
 import it.unipi.encoding.implementation.UnaryEncoder;
 

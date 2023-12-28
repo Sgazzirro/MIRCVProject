@@ -29,7 +29,7 @@ public class Constants {
     public static final Path STOPWORDS_FILE = DATA_PATH.resolve("stopwords-en.txt");
     public static final List<String> STOPWORDS = IOUtils.loadStopwords();
 
-    public static int BLOCK_SIZE = 10000;
+    public static int BLOCK_SIZE = 10_000;
     public static int NUM_THREADS_SPIMI = 8;
     public static int MAX_ENTRIES_PER_SPIMI_BLOCK = 1_000_000;
 
