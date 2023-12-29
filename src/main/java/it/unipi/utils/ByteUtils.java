@@ -87,7 +87,7 @@ public class ByteUtils {
     }
 
     public static DocumentIndexEntry bytesToDocumentIndexEntry(byte[] documentIndexEntryBytes) {
-        int documentLength = bytesToInt(documentIndexEntryBytes, 0);
+        int documentLength = bytesToInt(documentIndexEntryBytes, 2*Integer.BYTES);
         int docNo = bytesToInt(documentIndexEntryBytes, Integer.BYTES);
 
         DocumentIndexEntry entry = new DocumentIndexEntry();

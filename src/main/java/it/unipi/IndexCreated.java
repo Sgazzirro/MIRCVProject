@@ -7,6 +7,7 @@ import it.unipi.encoding.CompressionType;
 import it.unipi.scoring.ScoringType;
 import it.unipi.utils.Constants;
 import it.unipi.scoring.DocumentScore;
+import opennlp.tools.parser.Cons;
 
 import java.io.IOException;
 import java.nio.file.Path;
@@ -21,9 +22,8 @@ public class IndexCreated {
         Constants.CACHING = true;
         Constants.setCompression(CompressionType.COMPRESSED);
         Constants.setScoring(ScoringType.TFIDF);
-        Constants.setPath(Path.of("./COMPRESSEDELIAS100010K"));
+        Constants.setPath(Path.of("./data"));
         Constants.startSession();
-
 
         MaxScore max = new MaxScore(Constants.vocabulary, Constants.documentIndex, Tokenizer.getInstance());
         DocumentStream stream = new DocumentStream(Constants.COLLECTION_FILE);

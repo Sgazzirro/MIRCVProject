@@ -6,6 +6,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.nio.file.Path;
 import java.util.Map;
 import java.util.NavigableMap;
 import java.util.Objects;
@@ -151,4 +152,19 @@ public class DocumentIndex {
             logger.error(e.getMessage());
         }
     }
+
+    public void chargeHeader(){
+        try{
+            fetcher.start(Constants.getPath());
+            int[] stats = fetcher.getDocumentIndexStats();
+            numDocuments = stats[0];
+            totalLength = stats[1];
+            Constants.N=numDocuments;
+            fetcher.close();
+        } catch (Exception e){
+            logger.error(e.getMessage());
+        }
+    }
+
+
 }

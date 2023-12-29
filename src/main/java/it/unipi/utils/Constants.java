@@ -33,7 +33,7 @@ public class Constants {
     public static int NUM_THREADS_SPIMI = 8;
     public static int MAX_ENTRIES_PER_SPIMI_BLOCK = 1_000_000;
 
-    public static int N = 8841823;
+    public static int N;
 
     public static final int BYTES_STORED_STRING = 32;
     public static final int VOCABULARY_ENTRY_BYTES_SIZE =
@@ -134,6 +134,7 @@ public class Constants {
             vocabulary = new Vocabulary();
 
         documentIndex = new DocumentIndex();
+        documentIndex.chargeHeader();
     }
 
     public static void onExit(){

@@ -7,6 +7,7 @@ import it.unipi.io.implementation.DumperBinary;
 import it.unipi.model.*;
 import it.unipi.io.Dumper;
 import it.unipi.scoring.Scorer;
+import it.unipi.utils.Constants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -83,6 +84,7 @@ public class InMemoryIndex implements AutoCloseable {
 
     void dumpVocabulary() throws IOException {
         Scorer scorer = Scorer.getScorer(documentIndex);
+        Constants.N = documentIndex.getNumDocuments();
 
         for (Map.Entry<String, VocabularyEntry> entry : vocabulary.getMapping().entrySet())
             entry.getValue().computeUpperBound(scorer);
