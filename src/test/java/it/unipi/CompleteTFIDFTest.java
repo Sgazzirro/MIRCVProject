@@ -45,7 +45,7 @@ public class CompleteTFIDFTest {
                 new Document("3\trabbit recip recip duck"),
                 null
         );
-        CompressionType compression = CompressionType.BINARY;
+        CompressionType compression = CompressionType.COMPRESSED;
         Constants.setCompression(compression);
 
         // Dumping
@@ -115,7 +115,7 @@ public class CompleteTFIDFTest {
         MaxScore maxScore = new MaxScore(vocabulary, documentIndex, Tokenizer.getInstance());
 
         PriorityQueue<DocumentScore> results = maxScore.score(query, 10, "disjunctive");
-        Assert.assertNull(results);
+        Assert.assertNull(results.poll());
     }
 
     @Test

@@ -143,7 +143,7 @@ public class DocumentIndex {
 
     public void chargeInMemory(){
         try {
-            fetcher.start(Constants.DATA_PATH);
+            fetcher.start(Constants.getPath());
             int[] stats = fetcher.getDocumentIndexStats();
             numDocuments=stats[0];
             totalLength=stats[1];

@@ -101,7 +101,7 @@ public class CompleteBM25Test {
         MaxScore maxScore = new MaxScore(vocabulary, documentIndex, Tokenizer.getInstance());
 
         PriorityQueue<DocumentScore> results = maxScore.score(query, 10, "disjunctive");
-        Assert.assertNull(results);
+        Assert.assertNull(results.poll());
     }
 
     @Test

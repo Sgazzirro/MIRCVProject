@@ -130,7 +130,7 @@ public class SPIMIIndex {
             Constants.N = mergeDocumentIndexes(blockFetchers);
             logger.info("Document index correctly merged");
 
-            Constants.setPath(Constants.DATA_PATH);
+            Constants.setPath(path);
 
             // 3.5) if BM25 charge docindex in memory
             if(Constants.getScoring()== ScoringType.BM25) {

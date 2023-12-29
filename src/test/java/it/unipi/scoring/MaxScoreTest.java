@@ -23,6 +23,7 @@ public class MaxScoreTest {
     @Before
     public void setup(){
         Constants.setCompression(CompressionType.DEBUG);
+        Constants.setScoring(ScoringType.TFIDF);
         Constants.N = 2;
 
         vocabulary = new Vocabulary();
@@ -32,9 +33,9 @@ public class MaxScoreTest {
         vocabulary.addEntry("c", (int) Math.pow(2,30));
 
         documentIndex = new DocumentIndex();
-        documentIndex.addDocument(1, 2);
-        documentIndex.addDocument(2, 1);
-        documentIndex.addDocument((int) Math.pow(2, 30), 1);
+        documentIndex.addDocument(1, 1,2);
+        documentIndex.addDocument(2, 2,1);
+        documentIndex.addDocument((int) Math.pow(2, 30), (int)Math.pow(2,30),1);
 
         Tokenizer tokenizer = Tokenizer.getInstance(false, false);
         maxScore = new MaxScore(vocabulary, documentIndex, tokenizer);
