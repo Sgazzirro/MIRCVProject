@@ -137,8 +137,8 @@ public class TrecEvaluation {
     public static void main(String[] args){
         Constants.CACHING = false;
         Constants.setCompression(CompressionType.COMPRESSED);
-        Constants.setPath(Path.of("./COMPRESSED100010K"));
-        Constants.setScoring(ScoringType.TFIDF);
+        Constants.setPath(Constants.DATA_PATH);
+        Constants.setScoring(ScoringType.BM25);
         Constants.startSession();
         generateEvaluation();
         Constants.onExit();

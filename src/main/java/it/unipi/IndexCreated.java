@@ -21,7 +21,7 @@ public class IndexCreated {
     public static void main(String[] args) throws IOException {
         Constants.CACHING = true;
         Constants.setCompression(CompressionType.COMPRESSED);
-        Constants.setScoring(ScoringType.TFIDF);
+        Constants.setScoring(ScoringType.BM25);
         Constants.setPath(Path.of("./data"));
         Constants.startSession();
 
@@ -69,7 +69,8 @@ public class IndexCreated {
                         System.out.println("+--------------------------------------+");
                         System.out.println("Fetching passage...");
                         System.out.println("+--------------------------------------+");
-                        System.out.println(stream.getDoc(reverseMode.get(0).docId()).getText());
+                        int docNo = Constants.documentIndex.getDocNo(reverseMode.get(0).docId());
+                        System.out.println(stream.getDoc(docNo).getText());
                         reverseMode.remove(0);
                         System.out.println("Wanna see the next passage? [Y/N]");
                     } while (new Scanner(System.in).nextLine().equals("Y"));

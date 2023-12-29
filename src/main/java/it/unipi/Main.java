@@ -13,7 +13,7 @@ import java.nio.file.Path;
 public class Main {
 
     public static void main( String[] args ) throws IOException {
-        Path indexPath = Path.of("COMPRESSEDELIAS100010K");
+        Path indexPath = Constants.DATA_PATH;
         File collectionFile = Constants.COLLECTION_FILE;
 
         DocumentStream stream = new DocumentStream(collectionFile);

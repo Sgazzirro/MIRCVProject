@@ -46,7 +46,7 @@ public class Constants {
     // BM25 constants
     public static double BM25_b = 0.75;
     public static double BM25_k = 1.2;
-    private static ScoringType scoringType = ScoringType.TFIDF;
+    private static ScoringType scoringType = ScoringType.BM25;
 
     private static Path currentPath;
     private static CompressionType currentCompression = CompressionType.COMPRESSED;
