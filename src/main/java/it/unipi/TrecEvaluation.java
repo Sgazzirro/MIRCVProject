@@ -29,7 +29,7 @@ public class TrecEvaluation {
      * The name of the file in which we store our IR's results
      * RESULT FORMAT : QueryID | Q0 | pid | rank | Score | IDofTheRUN
      */
-    private static String RESULT = "./data/evaluation/result1000NOTHSTFIDF.txt";
+    private static String RESULT = "./data/evaluation/result1000OLDELIAS.txt";
 
     private static class Query{
         String queryID;
@@ -102,14 +102,15 @@ public class TrecEvaluation {
 
             String queryLine;
 
-            MaxScore scorer = new MaxScore(Constants.vocabulary, Constants.documentIndex, Tokenizer.getInstance(false, false));
+            MaxScore scorer = new MaxScore(Constants.vocabulary, Constants.documentIndex, Tokenizer.getInstance());
             while((queryLine = queries.readLine()) != null){
                 Query q = new Query(queryLine);
                 System.out.println(q.getText());
                 List<Result> results = new ArrayList<>();
                 PriorityQueue<DocumentScore> scoring = scorer.score(q.getText(), 10, "disjunctive");
+                if(scoring == null)
+                    continue;
                 PriorityQueue<DocumentScore> reverseMode = new PriorityQueue<>(java.util.Collections.reverseOrder());
-                System.out.println("OK");
                 while(scoring.size() > 0) {
                     DocumentScore first = scoring.poll();
                     reverseMode.add(first);
@@ -138,7 +139,7 @@ public class TrecEvaluation {
     public static void main(String[] args){
         Constants.CACHING = false;
         Constants.setCompression(CompressionType.COMPRESSED);
-        Constants.setPath(Path.of("./data/compressedNOTHING10K"));
+        Constants.setPath(Path.of("./COMPRESSED100010K"));
         Constants.setScoring(ScoringType.TFIDF);
         Constants.startSession();
         generateEvaluation();

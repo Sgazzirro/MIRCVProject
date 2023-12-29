@@ -37,12 +37,15 @@ public class Vocabulary {
 
     public Vocabulary(PriorityQueue<Map.Entry<String, Long>> init) {
         this();
-
-        for (Map.Entry<String, Long> entry : init.stream().toList()){
+        Constants.CACHING = false;
+        while(init.size() > 0){
             if (MEMORY_USED() > 50)
                 break;
-            getEntry(entry.getKey()).setTouches(entry.getValue());
+            Map.Entry<String, Long> entry = init.poll();
+            VocabularyEntry loaded = getEntry(entry.getKey());
+            loaded.setTouches(entry.getValue());
         }
+        Constants.CACHING = true;
     }
 
     public boolean isNotPresent(String term) {

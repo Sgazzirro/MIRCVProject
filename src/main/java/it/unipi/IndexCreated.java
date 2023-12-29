@@ -20,9 +20,10 @@ public class IndexCreated {
         // Return how many documents and how many words are indexed
         int numDocs;
         int numWords;
+        Constants.CACHING = true;
         Constants.setCompression(CompressionType.COMPRESSED);
         Constants.setScoring(ScoringType.TFIDF);
-        Constants.setPath(Path.of("./data"));
+        Constants.setPath(Path.of("./COMPRESSEDELIAS100010K"));
         Constants.startSession();
 
         MaxScore max = new MaxScore(Constants.vocabulary, Constants.documentIndex, Tokenizer.getInstance());
@@ -35,7 +36,7 @@ public class IndexCreated {
             int numResults = 10;
             boolean printFirstText = true;
 
-            PriorityQueue<DocumentScore> scoring = max.score("average rainfall in Costa Rica", numResults, "disjunctive");
+            PriorityQueue<DocumentScore> scoring = max.score("jesus", numResults, "disjunctive");
             List<DocumentScore> reverseMode = new ArrayList<>();
 
             while (!scoring.isEmpty()) {
@@ -64,6 +65,8 @@ public class IndexCreated {
                 System.out.println("SENZA IL CACHING GENTILMENTE OFFERTO DA JAVA : " + (end - start));
             else
                 System.out.println("CON IL CACHING GENTILMENTE OFFERTO DA JAVA : " + (end - start));
+
         }
+        Constants.onExit();
     }
 }
