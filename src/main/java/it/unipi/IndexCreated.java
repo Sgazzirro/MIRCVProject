@@ -22,8 +22,8 @@ public class IndexCreated {
     public static void main(String[] args) throws IOException {
         Constants.CACHING = true;
         Constants.setCompression(CompressionType.COMPRESSED);
-        Constants.setScoring(ScoringType.TFIDF);
-        Constants.setPath(Path.of("./finalIndexTFIDF"));
+        Constants.setScoring(ScoringType.BM25);
+        Constants.setPath(Constants.DATA_PATH);
         Constants.startSession();
 
         MaxScore max = new MaxScore(Constants.vocabulary, Constants.documentIndex, Tokenizer.getInstance());

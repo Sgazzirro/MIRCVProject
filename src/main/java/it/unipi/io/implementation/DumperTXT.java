@@ -150,5 +150,13 @@ public class DumperTXT implements Dumper {
     public void dumpDocumentIndexEntry(Map.Entry<Integer, DocumentIndexEntry> entry) throws IOException {
         documentIndexWriter.write(entry.getKey().toString() + "," + entry.getValue().getDocNo()+ "," + entry.getValue().getDocumentLength() + "\n");
     }
+
+    public void flushDocumentIndexBuffer(){
+        try {
+            documentIndexWriter.close();
+        }catch(IOException ie){
+            logger.error(ie.getMessage());
+        }
+    }
 }
 

@@ -24,8 +24,8 @@ public class DocumentIndexEntry {
         DocumentIndexEntry entry = new DocumentIndexEntry();
         String[] params = line.split(",");
 
-        int docLength = Integer.parseInt(params[1]);
-        int docNo = Integer.parseInt(params[2]);
+        int docLength = Integer.parseInt(params[2]);
+        int docNo = Integer.parseInt(params[1]);
 
         entry.setDocumentLength(docLength);
         entry.setDocNo(docNo);

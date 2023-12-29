@@ -5,6 +5,7 @@ import it.unipi.io.Fetcher;
 import it.unipi.model.DocumentIndexEntry;
 import it.unipi.model.PostingList;
 import it.unipi.model.VocabularyEntry;
+import it.unipi.utils.ByteUtils;
 import it.unipi.utils.Constants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -195,48 +196,10 @@ public class FetcherTXT implements Fetcher {
     public DocumentIndexEntry loadDocEntry(long docId) throws IOException {
         if (!opened)
             throw new IOException("Fetcher has not been started");
-
-        String line;
-
-        // CASES AT FIRST READ
-        // - line = null EOF reached, restart and parse the whole file
-        // - line != null and comparison < 0, you have to restart and search until you come back to that term
-        // - line != null and comparison > 0, you have to search until EOF (do nothing)
-        line = documentIndexReader.readLine();
-        Long toReach = null;
-
-        if (line == null) {
-            // CASE 1
-            documentIndexReader.close();
-            documentIndexReader = new BufferedReader(new FileReader(path.resolve(Constants.DOCUMENT_INDEX_FILENAME).toFile()));
-            line = documentIndexReader.readLine();
-
-        } else {
-            boolean comparison = docId < Long.parseLong(line.split(",")[0]);
-            if (comparison) {
-                // CASE 2
-                toReach = Long.parseLong(line.split(",")[0]);
-                documentIndexReader.close();
-                documentIndexReader = new BufferedReader(new FileReader(path.resolve(Constants.DOCUMENT_INDEX_FILENAME).toFile()));
-                line = documentIndexReader.readLine();
-            }
+        for(int i=0; i<docId+2; i++){
+            documentIndexReader.readLine();
         }
-
-        do {
-            String[] params = line.split(",");
-
-            if(toReach != null && Long.parseLong(params[0]) == toReach)
-                return null;
-
-            if (Long.parseLong(params[0]) == docId) {
-                return DocumentIndexEntry.parseTXT(line);
-            }
-            line = documentIndexReader.readLine();
-        } while (line != null);
-
-        // We have not found this docId in the document index
-        logger.debug("Doc id " + docId + " was not found in the document index");
-        return null;
+        return DocumentIndexEntry.parseTXT(documentIndexReader.readLine());
     }
 
     @Override

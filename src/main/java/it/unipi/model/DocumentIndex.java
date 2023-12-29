@@ -144,6 +144,10 @@ public class DocumentIndex {
     public void chargeInMemory(){
         try {
             fetcher.start(Constants.DATA_PATH);
+            int[] stats = fetcher.getDocumentIndexStats();
+            numDocuments=stats[0];
+            totalLength=stats[1];
+            Constants.N=numDocuments;
             Map.Entry<Integer, DocumentIndexEntry> entry;
             while((entry = fetcher.loadDocEntry())!=null){
                 table.put(entry.getKey(), entry.getValue());

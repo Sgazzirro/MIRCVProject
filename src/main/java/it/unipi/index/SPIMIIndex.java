@@ -236,8 +236,9 @@ public class SPIMIIndex {
         for (int i = 0; i < blocksProcessed; i++) {
             Map.Entry<Integer, DocumentIndexEntry> entry;
 
-            while ( (entry = readers.get(i).loadDocEntry()) != null )
+            while ( (entry = readers.get(i).loadDocEntry()) != null ) {
                 globalIndexer.dumpDocumentIndexLine(entry);
+            }
         }
         // ------------------------------------
         globalIndexer.flushDocumentIndex();     // Flush residual entries in buffer

@@ -29,7 +29,7 @@ public class TrecEvaluation {
      * The name of the file in which we store our IR's results
      * RESULT FORMAT : QueryID | Q0 | pid | rank | Score | IDofTheRUN
      */
-    private static String RESULT = "./data/evaluation/resultFinalEliasTFIDF.txt";
+    private static String RESULT = "./data/evaluation/resultsTFIDF.txt";
 
     private static class Query{
         String queryID;
@@ -137,7 +137,7 @@ public class TrecEvaluation {
     public static void main(String[] args){
         Constants.CACHING = false;
         Constants.setCompression(CompressionType.COMPRESSED);
-        Constants.setPath(Path.of("./finalIndexTFIDF"));
+        Constants.setPath(Constants.DATA_PATH);
         Constants.setScoring(ScoringType.TFIDF);
         Constants.startSession();
         generateEvaluation();

@@ -18,7 +18,7 @@ public class Main {
 
         DocumentStream stream = new DocumentStream(collectionFile);
 
-        SPIMIIndex spimi = new SPIMIIndex(CompressionType.COMPRESSED, stream);
+        SPIMIIndex spimi = new SPIMIIndex(CompressionType.DEBUG, stream);
         spimi.buildIndex(indexPath);
     }
 }

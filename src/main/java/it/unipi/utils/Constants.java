@@ -134,7 +134,10 @@ public class Constants {
             vocabulary = new Vocabulary();
 
         documentIndex = new DocumentIndex();
-        documentIndex.chargeHeader();
+        if(currentCompression==CompressionType.DEBUG){
+            documentIndex.chargeInMemory(); // speed reasons
+        }
+        else documentIndex.chargeHeader();
     }
 
     public static void onExit(){

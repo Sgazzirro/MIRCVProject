@@ -4,6 +4,7 @@ import it.unipi.encoding.CompressionType;
 import it.unipi.encoding.Tokenizer;
 import it.unipi.io.DocumentStream;
 import it.unipi.io.implementation.DumperBinary;
+import it.unipi.io.implementation.DumperTXT;
 import it.unipi.model.*;
 import it.unipi.io.Dumper;
 import it.unipi.scoring.Scorer;
@@ -106,6 +107,8 @@ public class InMemoryIndex implements AutoCloseable {
         // Flush entries in document index buffer if any
         if (dumper instanceof DumperBinary dumperBinary)
             dumperBinary.flushDocumentIndexBuffer();
+        if (dumper instanceof DumperTXT dumperTXT)
+            dumperTXT.flushDocumentIndexBuffer();
     }
 
     void dumpDocumentIndexLine(Map.Entry<Integer, DocumentIndexEntry> entry) throws IOException {
