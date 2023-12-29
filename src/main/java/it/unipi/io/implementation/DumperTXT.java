@@ -137,8 +137,10 @@ public class DumperTXT implements Dumper {
             int docId = entry.getKey();
             DocumentIndexEntry docEntry = entry.getValue();
 
+            int docNo = docEntry.getDocNo();
             int docLength = docEntry.getDocumentLength();
-            result.append(docId).append(",").append(docLength).append("\n");
+
+            result.append(docId).append(",").append(docNo).append(",").append(docLength).append("\n");
         }
 
         documentIndexWriter.write(String.valueOf(result));
@@ -146,7 +148,7 @@ public class DumperTXT implements Dumper {
 
     @Override
     public void dumpDocumentIndexEntry(Map.Entry<Integer, DocumentIndexEntry> entry) throws IOException {
-        documentIndexWriter.write(entry.getKey().toString() + "," + entry.getValue().getDocumentLength() + "\n");
+        documentIndexWriter.write(entry.getKey().toString() + "," + entry.getValue().getDocNo()+ "," + entry.getValue().getDocumentLength() + "\n");
     }
 }
 

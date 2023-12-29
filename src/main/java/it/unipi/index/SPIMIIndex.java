@@ -6,6 +6,7 @@ import it.unipi.io.Fetcher;
 import it.unipi.model.*;
 import it.unipi.model.implementation.PostingListImpl;
 import it.unipi.scoring.Scorer;
+import it.unipi.scoring.ScoringType;
 import it.unipi.utils.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -129,6 +130,15 @@ public class SPIMIIndex {
             Constants.N = mergeDocumentIndexes(blockFetchers);
             logger.info("Document index correctly merged");
 
+            Constants.setPath(Constants.DATA_PATH);
+
+            // 3.5) if BM25 charge docindex in memory
+            if(Constants.getScoring()== ScoringType.BM25) {
+                logger.info("Starting fetch document index from disk");
+                globalIndexer.getDocumentIndex().chargeInMemory();
+                logger.info("Document index charged in memory");
+            }
+
             // 4) Merge all vocabularies (with relative posting lists)
             mergeVocabularies(blockFetchers);
             logger.info("Vocabulary correctly merged");
@@ -142,7 +152,7 @@ public class SPIMIIndex {
                 }
 
             // Delete blocks temp directory
-            IOUtils.deleteDirectory(blocksPath);
+            //IOUtils.deleteDirectory(blocksPath);
             globalIndexer.close();
 
         } catch (IOException ioException) {
@@ -177,7 +187,7 @@ public class SPIMIIndex {
                     finished = true;
                     break;
                 }
-                if(blockIndexer.processDocument(doc.get())) {
+                if(blockIndexer.processDocument(doc.get(), docProcessed)) {
                     docProcessed++;
                     blockDocsProcessed++;
                     if (docProcessed % Constants.MAX_ENTRIES_PER_SPIMI_BLOCK == 0)
@@ -190,7 +200,7 @@ public class SPIMIIndex {
             // 2.1) Dump the block
             if (blockDocsProcessed > 0) {
                 logger.debug("Block " + blocksProcessed + " correctly created, waiting for dump...");
-
+                Constants.setPath(blockPath);
                 blockIndexer.dumpDocumentIndex();
                 blockIndexer.dumpVocabulary();
                 logger.info("Block " + blocksProcessed + " dumped (" + blockDocsProcessed + " documents)");

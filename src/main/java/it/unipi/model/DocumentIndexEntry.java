@@ -1,11 +1,19 @@
 package it.unipi.model;
 
 public class DocumentIndexEntry {
-
+    private int docNo;
     private int documentLength;
+
 
     public int getDocumentLength() {
         return documentLength;
+    }
+    public int getDocNo(){
+        return docNo;
+    }
+
+    public void setDocNo(int docNo){
+        this.docNo=docNo;
     }
 
     public void setDocumentLength(int documentLength) {
@@ -17,8 +25,10 @@ public class DocumentIndexEntry {
         String[] params = line.split(",");
 
         int docLength = Integer.parseInt(params[1]);
+        int docNo = Integer.parseInt(params[2]);
 
         entry.setDocumentLength(docLength);
+        entry.setDocNo(docNo);
         return entry;
     }
 

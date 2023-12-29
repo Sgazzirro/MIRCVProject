@@ -17,7 +17,6 @@ import java.util.Map;
 public class FetcherBinary implements Fetcher {
 
     protected static final Logger logger = LoggerFactory.getLogger(FetcherBinary.class);
-
     private   FileInputStream vocabularyReader;
     private   FileInputStream documentIndexReader;
     protected FileInputStream docIdsReader;
@@ -187,35 +186,12 @@ public class FetcherBinary implements Fetcher {
         if (!opened)
             throw new IOException("Fetcher has not been started");
 
-        // Binary search to find the docId
-        // Remember to consider also the ints at the beginning of file denoting documentIndex
-        int start = 0, end = documentIndexSize;
-        int middle;
+        documentIndexReader.getChannel().position(Constants.DOCUMENT_INDEX_HEADER_BYTES+Constants.DOCUMENT_INDEX_ENTRY_BYTES_SIZE*docId);
+
         byte[] documentIndexEntryBytes = new byte[Constants.DOCUMENT_INDEX_ENTRY_BYTES_SIZE];
-
-        while (true) {
-            middle = (end + start) / 2;
-            // Set the file pointer to the entry of index middle
-            documentIndexReader.getChannel().position(
-                    (long) middle * Constants.DOCUMENT_INDEX_ENTRY_BYTES_SIZE + Constants.DOCUMENT_INDEX_HEADER_BYTES);
-
-            if (documentIndexReader.read(documentIndexEntryBytes, 0, Constants.DOCUMENT_INDEX_ENTRY_BYTES_SIZE) != Constants.DOCUMENT_INDEX_ENTRY_BYTES_SIZE)
-                throw new IOException("Could not read document index entry");
-
-            int currentDocId = ByteUtils.bytesToInt(documentIndexEntryBytes, 0);
-
-            // Stop condition
-            if (end == start + 1 && currentDocId != docId)
-                return null;
-
-            if (docId > currentDocId)
-                start = middle;
-            else if (docId < currentDocId)
-                end = middle;
-            else {
-                return ByteUtils.bytesToDocumentIndexEntry(documentIndexEntryBytes);
-            }
-        }
+        if(documentIndexReader.read(documentIndexEntryBytes, 0, Constants.DOCUMENT_INDEX_ENTRY_BYTES_SIZE)!=Constants.DOCUMENT_INDEX_ENTRY_BYTES_SIZE)
+            throw new IOException("Not able to read doc index entry");
+        return ByteUtils.bytesToDocumentIndexEntry(documentIndexEntryBytes);
     }
 
     @Override
@@ -224,18 +200,21 @@ public class FetcherBinary implements Fetcher {
             throw new IOException("Fetcher has not been started");
 
         DocumentIndexEntry documentIndexEntry;
-        byte[] docId, length;
+        byte[] docId, length, docNo;
 
         docId = new byte[Integer.BYTES];     // Store the 4 bytes of docId
         if (documentIndexReader.read(docId) != Integer.BYTES)
             return null;
-
+        docNo = new byte[Integer.BYTES];
+        if(documentIndexReader.read(docNo)!=Integer.BYTES)
+            return null;
         length = new byte[Integer.BYTES];    // Store the 4 bytes of document length
         if (documentIndexReader.read(length) != Integer.BYTES)
             return null;
 
         documentIndexEntry = new DocumentIndexEntry();
         documentIndexEntry.setDocumentLength(ByteUtils.bytesToInt(length));
+        documentIndexEntry.setDocNo(ByteUtils.bytesToInt(docNo));
 
         return Map.entry(ByteUtils.bytesToInt(docId), documentIndexEntry);
     }
