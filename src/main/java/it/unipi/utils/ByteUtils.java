@@ -87,10 +87,12 @@ public class ByteUtils {
     }
 
     public static DocumentIndexEntry bytesToDocumentIndexEntry(byte[] documentIndexEntryBytes) {
-        int documentLength = bytesToInt(documentIndexEntryBytes, Integer.BYTES);
+        int documentLength = bytesToInt(documentIndexEntryBytes, 0);
+        int docNo = bytesToInt(documentIndexEntryBytes, Integer.BYTES);
 
         DocumentIndexEntry entry = new DocumentIndexEntry();
         entry.setDocumentLength(documentLength);
+        entry.setDocNo(docNo);
         return entry;
     }
 

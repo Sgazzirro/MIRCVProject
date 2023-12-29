@@ -5,6 +5,7 @@ import it.unipi.utils.Constants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
 import java.util.Map;
 import java.util.NavigableMap;
 import java.util.Objects;
@@ -23,7 +24,6 @@ public class DocumentIndex {
     public DocumentIndex() {
         table = new TreeMap<>();
         fetcher = Fetcher.getFetcher(Constants.getCompression());
-
         numDocuments = 0;
         totalLength = 0;
     }
@@ -67,6 +67,29 @@ public class DocumentIndex {
         return table.get(docId).getDocumentLength();
     }
 
+    public int getDocNo(int docId){
+        if (!table.containsKey(docId)) {
+            String errorMessage = "Could not fetch docId " + docId + " from document index";
+
+            try {
+                fetcher.start(Constants.getPath());
+                DocumentIndexEntry entry = fetcher.loadDocEntry(docId);
+                fetcher.close();
+
+                if (entry != null) {
+                    table.put(docId, entry);
+                    return entry.getDocNo();
+                }
+            } catch (Exception e) {
+                logger.error(errorMessage, e);
+            }
+
+            throw new RuntimeException(errorMessage);
+        }
+
+        return table.get(docId).getDocNo();
+    }
+
     public double getAverageLength() {
         // Check whether the document index metadata have not been loaded in memory
         if (numDocuments == 0 && !table.isEmpty()) {
@@ -87,12 +110,13 @@ public class DocumentIndex {
         return (double) totalLength / numDocuments;
     }
 
-    public void addDocument(int docId, int docLength) {
+    public void addDocument(int docId, int docno, int docLength) {
         if (table.containsKey(docId))
             return;
 
         DocumentIndexEntry die = new DocumentIndexEntry();
         die.setDocumentLength(docLength);
+        die.setDocNo(docno);
         table.put(docId, die);
         numDocuments += 1;
         totalLength += docLength;
@@ -113,5 +137,18 @@ public class DocumentIndex {
     @Override
     public int hashCode() {
         return Objects.hash(totalLength, numDocuments, table);
+    }
+
+    public void chargeInMemory(){
+        try {
+            fetcher.start(Constants.DATA_PATH);
+            Map.Entry<Integer, DocumentIndexEntry> entry;
+            while((entry = fetcher.loadDocEntry())!=null){
+                table.put(entry.getKey(), entry.getValue());
+            }
+            fetcher.close();
+        } catch (Exception e){
+            logger.error(e.getMessage());
+        }
     }
 }

@@ -23,6 +23,7 @@ public class InMemoryIndex implements AutoCloseable {
 
     private final Dumper dumper;
     private final Tokenizer tokenizer;
+    private int docId;
 
     public InMemoryIndex(CompressionType compression) {
         vocabulary = new Vocabulary(compression);
@@ -30,6 +31,7 @@ public class InMemoryIndex implements AutoCloseable {
 
         dumper = Dumper.getInstance(compression);
         tokenizer = Tokenizer.getInstance();
+        docId=0;
     }
 
     public boolean setup(Path filename) {
@@ -52,11 +54,12 @@ public class InMemoryIndex implements AutoCloseable {
         try {
             Document document;
 
-            while ((document = tokenStream.nextDoc()) != null)
-                processDocument(document);
-
-            dumpVocabulary();
+            while ((document = tokenStream.nextDoc()) != null) {
+                if(processDocument(document, docId))
+                    docId++;
+            }
             dumpDocumentIndex();
+            dumpVocabulary();
 
         } catch (IOException ioException) {
             logger.error("Fatal error when building the index", ioException);
@@ -64,22 +67,23 @@ public class InMemoryIndex implements AutoCloseable {
         }
     }
 
-    public boolean processDocument(Document document) {
+    public boolean processDocument(Document document, int docid) {
         if (document == null || document.getText().isEmpty())
             return false;
         List<String> tokenized = tokenizer.tokenize(document.getText());
-        if(tokenized==null) return false;
+        if(tokenized==null)
+            return false;
 
         for (String token : tokenized)
-            vocabulary.addEntry(token, document.getId());
+            vocabulary.addEntry(token, docid);
 
-        documentIndex.addDocument(document.getId(), tokenized.size());
+        documentIndex.addDocument(docid, document.getId(), tokenized.size());
         return true;
     }
 
     void dumpVocabulary() throws IOException {
         Scorer scorer = Scorer.getScorer(documentIndex);
-        // Compute upper bound of each term
+
         for (Map.Entry<String, VocabularyEntry> entry : vocabulary.getMapping().entrySet())
             entry.getValue().computeUpperBound(scorer);
 

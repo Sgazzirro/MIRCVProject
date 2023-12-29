@@ -3,8 +3,10 @@ package it.unipi;
 import it.unipi.encoding.CompressionType;
 import it.unipi.index.SPIMIIndex;
 import it.unipi.io.DocumentStream;
+import it.unipi.model.DocumentIndex;
 import it.unipi.utils.*;
 
+import javax.print.Doc;
 import java.io.*;
 import java.nio.file.Path;
 

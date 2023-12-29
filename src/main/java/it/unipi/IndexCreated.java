@@ -2,6 +2,7 @@ package it.unipi;
 
 import it.unipi.encoding.Tokenizer;
 import it.unipi.io.DocumentStream;
+import it.unipi.model.DocumentIndex;
 import it.unipi.scoring.MaxScore;
 import it.unipi.encoding.CompressionType;
 import it.unipi.scoring.ScoringType;
@@ -49,10 +50,11 @@ public class IndexCreated {
             System.out.println();
 
             for (DocumentScore first : reverseMode) {
-                System.out.println("ID : " + first.docId() + " SCORE : " + first.score());
+                int docNo = Constants.documentIndex.getDocNo(first.docId());
+                System.out.println("ID : " + first.docId() +" DOCNO : "+docNo+ " SCORE : " + first.score());
 
                 if (printFirstText) {
-                    System.out.println(stream.getDoc(first.docId()).getText() + "\n");
+                    System.out.println(stream.getDoc(docNo).getText() + "\n");
                     printFirstText = false;
                 }
             }

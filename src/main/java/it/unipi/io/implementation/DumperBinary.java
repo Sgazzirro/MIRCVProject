@@ -31,7 +31,7 @@ public class DumperBinary implements Dumper {
 
     private ByteBuffer docIndexBuffer;
     private int        docIndexBufferSize;
-    private static final int DOC_INDEX_BUFFER_CAPACITY = 100000;
+    private static final int DOC_INDEX_BUFFER_CAPACITY = 120000;
 
     @Override
     public boolean start(Path path) {
@@ -183,8 +183,9 @@ public class DumperBinary implements Dumper {
         DocumentIndexEntry documentIndexEntry = entry.getValue();
 
         buffer.putInt(docId);
+        buffer.putInt(documentIndexEntry.getDocNo());
         buffer.putInt(documentIndexEntry.getDocumentLength());
-        docIndexBufferSize += 2;
+        docIndexBufferSize += 3;
     }
 
     @Override

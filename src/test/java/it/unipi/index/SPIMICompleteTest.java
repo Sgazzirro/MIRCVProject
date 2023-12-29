@@ -64,10 +64,10 @@ public class SPIMICompleteTest {
         correctVocabulary.addEntry("recip", 2);
         correctVocabulary.addEntry("recip", 3);
 
-        correctDocumentIndex.addDocument(0, 3);
-        correctDocumentIndex.addDocument(1, 4);
-        correctDocumentIndex.addDocument(2, 4);
-        correctDocumentIndex.addDocument(3, 2);
+        correctDocumentIndex.addDocument(0,0, 3);
+        correctDocumentIndex.addDocument(1,1, 4);
+        correctDocumentIndex.addDocument(2,2, 4);
+        correctDocumentIndex.addDocument(3,3, 2);
     }
 
     @Before
@@ -117,8 +117,11 @@ public class SPIMICompleteTest {
         Map.Entry<Integer, DocumentIndexEntry> entryDI;
 
         fetcher.getDocumentIndexStats();      // Skip first two lines
-        while((entryDI = fetcher.loadDocEntry()) != null)
-            fetchedIndex.addDocument(entryDI.getKey(),entryDI.getValue().getDocumentLength());
+        int docId = 0;
+        while((entryDI = fetcher.loadDocEntry()) != null) {
+            fetchedIndex.addDocument(docId, entryDI.getKey(), entryDI.getValue().getDocumentLength());
+            docId++;
+        }
         fetcher.close();
 
         assertEquals(correctVocabulary.getMapping(), testOutput);
@@ -147,8 +150,10 @@ public class SPIMICompleteTest {
         Map.Entry<Integer, DocumentIndexEntry> entryDI;
 
         fetcher.getDocumentIndexStats();      // Skip first two lines
+        int docId = 0;
         while((entryDI = fetcher.loadDocEntry()) != null){
-            fetchedIndex.addDocument(entryDI.getKey(),entryDI.getValue().getDocumentLength());
+            fetchedIndex.addDocument(docId, entryDI.getKey(),entryDI.getValue().getDocumentLength());
+            docId++;
         }
         fetcher.close();
 
@@ -177,8 +182,11 @@ public class SPIMICompleteTest {
         Map.Entry<Integer, DocumentIndexEntry> entryDI;
 
         fetcher.getDocumentIndexStats();      // Skip first two lines
-        while ( (entryDI = fetcher.loadDocEntry()) != null )
-            fetchedIndex.addDocument(entryDI.getKey(),entryDI.getValue().getDocumentLength());
+        int docId = 0;
+        while ( (entryDI = fetcher.loadDocEntry()) != null ) {
+            fetchedIndex.addDocument(docId,entryDI.getKey(), entryDI.getValue().getDocumentLength());
+            docId++;
+        }
 
         fetcher.close();
         assertEquals(correctVocabulary.getMapping(), testOutput);
@@ -204,8 +212,11 @@ public class SPIMICompleteTest {
         fetcher.getDocumentIndexStats();
         DocumentIndex fetchedIndex = new DocumentIndex();
         Map.Entry<Integer, DocumentIndexEntry> entryDI;
-        while ( (entryDI = fetcher.loadDocEntry()) != null )
-            fetchedIndex.addDocument(entryDI.getKey(),entryDI.getValue().getDocumentLength());
+        int docId = 0;
+        while ( (entryDI = fetcher.loadDocEntry()) != null ) {
+            fetchedIndex.addDocument(docId,entryDI.getKey(), entryDI.getValue().getDocumentLength());
+            docId++;
+        }
 
         fetcher.close();
         assertEquals(correctVocabulary.getMapping(), testOutput);
@@ -234,8 +245,10 @@ public class SPIMICompleteTest {
         fetcher.getDocumentIndexStats();
         DocumentIndex fetchedIndex = new DocumentIndex();
         Map.Entry<Integer, DocumentIndexEntry> entryDI;
+        int docId = 0;
         while((entryDI = fetcher.loadDocEntry()) != null){
-            fetchedIndex.addDocument(entryDI.getKey(),entryDI.getValue().getDocumentLength());
+            fetchedIndex.addDocument(docId, entryDI.getKey(),entryDI.getValue().getDocumentLength());
+            docId++;
         }
         fetcher.close();
 
@@ -264,8 +277,11 @@ public class SPIMICompleteTest {
         fetcher.getDocumentIndexStats();
         DocumentIndex fetchedIndex = new DocumentIndex();
         Map.Entry<Integer, DocumentIndexEntry> entryDI;
-        while ( (entryDI = fetcher.loadDocEntry()) != null )
-            fetchedIndex.addDocument(entryDI.getKey(), entryDI.getValue().getDocumentLength());
+        int docId = 0;
+        while ( (entryDI = fetcher.loadDocEntry()) != null ) {
+            fetchedIndex.addDocument(docId,entryDI.getKey(), entryDI.getValue().getDocumentLength());
+            docId++;
+        }
 
         fetcher.close();
 
@@ -293,8 +309,11 @@ public class SPIMICompleteTest {
         fetcher.getDocumentIndexStats();
         DocumentIndex fetchedIndex = new DocumentIndex();
         Map.Entry<Integer, DocumentIndexEntry> entryDI;
-        while ( (entryDI = fetcher.loadDocEntry()) != null )
-            fetchedIndex.addDocument(entryDI.getKey(), entryDI.getValue().getDocumentLength());
+        int docId = 0;
+        while ( (entryDI = fetcher.loadDocEntry()) != null ) {
+            fetchedIndex.addDocument(docId, entryDI.getKey(), entryDI.getValue().getDocumentLength());
+            docId++;
+        }
 
         fetcher.close();
 

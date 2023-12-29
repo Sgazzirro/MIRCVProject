@@ -39,20 +39,21 @@ public class Constants {
     public static final int VOCABULARY_ENTRY_BYTES_SIZE =
             BYTES_STORED_STRING + 3*Integer.BYTES + Double.BYTES + 2*Long.BYTES;
     public static final int DOCUMENT_INDEX_ENTRY_BYTES_SIZE =
-            2*Integer.BYTES;
+            3*Integer.BYTES;
     public static final int VOCABULARY_HEADER_BYTES = 0;
     public static final int DOCUMENT_INDEX_HEADER_BYTES = 2*Integer.BYTES;
 
     // BM25 constants
     public static double BM25_b = 0.75;
-    public static double BM25_k = 1.6;
+    public static double BM25_k = 1.2;
     private static ScoringType scoringType = ScoringType.TFIDF;
 
     private static Path currentPath;
-    private static CompressionType currentCompression = CompressionType.DEBUG;
+    private static CompressionType currentCompression = CompressionType.COMPRESSED;
 
     // Global structures
     public static Vocabulary vocabulary;
+
     public static DocumentIndex documentIndex;
 
     public static CompressionType getCompression() {

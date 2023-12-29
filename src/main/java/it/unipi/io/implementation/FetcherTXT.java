@@ -247,6 +247,7 @@ public class FetcherTXT implements Fetcher {
         // The loading of an entry without arguments uses the global reader
         DocumentIndexEntry result;
         int docId;
+        int docNo;
 
         // Read next line
         String line = documentIndexReader.readLine();
