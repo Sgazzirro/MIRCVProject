@@ -37,6 +37,8 @@ public class IndexCreated {
             String query = new Scanner(System.in).nextLine();
             if (query.startsWith("\"") && query.endsWith("\""))
                 option = "conjunctive";
+            else
+                option = "disjunctive";
 
             long start = System.currentTimeMillis();
             PriorityQueue<DocumentScore> scoring = max.score(query, NUM_RESULTS, option);
