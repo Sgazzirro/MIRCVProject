@@ -7,16 +7,14 @@ import it.unipi.utils.Constants;
 import java.util.Objects;
 
 public class VocabularyEntry {
-
     private int documentFrequency;
     private double upperBound;
     private long docIdsOffset;
     private long termFreqOffset;
     private int docIdsLength;
     private int termFreqLength;
-
     private PostingList postingList;
-    private long touches;
+    private long touches;   // caching purposes
 
     public void touch() {
         touches++;

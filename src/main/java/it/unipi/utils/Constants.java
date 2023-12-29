@@ -13,48 +13,45 @@ import java.nio.file.Paths;
 import java.util.*;
 
 public class Constants {
-
+    ////////////////////////////////// PATHS //////////////////////////////////
     private static final Logger logger = LoggerFactory.getLogger(Constants.class);
-
     public static final Path DATA_PATH = Paths.get("./data");
     public static final Path TEST_PATH = DATA_PATH.resolve("test");
     public static final File COLLECTION_FILE = DATA_PATH.resolve("collection.tar.gz").toFile();
-
     public static final String VOCABULARY_FILENAME = "vocabulary.bin";
     public static final String DOCUMENT_INDEX_FILENAME = "document_index.bin";
     public static final String DOC_IDS_FILENAME = "doc_ids.bin";
     public static final String TERM_FREQ_FILENAME = "term_frequencies.bin";
-
-    // Stopwords downloaded from https://raw.githubusercontent.com/stopwords-iso/stopwords-en/master/stopwords-en.txt
-    public static final Path STOPWORDS_FILE = DATA_PATH.resolve("stopwords-en.txt");
+    public static final Path STOPWORDS_FILE = DATA_PATH.resolve("stopwords-en.txt"); // Stopwords downloaded from https://raw.githubusercontent.com/stopwords-iso/stopwords-en/master/stopwords-en.txt
     public static final List<String> STOPWORDS = IOUtils.loadStopwords();
+    private static Path currentPath;
 
-    public static int BLOCK_SIZE = 10_000;
-    public static int NUM_THREADS_SPIMI = 8;
-    public static int MAX_ENTRIES_PER_SPIMI_BLOCK = 1_000_000;
-
-    public static int N;
-
+    ////////////////////////////////// BYTES ENTRIES //////////////////////////////////
     public static final int BYTES_STORED_STRING = 32;
-    public static final int VOCABULARY_ENTRY_BYTES_SIZE =
-            BYTES_STORED_STRING + 3*Integer.BYTES + Double.BYTES + 2*Long.BYTES;
-    public static final int DOCUMENT_INDEX_ENTRY_BYTES_SIZE =
-            3*Integer.BYTES;
+    public static final int VOCABULARY_ENTRY_BYTES_SIZE = BYTES_STORED_STRING + 3*Integer.BYTES + Double.BYTES + 2*Long.BYTES;
+    public static final int DOCUMENT_INDEX_ENTRY_BYTES_SIZE = 3*Integer.BYTES;
     public static final int VOCABULARY_HEADER_BYTES = 0;
     public static final int DOCUMENT_INDEX_HEADER_BYTES = 2*Integer.BYTES;
 
-    // BM25 constants
+    ////////////////////////////////// COMPRESSION //////////////////////////////////
+    public static int BLOCK_SIZE = 10_000;
+    private static CompressionType currentCompression = CompressionType.COMPRESSED;
+
+    ////////////////////////////////// SPIMI //////////////////////////////////
+    public static int MAX_ENTRIES_PER_SPIMI_BLOCK = 1_000_000;
+
+    ////////////////////////////////// SCORING //////////////////////////////////
     public static double BM25_b = 0.75;
     public static double BM25_k = 1.2;
     private static ScoringType scoringType = ScoringType.BM25;
 
-    private static Path currentPath;
-    private static CompressionType currentCompression = CompressionType.COMPRESSED;
+    ////////////////////////////////// GLOBAL STRUCTURES //////////////////////////////////
 
-    // Global structures
     public static Vocabulary vocabulary;
 
     public static DocumentIndex documentIndex;
+
+    public static int N;
 
     public static CompressionType getCompression() {
         return currentCompression;
@@ -135,7 +132,7 @@ public class Constants {
 
         documentIndex = new DocumentIndex();
         if(currentCompression==CompressionType.DEBUG){
-            documentIndex.chargeInMemory(); // speed reasons
+            documentIndex.chargeInMemory(); // speed reasons in TXT
         }
         else documentIndex.chargeHeader();
     }

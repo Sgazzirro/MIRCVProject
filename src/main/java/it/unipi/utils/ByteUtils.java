@@ -10,7 +10,6 @@ import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 
 public class ByteUtils {
-
     public static void intToBytes(byte[] bytes, int offset, int... numbers) {
         // Convert number n in its byte representation and put it in the byte array starting from offset:
         //     n -> bytes[offset], bytes[offset+1], bytes[offset+2], bytes[offset+3]

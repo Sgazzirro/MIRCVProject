@@ -7,18 +7,14 @@ import it.unipi.encoding.CompressionType;
 import it.unipi.scoring.ScoringType;
 import it.unipi.utils.Constants;
 import it.unipi.scoring.DocumentScore;
-import opennlp.tools.parser.Cons;
 
-import javax.print.Doc;
 import java.io.IOException;
-import java.nio.file.Path;
-import java.sql.SQLOutput;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.PriorityQueue;
 import java.util.Scanner;
 
-public class IndexCreated {
+public class GUI {
     public static void main(String[] args) throws IOException {
         Constants.CACHING = true;
         Constants.setCompression(CompressionType.COMPRESSED);

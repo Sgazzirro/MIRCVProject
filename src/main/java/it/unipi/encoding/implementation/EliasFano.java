@@ -108,10 +108,7 @@ public class EliasFano extends Encoder {
             if (highBitset.get(i)) {
                 int shifted = groupValue;
 
-                for (int j = lowBitsetIndex * lowHalfLength;
-                     j < lowBitsetIndex*lowHalfLength + lowHalfLength;
-                     j++)
-                {
+                for (int j = lowBitsetIndex * lowHalfLength; j < lowBitsetIndex*lowHalfLength + lowHalfLength; j++) {
                     int bitValue = lowBitset.get(j)? 1:0;
                     shifted = shifted << 1 | bitValue;
                 }
@@ -124,6 +121,8 @@ public class EliasFano extends Encoder {
 
         return decoded;
     }
+
+    /////////////////////// UTILITY ///////////////////////////
 
     private static BitSet extractLowBitset(int number, int nLowBits) {
         // Create a BitSet with nLowBits bits

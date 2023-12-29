@@ -17,18 +17,15 @@ import java.util.List;
 import java.util.Map;
 
 public class DumperBinary implements Dumper {
-
     private static final Logger logger = LoggerFactory.getLogger(DumperBinary.class);
-
     protected FileChannel vocabularyWriter;
     protected FileChannel docIdsWriter;
     protected FileChannel termFreqWriter;
     protected FileChannel documentIndexWriter;
-
     protected long docIdsOffset;
     protected long termFreqOffset;
-    protected boolean opened;
 
+    protected boolean opened;
     private ByteBuffer docIndexBuffer;
     private int        docIndexBufferSize;
     private static final int DOC_INDEX_BUFFER_CAPACITY = 120000;

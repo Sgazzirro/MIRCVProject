@@ -3,23 +3,18 @@ package it.unipi.model;
 public class DocumentIndexEntry {
     private int docNo;
     private int documentLength;
-
-
     public int getDocumentLength() {
         return documentLength;
     }
     public int getDocNo(){
         return docNo;
     }
-
     public void setDocNo(int docNo){
         this.docNo=docNo;
     }
-
     public void setDocumentLength(int documentLength) {
         this.documentLength = documentLength;
     }
-
     public static DocumentIndexEntry parseTXT(String line) {
         DocumentIndexEntry entry = new DocumentIndexEntry();
         String[] params = line.split(",");

@@ -11,16 +11,13 @@ import java.util.List;
 import java.util.NoSuchElementException;
 
 public class PostingListCompressedImpl extends PostingList {
-
     private byte[] compressedDocIds;
     private byte[] compressedTermFrequencies;
-
     private List<Integer> docIdsDecompressedList;           // ELIAS FANO    - DOC IDS
     private List<Integer> termFrequenciesDecompressedList;  // SIMPLE9/UNARY - TERM FREQUENCIES
     private int blockPointer;
     private int docIdsBlockPointer;                    // This represents the offset of the next docIdsBlock
     private int termFrequenciesBlockPointer;           // This represents the index of the actual block of term frequencies
-
     private static final Encoder docIdsEncoder = Encoder.getDocIdsEncoder();
     private static final Encoder termFreqEncoder = Encoder.getTermFrequenciesEncoder();
 
@@ -31,7 +28,7 @@ public class PostingListCompressedImpl extends PostingList {
         termFrequenciesDecompressedList = new ArrayList<>();
 
         docIdsBlockPointer = termFrequenciesBlockPointer = 0;
-        blockPointer = -1;
+        blockPointer = -1; // so that hasNext will return true
     }
 
     @Override
@@ -53,16 +50,17 @@ public class PostingListCompressedImpl extends PostingList {
     @Override
     public void next() {
         long docIdsLength = rootEntry.getDocIdsLength();
-        if (docIdsBlockPointer == docIdsLength &&
-                blockPointer == docIdsDecompressedList.size() - 1)
+        if (docIdsBlockPointer == docIdsLength && blockPointer == docIdsDecompressedList.size() - 1)
+            // arrived to end of file
             throw new NoSuchElementException();
 
         if (blockPointer + 1 < docIdsDecompressedList.size())
+            // inside the decompressed block
             blockPointer++;
         else {
+            // fetching in memory the next block
             IntegerListBlock docIdsBlock = docIdsEncoder.getNextBlock(compressedDocIds, docIdsBlockPointer),
                 termFreqBlock = termFreqEncoder.getNextBlock(compressedTermFrequencies, termFrequenciesBlockPointer);
-
             decompressBlock(docIdsBlock, termFreqBlock);
             blockPointer = 0;
         }
@@ -79,7 +77,6 @@ public class PostingListCompressedImpl extends PostingList {
                 }
             }
         }
-
         // if we're in the last block, and it doesn't contain the docId
         long docIdsLength = rootEntry.getDocIdsLength();
         if (docIdsBlockPointer == docIdsLength &&
@@ -89,19 +86,20 @@ public class PostingListCompressedImpl extends PostingList {
         // Else get the block containing the right docId
         IntegerListBlock docIdsBlock, termFreqBlock;
         while (true) {
+            // find upper bound and length of the next blocks
             docIdsBlock = docIdsEncoder.getNextBlock(compressedDocIds, docIdsBlockPointer);
             termFreqBlock = termFreqEncoder.getNextBlock(compressedTermFrequencies, termFrequenciesBlockPointer);
 
             // If this is the last block, or we are at the correct block, exit the loop
             if (docIdsBlockPointer + docIdsBlock.length() == docIdsLength)
                 break;
+            // if this is the correct block
             if (docId < docIdsBlock.upperbound())
                 break;
-
+            // else
             docIdsBlockPointer += docIdsBlock.length();
             termFrequenciesBlockPointer += termFreqBlock.length();
         }
-
         decompressBlock(docIdsBlock, termFreqBlock);
         blockPointer = 0;
 
@@ -113,7 +111,6 @@ public class PostingListCompressedImpl extends PostingList {
     public void reset() {
         docIdsBlockPointer = termFrequenciesBlockPointer = 0;
         blockPointer = -1;
-
         loadFirstBlock();
     }
 

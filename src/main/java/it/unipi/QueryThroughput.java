@@ -17,6 +17,8 @@ import java.util.List;
 import java.util.PriorityQueue;
 
 public class QueryThroughput {
+    // class designed to evaluate the query throughput of a given combination
+    // queries are the ones of the trec eval
     public static void main(String[] args){
         // Constants settings
         Constants.setCompression(CompressionType.COMPRESSED);

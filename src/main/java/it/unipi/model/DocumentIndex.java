@@ -13,14 +13,11 @@ import java.util.Objects;
 import java.util.TreeMap;
 
 public class DocumentIndex {
-
-    private static final Logger logger = LoggerFactory.getLogger(DocumentIndex.class);
-
     private int totalLength;
     private int numDocuments;
-
     private final NavigableMap<Integer, DocumentIndexEntry> table;
     private final Fetcher fetcher;
+    private static final Logger logger = LoggerFactory.getLogger(DocumentIndex.class);
 
     public DocumentIndex() {
         table = new TreeMap<>();
@@ -142,6 +139,7 @@ public class DocumentIndex {
     }
 
     public void chargeInMemory(){
+        // used to ENTIRELY charge in memory the document index, for speed purposes
         try {
             fetcher.start(Constants.getPath());
             int[] stats = fetcher.getDocumentIndexStats();
@@ -159,6 +157,7 @@ public class DocumentIndex {
     }
 
     public void chargeHeader(){
+        // used to charge the header in mememory
         try{
             fetcher.start(Constants.getPath());
             int[] stats = fetcher.getDocumentIndexStats();

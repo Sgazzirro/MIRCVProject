@@ -10,9 +10,6 @@ import it.unipi.utils.Constants;
 import java.util.*;
 
 public class MaxScore {
-
-    // private static final Logger logger = LoggerFactory.getLogger(MaxScore.class);
-
     private final Vocabulary vocabulary;
     private final Scorer scorer;
     private final Tokenizer tokenizer;
@@ -33,11 +30,8 @@ public class MaxScore {
         TreeMap<Double, PostingList> treeMap = new TreeMap<>();
 
         ////////////////// DISJUNCTIVE MODE ///////////////////////
-        int IOCalls = 0;
         if(mode.equals("disjunctive")) {
             for (String token : queryTokens) {
-                if(vocabulary.isNotPresent(token))
-                    IOCalls++;
                 VocabularyEntry entry = vocabulary.getEntry(token);
                 if (entry != null)
                     treeMap.put(entry.getUpperBound(), entry.getPostingList());
@@ -90,7 +84,7 @@ public class MaxScore {
         if (K <= 0) return new PriorityQueue<>();
         PriorityQueue<DocumentScore> scores = new PriorityQueue<>(K);
         List<Double> ub = computeUB(p, sigma);
-        double theta = 0;       // Current maxScore
+        double theta = 0;
         int pivot = 0;
 
         int current = minimumDocId(p);
@@ -135,7 +129,6 @@ public class MaxScore {
                     sigma.remove(i);
                     if (p.size() > 1)
                         ub = computeUB(p, sigma);
-
                     i--;
                     continue;
                 }
@@ -166,6 +159,7 @@ public class MaxScore {
     }
 
     private int minimumDocId(List<PostingList> postingLists){
+        // returns the minimum docid between the posting lists passed
         int min = Integer.MAX_VALUE;
         for (PostingList postingList : postingLists) {
             if (postingList.hasNext()){
@@ -182,6 +176,8 @@ public class MaxScore {
     }
 
     private int nextConjunctive(List<PostingList> postingLists){
+        // returns -1 if posting lists are empty, or if they don't have any doc id in common
+        // returns 0 if posting lists are all pointing to the same doc id
         int current = minimumDocId(postingLists);
         if (current == -1)
             return -1;
@@ -210,11 +206,11 @@ public class MaxScore {
     }
 
     private List<Double> computeUB (List<PostingList> p, List<Double> sigma){
+        // computes the upper bound given the posting lists and sigma (term upper bound of each posting list)
         List<Double> ub = new ArrayList<>(p.size());
         ub.add(0, sigma.get(0));
         for (int i=1; i < p.size(); i++)
             ub.add(i, (ub.get(i-1) + sigma.get(i)));
-
         return ub;
     }
 }

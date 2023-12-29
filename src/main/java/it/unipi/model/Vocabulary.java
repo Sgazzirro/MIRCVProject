@@ -12,14 +12,10 @@ import static it.unipi.utils.Constants.CACHE;
 import static it.unipi.utils.Constants.MEMORY_USED;
 
 public class Vocabulary {
-
-    private static final Logger logger = LoggerFactory.getLogger(Vocabulary.class);
-
     private final NavigableMap<String, VocabularyEntry> table;
     private final Fetcher fetcher;
-
     private final CompressionType compression;
-
+    private static final Logger logger = LoggerFactory.getLogger(Vocabulary.class);
     public Vocabulary() {
         this(Constants.getCompression());
     }
