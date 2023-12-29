@@ -10,61 +10,87 @@ import it.unipi.scoring.DocumentScore;
 
 import java.io.IOException;
 import java.nio.file.Path;
+import java.sql.SQLOutput;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.PriorityQueue;
+import java.util.Scanner;
 
 public class IndexCreated {
     public static void main(String[] args) throws IOException {
-        // Return how many documents and how many words are indexed
-        int numDocs;
-        int numWords;
         Constants.CACHING = true;
         Constants.setCompression(CompressionType.COMPRESSED);
         Constants.setScoring(ScoringType.TFIDF);
         Constants.setPath(Path.of("./COMPRESSEDELIAS100010K"));
         Constants.startSession();
 
-        MaxScore max = new MaxScore(Constants.vocabulary, Constants.documentIndex, Tokenizer.getInstance());
 
+        MaxScore max = new MaxScore(Constants.vocabulary, Constants.documentIndex, Tokenizer.getInstance());
         DocumentStream stream = new DocumentStream(Constants.COLLECTION_FILE);
 
-        for(int i = 0; i < 2; i++) {
+        int NUM_RESULTS = 10;
+        String option = "disjunctive";
+
+        do {
+            System.out.println("MSMARCO PASSAGES: Input Your query (Closed between \"\" for conjunctive mode, disjunctive otherwise)");
+            String query = new Scanner(System.in).nextLine();
+            if (query.startsWith("\"") && query.endsWith("\""))
+                option = "conjunctive";
+
             long start = System.currentTimeMillis();
-            // TODO - with numResults = 10 or 100 we get different results
-            int numResults = 10;
-            boolean printFirstText = true;
+            PriorityQueue<DocumentScore> scoring = max.score(query, NUM_RESULTS, option);
+            long time = System.currentTimeMillis() - start;
 
-            PriorityQueue<DocumentScore> scoring = max.score("jesus", numResults, "disjunctive");
+            System.out.println("+--------------------------------------+");
+            System.out.println(scoring.size() + " results loaded in " + time + " (ms)");
+            System.out.println("+--------------------------------------+");
+
             List<DocumentScore> reverseMode = new ArrayList<>();
-
             while (!scoring.isEmpty()) {
                 DocumentScore first = scoring.poll();
                 reverseMode.add(0, first);
             }
 
-            // Print how many different documents we got (for testing purposes)
-            System.out.println("Results asked: " + numResults);
-            System.out.println("Results obtained: " +
-                    reverseMode.stream().mapToInt(DocumentScore::docId).distinct().count());
-            System.out.println();
-
-            for (DocumentScore first : reverseMode) {
-                System.out.println("ID : " + first.docId() + " SCORE : " + first.score());
-
-                if (printFirstText) {
-                    System.out.println(stream.getDoc(first.docId()).getText() + "\n");
-                    printFirstText = false;
-                }
+            System.out.println("PID : " + reverseMode.get(0));
+            System.out.println("What do you want to do next?");
+            System.out.println("+--------------------------------------+");
+            System.out.println("1 : Check the passage at PID : " + reverseMode.get(0));
+            System.out.println("2 : Make another query");
+            System.out.println("3 : Change the number of results to fetch at the next query");
+            System.out.println("4 : Check all results (only PIDS)");
+            System.out.println("5 : Quit");
+            System.out.println("+--------------------------------------+");
+            int choice = new Scanner(System.in).nextInt();
+            if(choice == 5)
+                break;
+            switch (choice) {
+                case 1:
+                    do {
+                        System.out.println("+--------------------------------------+");
+                        System.out.println("Fetching passage...");
+                        System.out.println("+--------------------------------------+");
+                        System.out.println(stream.getDoc(reverseMode.get(0).docId()).getText());
+                        reverseMode.remove(0);
+                        System.out.println("Wanna see the next passage? [Y/N]");
+                    } while (new Scanner(System.in).nextLine().equals("Y"));
+                    break;
+                case 2:
+                    break;
+                case 3:
+                    System.out.println("New K : ");
+                    int K = new Scanner(System.in).nextInt();
+                    if (K < 1000)
+                        NUM_RESULTS = K;
+                    break;
+                case 4:
+                    while(reverseMode.size() > 0) {
+                        System.out.println(reverseMode.get(0));
+                        reverseMode.remove(0);
+                    }
+                    break;
             }
+        }while(true);
 
-            long end = System.currentTimeMillis();
-            if(i == 0)
-                System.out.println("SENZA IL CACHING GENTILMENTE OFFERTO DA JAVA : " + (end - start));
-            else
-                System.out.println("CON IL CACHING GENTILMENTE OFFERTO DA JAVA : " + (end - start));
-
-        }
         Constants.onExit();
     }
 }

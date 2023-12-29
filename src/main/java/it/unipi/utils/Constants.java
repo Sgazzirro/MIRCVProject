@@ -127,7 +127,6 @@ public class Constants {
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
-            System.out.println("QUI CI VADO");
             vocabulary = new Vocabulary(influencersR);
         }
         else

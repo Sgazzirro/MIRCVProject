@@ -23,7 +23,7 @@ public class Timing {
         long accumulated = 0;
         int queries = 0;
         try(
-                BufferedReader readerQ = new BufferedReader(new FileReader("./data/evaluation/queries.train.tsv"))
+                BufferedReader readerQ = new BufferedReader(new FileReader("./data/evaluation/msmarco-test2019-queries.tsv"))
         ){
             String query;
 
@@ -46,7 +46,13 @@ public class Timing {
         catch (IOException e) {
             throw new RuntimeException(e);
         }
-        System.out.println("THROUGHPUT WITH CACHE, REFRESH = " + cache +  "   " +  refresh + " SEARCHING FOR " + maxRes + " QUERIES : " + accumulated);
+        double result = (double) accumulated;
+        queries--;
+        result = result / queries;
+        result = 1/(result / (queries*1000));
+
+        System.out.println("THROUGHPUT WITH CACHE, REFRESH = " + cache +  "   " +  refresh + " SEARCHING FOR " + maxRes + " QUERIES : " + result );
+        System.out.println("QUERY LATENCY WITH CACHE, REFRESH = " + cache +  "   " +  refresh + " SEARCHING FOR " + maxRes + " QUERIES : " + accumulated );
         Constants.onExit();
     }
 
@@ -100,9 +106,7 @@ public class Timing {
         TimeIT(true, false,1);
         TimeIT(true, false,10);
        TimeIT(true, false, 100);
-      TimeIT(false, false,1);
-      TimeIT(false, false,10);
-      TimeIT(false, false,100);
+
 
 
 

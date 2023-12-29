@@ -108,8 +108,6 @@ public class TrecEvaluation {
                 System.out.println(q.getText());
                 List<Result> results = new ArrayList<>();
                 PriorityQueue<DocumentScore> scoring = scorer.score(q.getText(), 10, "disjunctive");
-                if(scoring == null)
-                    continue;
                 PriorityQueue<DocumentScore> reverseMode = new PriorityQueue<>(java.util.Collections.reverseOrder());
                 while(scoring.size() > 0) {
                     DocumentScore first = scoring.poll();

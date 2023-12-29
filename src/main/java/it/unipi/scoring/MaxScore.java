@@ -43,7 +43,7 @@ public class MaxScore {
                     treeMap.put(entry.getUpperBound(), entry.getPostingList());
             }
             if (treeMap.isEmpty())
-                return null;
+                return new PriorityQueue<>();
 
             return maxScore(new ArrayList<>(treeMap.values()), new ArrayList<>(treeMap.keySet()), numResults);
         }
