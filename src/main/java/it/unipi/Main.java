@@ -4,6 +4,7 @@ import it.unipi.encoding.CompressionType;
 import it.unipi.index.SPIMIIndex;
 import it.unipi.io.DocumentStream;
 import it.unipi.model.DocumentIndex;
+import it.unipi.scoring.ScoringType;
 import it.unipi.utils.*;
 
 import javax.print.Doc;
@@ -13,8 +14,9 @@ import java.nio.file.Path;
 public class Main {
 
     public static void main( String[] args ) throws IOException {
-        Path indexPath = Path.of("COMPRESSEDELIAS100010K");
+        Path indexPath = Path.of("./finalIndexTFIDF");
         File collectionFile = Constants.COLLECTION_FILE;
+        Constants.setScoring(ScoringType.TFIDF);
 
         DocumentStream stream = new DocumentStream(collectionFile);
 

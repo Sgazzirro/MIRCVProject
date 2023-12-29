@@ -226,7 +226,7 @@ public class SPIMIIndex {
             N += documentIndexStats[0];
             L += documentIndexStats[1];
         }
-
+        Constants.N = N;
         globalIndexer.getDocumentIndex().setNumDocuments(N);
         globalIndexer.getDocumentIndex().setTotalLength(L);
         globalIndexer.dumpDocumentIndex();

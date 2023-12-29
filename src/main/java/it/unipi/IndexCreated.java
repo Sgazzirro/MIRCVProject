@@ -9,6 +9,7 @@ import it.unipi.utils.Constants;
 import it.unipi.scoring.DocumentScore;
 import opennlp.tools.parser.Cons;
 
+import javax.print.Doc;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.sql.SQLOutput;
@@ -22,7 +23,7 @@ public class IndexCreated {
         Constants.CACHING = true;
         Constants.setCompression(CompressionType.COMPRESSED);
         Constants.setScoring(ScoringType.TFIDF);
-        Constants.setPath(Path.of("./data"));
+        Constants.setPath(Path.of("./finalIndexTFIDF"));
         Constants.startSession();
 
         MaxScore max = new MaxScore(Constants.vocabulary, Constants.documentIndex, Tokenizer.getInstance());
@@ -46,15 +47,23 @@ public class IndexCreated {
             System.out.println("+--------------------------------------+");
 
             List<DocumentScore> reverseMode = new ArrayList<>();
+            if(scoring.isEmpty()){
+                System.out.println("+--------------------------------------+");
+                System.out.println("No results found... :(");
+                System.out.println("+--------------------------------------+");
+                continue;
+            }
+
             while (!scoring.isEmpty()) {
                 DocumentScore first = scoring.poll();
-                reverseMode.add(0, first);
+                DocumentScore second = new DocumentScore(Constants.documentIndex.getDocNo(first.docId()), first.score());
+                reverseMode.add(0, second);
             }
 
             System.out.println("PID : " + reverseMode.get(0));
             System.out.println("What do you want to do next?");
             System.out.println("+--------------------------------------+");
-            System.out.println("1 : Check the passage at PID : " + reverseMode.get(0));
+            System.out.println("1 : Check the passage at PID : " + reverseMode.get(0).docId());
             System.out.println("2 : Make another query");
             System.out.println("3 : Change the number of results to fetch at the next query");
             System.out.println("4 : Check all results (only PIDS)");
@@ -84,6 +93,7 @@ public class IndexCreated {
                     break;
                 case 4:
                     while(reverseMode.size() > 0) {
+                        System.out.println(Constants.documentIndex.getDocNo(reverseMode.get(0).docId()));
                         System.out.println(reverseMode.get(0));
                         reverseMode.remove(0);
                     }

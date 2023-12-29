@@ -29,7 +29,7 @@ public class TrecEvaluation {
      * The name of the file in which we store our IR's results
      * RESULT FORMAT : QueryID | Q0 | pid | rank | Score | IDofTheRUN
      */
-    private static String RESULT = "./data/evaluation/result1000OLDELIAS.txt";
+    private static String RESULT = "./data/evaluation/resultFinalEliasTFIDF.txt";
 
     private static class Query{
         String queryID;
@@ -117,7 +117,7 @@ public class TrecEvaluation {
                 int rank = 1;
                 while(reverseMode.size() > 0){
                     DocumentScore first = reverseMode.poll();
-                    results.add(new Result(q.getQueryID(), String.valueOf(first.docId()), rank, first.score()));
+                    results.add(new Result(q.getQueryID(), String.valueOf(Constants.documentIndex.getDocNo(first.docId())), rank, first.score()));
                     rank++;
                 }
                 // TODO: Riempire la lista di risultati
@@ -137,7 +137,7 @@ public class TrecEvaluation {
     public static void main(String[] args){
         Constants.CACHING = false;
         Constants.setCompression(CompressionType.COMPRESSED);
-        Constants.setPath(Path.of("./COMPRESSED100010K"));
+        Constants.setPath(Path.of("./finalIndexTFIDF"));
         Constants.setScoring(ScoringType.TFIDF);
         Constants.startSession();
         generateEvaluation();

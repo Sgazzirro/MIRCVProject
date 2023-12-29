@@ -29,6 +29,7 @@ public class DocumentIndex {
         totalLength = 0;
     }
 
+
     public int getTotalLength() {
         return totalLength;
     }
