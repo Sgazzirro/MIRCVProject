@@ -29,7 +29,7 @@ public class TrecEvaluation {
      * The name of the file in which we store our IR's results
      * RESULT FORMAT : QueryID | Q0 | pid | rank | Score | IDofTheRUN
      */
-    private static String RESULT = "./data/evaluation/resultsBM25.txt";
+    private static String RESULT = "./data/evaluation/resultsBM15.txt";
 
     private static class Query{
         String queryID;
@@ -140,16 +140,6 @@ public class TrecEvaluation {
         Constants.setPath(Constants.DATA_PATH);
         Constants.setScoring(ScoringType.BM25);
         Constants.startSession();
-        for(int b=0; b<10; b++){
-            for(int k=0; k<10; k++){
-                double bm25_b = (double)b/10;
-                double bm25_k = (double)k/10*3;
-                Constants.BM25_b=bm25_b;
-                Constants.BM25_k=bm25_k;
-                RESULT = "./data/evaluation/resultsBM25_b"+b+"_k"+k+".txt";
-                generateEvaluation();
-            }
-        }
         generateEvaluation();
         Constants.onExit();
     }

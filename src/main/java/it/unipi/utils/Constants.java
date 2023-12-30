@@ -41,8 +41,8 @@ public class Constants {
     public static int MAX_ENTRIES_PER_SPIMI_BLOCK = 1_000_000;
 
     ////////////////////////////////// SCORING //////////////////////////////////
-    public static double BM25_b = 0.75;
-    public static double BM25_k = 1.2;
+    public static double BM25_b = 0.0;
+    public static double BM25_k = 0.9;
     private static ScoringType scoringType = ScoringType.BM25;
 
     ////////////////////////////////// GLOBAL STRUCTURES //////////////////////////////////

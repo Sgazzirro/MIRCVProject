@@ -3,6 +3,7 @@ package it.unipi;
 import it.unipi.encoding.CompressionType;
 import it.unipi.index.SPIMIIndex;
 import it.unipi.io.DocumentStream;
+import it.unipi.scoring.ScoringType;
 import it.unipi.utils.*;
 
 import java.io.*;
@@ -13,6 +14,7 @@ public class IndexCreator {
     public static void main( String[] args ) throws IOException {
         Path indexPath = Constants.DATA_PATH;
         File collectionFile = Constants.COLLECTION_FILE;
+        Constants.setScoring(ScoringType.BM25);
 
         DocumentStream stream = new DocumentStream(collectionFile);
 

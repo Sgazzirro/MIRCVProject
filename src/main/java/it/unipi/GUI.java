@@ -18,7 +18,7 @@ public class GUI {
     public static void main(String[] args) throws IOException {
         Constants.CACHING = true;
         Constants.setCompression(CompressionType.COMPRESSED);
-        Constants.setScoring(ScoringType.BM25);
+        Constants.setScoring(ScoringType.TFIDF);
         Constants.setPath(Constants.DATA_PATH);
         Constants.startSession();
 
@@ -58,13 +58,13 @@ public class GUI {
                 reverseMode.add(0, second);
             }
 
-            System.out.println("PID : " + reverseMode.get(0));
+            System.out.println("DOCNO : " + reverseMode.get(0));
             System.out.println("What do you want to do next?");
             System.out.println("+--------------------------------------+");
-            System.out.println("1 : Check the passage at PID : " + reverseMode.get(0).docId());
+            System.out.println("1 : Check the passage at DOCNO : " + reverseMode.get(0).docId());
             System.out.println("2 : Make another query");
             System.out.println("3 : Change the number of results to fetch at the next query");
-            System.out.println("4 : Check all results (only PIDS)");
+            System.out.println("4 : Check all results (only DOCNO)");
             System.out.println("5 : Quit");
             System.out.println("+--------------------------------------+");
             int choice = new Scanner(System.in).nextInt();

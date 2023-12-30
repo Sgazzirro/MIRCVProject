@@ -152,7 +152,7 @@ public class SPIMIIndex {
                 }
 
             // Delete blocks temp directory
-            //IOUtils.deleteDirectory(blocksPath);
+            IOUtils.deleteDirectory(blocksPath);
             globalIndexer.close();
 
         } catch (IOException ioException) {
