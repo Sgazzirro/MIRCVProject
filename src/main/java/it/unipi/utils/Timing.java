@@ -6,22 +6,19 @@ import it.unipi.encoding.EncodingType;
 import it.unipi.encoding.Tokenizer;
 import it.unipi.encoding.implementation.EliasFano;
 import it.unipi.encoding.implementation.UnaryEncoder;
-import it.unipi.scoring.DocumentScore;
 import it.unipi.scoring.MaxScore;
 import it.unipi.scoring.ScoringType;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
-import java.nio.file.Path;
-import java.util.PriorityQueue;
 
 
 public class Timing {
 
     public static double TimeIT(boolean cache, boolean refresh, int maxRes) {
-        Session.CACHING = cache;
-        Session.start();
+        Constants.CACHING = cache;
+        Constants.startSession();
         long start, end;
         long accumulated = 0;
         int queries = 0;
@@ -32,11 +29,11 @@ public class Timing {
 
             while ( (query = readerQ.readLine()) != null ) {
                 if (refresh)
-                    Session.start();
+                    Constants.startSession();
                 if (++queries == maxRes)
                     break;
                 start = System.currentTimeMillis();
-                MaxScore scorer = new MaxScore(Session.vocabulary, Session.documentIndex, Tokenizer.getInstance());
+                MaxScore scorer = new MaxScore(Constants.vocabulary, Constants.documentIndex, Tokenizer.getInstance());
                 scorer.score(query.split("\t")[1], 1, "disjunctive");
                 end = System.currentTimeMillis();
                 accumulated += (end - start);
@@ -51,15 +48,15 @@ public class Timing {
 
         System.out.println("THROUGHPUT WITH CACHE = " + cache +  ", REFRESH = " +  refresh + " SEARCHING FOR " + queries + " QUERIES : " + throughput );
         System.out.println("QUERY LATENCY WITH CACHE = " + cache +  ", REFRESH = " +  refresh + " SEARCHING FOR " + queries + " QUERIES : " + accumulated );
-        Session.onExit();
+        Constants.onExit();
 
         return result;
     }
 
     public static void main(String[] args){
-        Session.setCompression(CompressionType.COMPRESSED);
-        Session.setPath(Constants.DATA_PATH.resolve("EliasFano_Unary_10000_TFIDF"));
-        Session.setScoring(ScoringType.TFIDF);
+        Constants.setCompression(CompressionType.COMPRESSED);
+        Constants.setPath(Constants.DATA_PATH.resolve("EliasFano_Unary_10000_TFIDF"));
+        Constants.setScoring(ScoringType.TFIDF);
         Encoder.setDocIdsEncoder(new EliasFano(EncodingType.DOC_IDS));
         Encoder.setTermFrequenciesEncoder(new UnaryEncoder(EncodingType.TERM_FREQUENCIES));
         Constants.BLOCK_SIZE = 10000;

@@ -3,9 +3,7 @@ package it.unipi;
 import it.unipi.encoding.CompressionType;
 import it.unipi.encoding.Tokenizer;
 import it.unipi.scoring.MaxScore;
-import it.unipi.scoring.ScoringType;
 import it.unipi.utils.Constants;
-import it.unipi.utils.Session;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
@@ -20,9 +18,9 @@ public class QueryThroughput {
 
     public static long time(Path indexPath, int numResults) throws IOException {
         // Constants settings
-        Session.setCompression(CompressionType.COMPRESSED);
-        Session.setPath(indexPath);
-        Session.start();
+        Constants.setCompression(CompressionType.COMPRESSED);
+        Constants.setPath(indexPath);
+        Constants.startSession();
 
         // charge queries in memory
         String QUERY_FILE = "./data/evaluation/msmarco-test2019-queries.tsv";
@@ -36,7 +34,7 @@ public class QueryThroughput {
         }
 
         // scoring
-        MaxScore max = new MaxScore(Session.vocabulary, Session.documentIndex, Tokenizer.getInstance());
+        MaxScore max = new MaxScore(Constants.vocabulary, Constants.documentIndex, Tokenizer.getInstance());
         long time = System.currentTimeMillis();
         for (String query: queries)
             max.score(query, numResults, "conjunctive");

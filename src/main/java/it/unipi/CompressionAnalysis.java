@@ -7,12 +7,11 @@ import it.unipi.encoding.implementation.*;
 import it.unipi.index.InMemoryIndex;
 import it.unipi.index.SPIMIIndex;
 import it.unipi.io.DocumentStream;
-import it.unipi.io.implementation.BlockFetcherBinary;
 import it.unipi.io.implementation.DumperCompressed;
+import it.unipi.io.implementation.FetcherBinary;
 import it.unipi.model.VocabularyEntry;
 import it.unipi.scoring.ScoringType;
 import it.unipi.utils.Constants;
-import it.unipi.utils.Session;
 import it.unipi.utils.Timing;
 import org.apache.commons.io.FileUtils;
 
@@ -168,7 +167,7 @@ public class CompressionAnalysis {
     private static void buildIndex(CompressionStats stats) throws IOException {
         String indexFolder = stats.getIndexFolder();
         Path indexPath = Constants.DATA_PATH.resolve(indexFolder);
-        Session.setScoring(stats.scoring);
+        Constants.setScoring(stats.scoring);
         Constants.BLOCK_SIZE = stats.blockSize;
 
         long startTime = System.currentTimeMillis();
@@ -177,7 +176,7 @@ public class CompressionAnalysis {
         boolean alreadyExists = indexPath.toFile().exists();
         if (!alreadyExists) {
             try (
-                    BlockFetcherBinary blockFetcher = new BlockFetcherBinary();
+                    FetcherBinary blockFetcher = new FetcherBinary();
                     DumperCompressed dumper = new DumperCompressed(docIdsEncoders.get(stats.docIdsEncoder), termFreqEncoders.get(stats.termFreqEncoder))
             ) {
                 System.out.printf("Building index %5s %5d %10s %10s\n", stats.scoring, stats.blockSize, stats.docIdsEncoder, stats.termFreqEncoder);
@@ -195,7 +194,7 @@ public class CompressionAnalysis {
 
                 // Load one vocabulary entry at a time and dump it
                 Map.Entry<String, VocabularyEntry> entry;
-                while ((entry = blockFetcher.loadNextVocabularyEntry()) != null)
+                while ((entry = blockFetcher.loadVocEntry()) != null)
                     dumper.dumpVocabularyEntry(entry);
             }
             stats.buildTime = System.currentTimeMillis() - startTime;
@@ -207,15 +206,15 @@ public class CompressionAnalysis {
         }
     }
 
-    private static void analyzeIndexPerformances(CompressionStats stats) throws IOException {
+    private static void analyzeIndexPerformances(CompressionStats stats)  {
         String indexFolder = stats.getIndexFolder();
         Path indexPath = Constants.DATA_PATH.resolve(indexFolder);
 
         List<Double> times = new ArrayList<>(RUNS);
         for (int i = 0; i < RUNS; i++) {
             Constants.BLOCK_SIZE = stats.blockSize;
-            Session.setScoring(stats.scoring);
-            Session.setPath(indexPath);
+            Constants.setScoring(stats.scoring);
+            Constants.setPath(indexPath);
             Encoder.setDocIdsEncoder(docIdsEncoders.get(stats.docIdsEncoder));
             Encoder.setTermFrequenciesEncoder(termFreqEncoders.get(stats.termFreqEncoder));
             //Session.start();
