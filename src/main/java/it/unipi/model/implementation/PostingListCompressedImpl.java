@@ -18,14 +18,17 @@ public class PostingListCompressedImpl extends PostingList {
     private int blockPointer;
     private int docIdsBlockPointer;                    // This represents the offset of the next docIdsBlock
     private int termFrequenciesBlockPointer;           // This represents the index of the actual block of term frequencies
-    private static final Encoder docIdsEncoder = Encoder.getDocIdsEncoder();
-    private static final Encoder termFreqEncoder = Encoder.getTermFrequenciesEncoder();
+    private static Encoder docIdsEncoder;
+    private static Encoder termFreqEncoder;
 
     public PostingListCompressedImpl(VocabularyEntry entry) {
         super(entry);
 
         docIdsDecompressedList = new ArrayList<>();
         termFrequenciesDecompressedList = new ArrayList<>();
+
+        docIdsEncoder = Encoder.getDocIdsEncoder();
+        termFreqEncoder = Encoder.getTermFrequenciesEncoder();
 
         docIdsBlockPointer = termFrequenciesBlockPointer = 0;
         blockPointer = -1; // so that hasNext will return true
@@ -94,7 +97,7 @@ public class PostingListCompressedImpl extends PostingList {
             if (docIdsBlockPointer + docIdsBlock.length() == docIdsLength)
                 break;
             // if this is the correct block
-            if (docId < docIdsBlock.upperbound())
+            if (docId <= docIdsBlock.upperbound())
                 break;
             // else
             docIdsBlockPointer += docIdsBlock.length();
@@ -144,13 +147,6 @@ public class PostingListCompressedImpl extends PostingList {
                 ByteUtils.subArray(compressedTermFrequencies, termFrequenciesBlockPointer, termFreqBlock.length())
         );
         termFrequenciesBlockPointer += termFreqBlock.length();
-
-        // Remove fictitious 0 frequencies
-        int first0Index = docIdsDecompressedList.size();
-        termFrequenciesDecompressedList.subList(
-                first0Index,
-                termFrequenciesDecompressedList.size()
-        ).clear();
     }
 
     @Override

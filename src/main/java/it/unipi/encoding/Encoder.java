@@ -1,6 +1,5 @@
 package it.unipi.encoding;
 
-import it.unipi.encoding.implementation.EliasFano;
 import it.unipi.encoding.implementation.Simple9;
 import it.unipi.encoding.implementation.UnaryEncoder;
 
@@ -20,9 +19,13 @@ public abstract class Encoder {
 
     public static Encoder getDocIdsEncoder() {
         if (docIdsEncoder == null)
-            docIdsEncoder = new EliasFano(EncodingType.DOC_IDS);
+            docIdsEncoder = new Simple9(EncodingType.DOC_IDS);
 
         return docIdsEncoder;
+    }
+
+    public static void setDocIdsEncoder(Encoder docIdsEncoder) {
+        Encoder.docIdsEncoder = docIdsEncoder;
     }
 
     public static Encoder getTermFrequenciesEncoder() {
@@ -30,6 +33,10 @@ public abstract class Encoder {
             termFrequenciesEncoder = new UnaryEncoder(EncodingType.TERM_FREQUENCIES);
 
         return termFrequenciesEncoder;
+    }
+
+    public static void setTermFrequenciesEncoder(Encoder termFrequenciesEncoder) {
+        Encoder.termFrequenciesEncoder = termFrequenciesEncoder;
     }
 
     public abstract byte[] encode(List<Integer> intList);

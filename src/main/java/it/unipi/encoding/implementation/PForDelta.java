@@ -100,31 +100,34 @@ public class PForDelta extends Encoder {
     public List<Integer> decode(byte[] bytes) {
         List<Integer> intList = new ArrayList<>();
 
-        ByteBuffer buffer = ByteBuffer.wrap(bytes);
         // Skip first 4 bytes of upper bound if we are encoding doc ids
-        int upperBoundBytes = (encoding == EncodingType.DOC_IDS) ? Integer.BYTES : 0;
-        buffer.position(upperBoundBytes);
+        int offset = (encoding == EncodingType.DOC_IDS) ? Integer.BYTES : 0;
 
-        int b = buffer.getInt(),
-                k = buffer.get(),
-                length = buffer.getInt(),
-                outliersBlockLength = buffer.getInt() >>> 8;
+        int b = ByteUtils.bytesToInt(bytes, offset);
+        offset += Integer.BYTES;
+        int k = bytes[offset];
+        offset += Byte.BYTES;
+        int length = ByteUtils.bytesToInt(bytes, offset);
+        offset += Integer.BYTES;
+        int outliersBlockLength = ByteUtils.bytesToInt(bytes, offset) >>> 8;
+        offset += (Integer.BYTES - Byte.BYTES);
+
         int placeholder = (1 << k) - 1;
         int codeSectionBytes = (int) Math.ceil(k * length / 8.);
 
+        // This offset denotes the start of the outliers block
+        int startOutliersBlock = offset + codeSectionBytes;
+
         // Decode outliers
-        int startOutliersOffset = upperBoundBytes + 3*Integer.BYTES + codeSectionBytes;
         List<Integer> outliers = new ArrayList<>();
-        for (int offset = 0; offset < outliersBlockLength; offset += Integer.BYTES)
-            outliers.add(ByteUtils.bytesToInt(bytes, startOutliersOffset + offset));
+        for (int off = 0; off < outliersBlockLength; off += Integer.BYTES)
+            outliers.add(ByteUtils.bytesToInt(bytes, startOutliersBlock + off));
 
         // Decode list
-        int offset = (upperBoundBytes + 3*Integer.BYTES) * 8;
-
         // Iterate over all bits of codeSection
         int num = 0, gap;
-        for (int bitOffset = offset; bitOffset < offset + k*length; bitOffset += k) {
-            gap = getIntFromByteArray(bytes, bitOffset, k);
+        for (int bitOffset = 0; bitOffset < k*length; bitOffset += k) {
+            gap = getIntFromByteArray(bytes, offset*8 + bitOffset, k);
 
             // Check if we have an outlier
             if (gap == placeholder)

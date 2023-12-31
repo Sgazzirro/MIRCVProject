@@ -55,8 +55,8 @@ public class IOUtils {
     private static void deleteDirectory(File directoryToBeDeleted) {
         try {
             FileUtils.deleteDirectory(directoryToBeDeleted);
-        } catch(IOException ie){
-            ie.printStackTrace();
+        } catch(IOException exception) {
+            logger.error("Error in deleting directory", exception);
         }
     }
 

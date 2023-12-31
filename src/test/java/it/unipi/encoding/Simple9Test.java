@@ -77,7 +77,7 @@ public class Simple9Test {
         byte[] bytes = test(list, encoder);
         int block = ByteUtils.bytesToInt(bytes, 2*Integer.BYTES);
 
-        assertEquals(getBinaryRepresentation(block), "00010110110101111110011001000000");
+        assertEquals(getBinaryRepresentation(block), "00011010110101111110011001000000");
     }
 
     @Test
@@ -125,9 +125,9 @@ public class Simple9Test {
     public void testDecodeGaps() {
         Encoder encoder = new Simple9(EncodingType.DOC_IDS);
         byte[] byteList = {
-                0,0,0,5,        // length
+                0,0,0,11,        // length
                 0,0,0b01000011,0b00000100,
-                0b00110001, 0b00110110, 0b00101010, (byte) 0b10110010,
+                0b00110010, 0b00110110, 0b00101010, (byte) 0b10110010,
                 0b01101111, (byte) 0b10100010, 0b00000000, (byte) 0b11011010,
                 (byte) 0b10000000, 0b00000000, 0b01000000, 0b00000000
         };
