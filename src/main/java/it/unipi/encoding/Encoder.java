@@ -20,7 +20,7 @@ public abstract class Encoder {
 
     public static Encoder getDocIdsEncoder() {
         if (docIdsEncoder == null)
-            docIdsEncoder = new EliasFano(EncodingType.DOC_IDS);
+            docIdsEncoder = new Simple9(EncodingType.DOC_IDS);
 
         return docIdsEncoder;
     }

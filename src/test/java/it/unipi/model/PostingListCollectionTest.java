@@ -1,7 +1,11 @@
 package it.unipi.model;
 
 import it.unipi.encoding.CompressionType;
+import it.unipi.encoding.Encoder;
+import it.unipi.encoding.EncodingType;
 import it.unipi.encoding.Tokenizer;
+import it.unipi.encoding.implementation.Simple9;
+import it.unipi.encoding.implementation.UnaryEncoder;
 import it.unipi.io.Fetcher;
 import it.unipi.scoring.Scorer;
 import it.unipi.scoring.ScoringType;
@@ -89,7 +93,7 @@ public class PostingListCollectionTest {
             tf = postingList.termFrequency();
 
             assertTrue(tf > 0);
-            assertTrue(tf < 9_000_000);
+            assertTrue(tf < Constants.N);
         }
     }
 
@@ -117,9 +121,6 @@ public class PostingListCollectionTest {
         Constants.setScoring(ScoringType.TFIDF);
         Constants.setCompression(CompressionType.COMPRESSED);
         Constants.setPath(Constants.DATA_PATH);
-        Constants.BLOCK_SIZE = 1000;
-        //Encoder.setDocIdsEncoder(new Simple9(EncodingType.DOC_IDS));
-        //Encoder.setTermFrequenciesEncoder(new UnaryEncoder(EncodingType.TERM_FREQUENCIES));
     }
 
     @AfterClass
