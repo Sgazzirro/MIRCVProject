@@ -1,5 +1,6 @@
 package it.unipi.encoding;
 
+import it.unipi.encoding.implementation.EliasFano;
 import it.unipi.encoding.implementation.Simple9;
 import it.unipi.encoding.implementation.UnaryEncoder;
 
@@ -19,7 +20,7 @@ public abstract class Encoder {
 
     public static Encoder getDocIdsEncoder() {
         if (docIdsEncoder == null)
-            docIdsEncoder = new Simple9(EncodingType.DOC_IDS);
+            docIdsEncoder = new EliasFano(EncodingType.DOC_IDS);
 
         return docIdsEncoder;
     }

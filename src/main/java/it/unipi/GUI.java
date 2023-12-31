@@ -1,6 +1,8 @@
 package it.unipi;
 
+import it.unipi.encoding.Encoder;
 import it.unipi.encoding.Tokenizer;
+import it.unipi.encoding.implementation.EliasFano;
 import it.unipi.io.DocumentStream;
 import it.unipi.scoring.MaxScore;
 import it.unipi.encoding.CompressionType;
@@ -9,10 +11,7 @@ import it.unipi.utils.Constants;
 import it.unipi.scoring.DocumentScore;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.PriorityQueue;
-import java.util.Scanner;
+import java.util.*;
 
 public class GUI {
     public static void main(String[] args) throws IOException {
@@ -67,7 +66,15 @@ public class GUI {
             System.out.println("4 : Check all results (only DOCNO)");
             System.out.println("5 : Quit");
             System.out.println("+--------------------------------------+");
-            int choice = new Scanner(System.in).nextInt();
+            int choice;
+            while(true){
+                try {
+                    choice = new Scanner(System.in).nextInt();
+                    break;
+                } catch (InputMismatchException ime){
+                    System.out.println("WRONG INPUT! TRY AGAIN.");
+                }
+            }
             if(choice == 5)
                 break;
             switch (choice) {
