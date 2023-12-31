@@ -1,9 +1,11 @@
 package it.unipi.model;
 
 import it.unipi.encoding.CompressionType;
+import it.unipi.encoding.Tokenizer;
 import it.unipi.io.Fetcher;
+import it.unipi.scoring.Scorer;
+import it.unipi.scoring.ScoringType;
 import it.unipi.utils.Constants;
-import opennlp.tools.stemmer.PorterStemmer;
 import org.junit.*;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
@@ -20,10 +22,11 @@ import static org.junit.Assert.*;
  */
 @RunWith(Parameterized.class)
 public class PostingListCollectionTest {
+
     // Test over different compression types
     @Parameterized.Parameters
     public static Collection<Object[]> terms() {
-        PorterStemmer stemmer = new PorterStemmer();
+        Tokenizer tokenizer = Tokenizer.getInstance();
         String[] terms = new String[] {
                 "car",
                 "future",
@@ -31,18 +34,21 @@ public class PostingListCollectionTest {
         };
 
         return Arrays.stream(terms)
-                .map(s -> new Object[]{stemmer.stem(s)})
+                .map(s -> new Object[]{tokenizer.tokenize(s).get(0)})
                 .toList();
     }
 
-    private final Fetcher fetcher;
+    private static Fetcher fetcher;
 
     private final VocabularyEntry entry;
     private final PostingList postingList;
 
     public PostingListCollectionTest(String term) throws IOException {
         fetcher = Fetcher.getFetcher(CompressionType.COMPRESSED);
-        fetcher.start();
+        fetcher.start(Constants.getPath());
+
+        int[] info = fetcher.getDocumentIndexStats();
+        Constants.N = info[0];
 
         entry = fetcher.loadVocEntry(term);
         postingList = entry.getPostingList();
@@ -61,14 +67,63 @@ public class PostingListCollectionTest {
         assertEquals(length, cont);
     }
 
-    @BeforeClass
-    public static void setUp() {
-        Constants.setCompression(CompressionType.COMPRESSED);
-        Constants.setPath(Constants.DATA_PATH);
+    @Test
+    public void testDocIds() {
+        int curr, prev = -1;
+
+        while (postingList.hasNext()) {
+            postingList.next();
+            curr = postingList.docId();
+            assertTrue(curr > prev);
+
+            prev = curr;
+        }
+    }
+
+    @Test
+    public void testTermFrequencies() {
+        int tf;
+
+        while (postingList.hasNext()) {
+            postingList.next();
+            tf = postingList.termFrequency();
+
+            assertTrue(tf > 0);
+            assertTrue(tf < 9_000_000);
+        }
+    }
+
+    @Test
+    public void testUpperBound() {
+        double upperBound = 0;
+        Scorer scorer = Scorer.getScorer(new DocumentIndex());      // Only works with TFIDF
+
+        postingList.reset();
+        while (postingList.hasNext()) {
+            postingList.next();
+            upperBound = Math.max(upperBound, scorer.score(postingList));
+        }
+
+        assertEquals(upperBound, entry.getUpperBound(), 1e-6);
     }
 
     @After
-    public void tearDown() throws Exception {
+    public void reset() {
+        postingList.reset();
+    }
+
+    @BeforeClass
+    public static void setUp() {
+        Constants.setScoring(ScoringType.TFIDF);
+        Constants.setCompression(CompressionType.COMPRESSED);
+        Constants.setPath(Constants.DATA_PATH);
+        Constants.BLOCK_SIZE = 1000;
+        //Encoder.setDocIdsEncoder(new Simple9(EncodingType.DOC_IDS));
+        //Encoder.setTermFrequenciesEncoder(new UnaryEncoder(EncodingType.TERM_FREQUENCIES));
+    }
+
+    @AfterClass
+    public static void tearDown() throws Exception {
         fetcher.close();
     }
 }
