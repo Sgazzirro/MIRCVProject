@@ -14,7 +14,8 @@ When selecting this as main class, It is required for you to have first built an
 The demo interface will ask you for query continuosly, until you voluntary quit. By default, the passage retrieved is not displaied unless requested.
 Be sure to have the entire collection inside a ./data folder if you want to retrieve text from PIDs.
 
-**Important Note**: The GUI assumes by default you have a compressed Index stored, change the value of Constants.Compression if you want to query the system with other output formats.
+**Important Note**: The GUI assumes by default you have a compressed Index stored, change the value of Constants.Compression if you want to query the system with other output formats Moreover,
+we have included an index on this repository, so if you want you can clone the entire project to test directly GUI without waiting for the indexing time.
 
 ## Constants.java
 Feel free to navigate and modify constants to control the compression strategy and some important constraints of the project, such as memory limit
