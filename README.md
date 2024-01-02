@@ -1,4 +1,5 @@
 # MIRCVProject
+**Pay Attention** : We have used JDK 17.
 You can use the following project to:
 
 ## Index MSMARCOPassages Collection with INDEXCREATOR.JAVA as Main Class
